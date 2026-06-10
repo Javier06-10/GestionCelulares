@@ -11,3 +11,21 @@ public class InventarioException : Exception
 {
     public InventarioException(string message) : base(message) { }
 }
+
+/// <summary>Regla de negocio de clientes violada -> HTTP 400/404 en el controlador.</summary>
+public class ClienteException : Exception
+{
+    public ClienteException(string message) : base(message) { }
+}
+
+/// <summary>Regla de negocio de proveedores violada -> HTTP 400/404 en el controlador.</summary>
+public class ProveedorException : Exception
+{
+    public ProveedorException(string message) : base(message) { }
+}
+
+/// <summary>Regla de negocio del catálogo violada -> HTTP 400/404 en el controlador.</summary>
+public class CatalogoException : Exception
+{
+    public CatalogoException(string message) : base(message) { }
+}

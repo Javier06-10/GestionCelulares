@@ -16,6 +16,10 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
     public DbSet<RolPermiso> RolPermisos => Set<RolPermiso>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Cliente> Clientes => Set<Cliente>();
+    public DbSet<Proveedor> Proveedores => Set<Proveedor>();
+    public DbSet<Compra> Compras => Set<Compra>();
+    public DbSet<PagoProveedor> PagosProveedor => Set<PagoProveedor>();
     public DbSet<Marca> Marcas => Set<Marca>();
     public DbSet<Categoria> Categorias => Set<Categoria>();
     public DbSet<Producto> Productos => Set<Producto>();
@@ -32,6 +36,10 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<Rol>().ToTable("Rol").HasKey(e => e.RolId);
         mb.Entity<Permiso>().ToTable("Permiso").HasKey(e => e.PermisoId);
         mb.Entity<Usuario>().ToTable("Usuario").HasKey(e => e.UsuarioId);
+        mb.Entity<Cliente>().ToTable("Cliente").HasKey(e => e.ClienteId);
+        mb.Entity<Proveedor>().ToTable("Proveedor").HasKey(e => e.ProveedorId);
+        mb.Entity<Compra>().ToTable("Compra").HasKey(e => e.CompraId);
+        mb.Entity<PagoProveedor>().ToTable("PagoProveedor").HasKey(e => e.PagoProveedorId);
         mb.Entity<RefreshToken>().ToTable("RefreshToken").HasKey(e => e.RefreshTokenId);
         mb.Entity<Marca>().ToTable("Marca").HasKey(e => e.MarcaId);
         mb.Entity<Categoria>().ToTable("Categoria").HasKey(e => e.CategoriaId);
@@ -59,6 +67,11 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<InventarioImei>().HasIndex(i => i.Imei).IsUnique();
 
         mb.Entity<MovimientoInventario>().HasOne(m => m.Imei).WithMany().HasForeignKey(m => m.ImeiId);
+
+        mb.Entity<Compra>().HasOne(c => c.Proveedor).WithMany(p => p.Compras).HasForeignKey(c => c.ProveedorId);
+        mb.Entity<Compra>().HasOne(c => c.Sucursal).WithMany().HasForeignKey(c => c.SucursalId);
+        mb.Entity<PagoProveedor>().HasOne(p => p.Proveedor).WithMany(x => x.Pagos).HasForeignKey(p => p.ProveedorId);
+        mb.Entity<PagoProveedor>().HasOne(p => p.Compra).WithMany().HasForeignKey(p => p.CompraId);
 
         // Vista de solo lectura
         mb.Entity<InventarioDisponibleDto>().HasNoKey().ToView("vw_InventarioDisponible");

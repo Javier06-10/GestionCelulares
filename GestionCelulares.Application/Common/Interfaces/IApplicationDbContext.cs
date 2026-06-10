@@ -13,6 +13,13 @@ public interface IApplicationDbContext
     DbSet<Usuario> Usuarios { get; }
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<Sucursal> Sucursales { get; }
+    DbSet<Cliente> Clientes { get; }
+    DbSet<Proveedor> Proveedores { get; }
+    DbSet<Compra> Compras { get; }
+    DbSet<PagoProveedor> PagosProveedor { get; }
+    DbSet<Marca> Marcas { get; }
+    DbSet<Categoria> Categorias { get; }
+    DbSet<Producto> Productos { get; }
     DbSet<ProductoVariante> ProductoVariantes { get; }
     DbSet<InventarioImei> InventarioImeis { get; }
     DbSet<MovimientoInventario> MovimientosInventario { get; }

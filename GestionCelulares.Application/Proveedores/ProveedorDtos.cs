@@ -1,0 +1,72 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace GestionCelulares.Application.Proveedores;
+
+public class ProveedorCrearDto
+{
+    [Required, StringLength(150)] public string Nombre { get; set; } = null!;
+    [StringLength(20)] public string? RNC { get; set; }
+    [StringLength(30)] public string? Telefono { get; set; }
+    [EmailAddress, StringLength(150)] public string? Email { get; set; }
+    [StringLength(250)] public string? Direccion { get; set; }
+}
+
+public class ProveedorActualizarDto
+{
+    [Required, StringLength(150)] public string Nombre { get; set; } = null!;
+    [StringLength(20)] public string? RNC { get; set; }
+    [StringLength(30)] public string? Telefono { get; set; }
+    [EmailAddress, StringLength(150)] public string? Email { get; set; }
+    [StringLength(250)] public string? Direccion { get; set; }
+    public bool Activo { get; set; } = true;
+}
+
+public class ProveedorDto
+{
+    public int ProveedorId { get; set; }
+    public string Nombre { get; set; } = null!;
+    public string? RNC { get; set; }
+    public string? Telefono { get; set; }
+    public string? Email { get; set; }
+    public string? Direccion { get; set; }
+    public decimal Balance { get; set; }
+    public bool Activo { get; set; }
+    public DateTime FechaCreacion { get; set; }
+}
+
+public class CompraRegistroDto
+{
+    [Required] public int SucursalId { get; set; }
+    [StringLength(50)] public string? NumeroFactura { get; set; }
+    [Range(0.01, double.MaxValue)] public decimal Total { get; set; }
+    [StringLength(300)] public string? Notas { get; set; }
+}
+
+public class CompraDto
+{
+    public int CompraId { get; set; }
+    public int ProveedorId { get; set; }
+    public int SucursalId { get; set; }
+    public string? NumeroFactura { get; set; }
+    public DateTime Fecha { get; set; }
+    public decimal Total { get; set; }
+    public string? Notas { get; set; }
+}
+
+public class PagoProveedorRegistroDto
+{
+    [Range(0.01, double.MaxValue)] public decimal Monto { get; set; }
+    public int? CompraId { get; set; }
+    [StringLength(100)] public string? Referencia { get; set; }
+}
+
+public class PagoProveedorDto
+{
+    public int PagoProveedorId { get; set; }
+    public int ProveedorId { get; set; }
+    public int? CompraId { get; set; }
+    public decimal Monto { get; set; }
+    public DateTime Fecha { get; set; }
+    public string? Referencia { get; set; }
+    public decimal BalanceProveedor { get; set; }
+}
