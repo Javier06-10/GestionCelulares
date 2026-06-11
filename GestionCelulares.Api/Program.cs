@@ -68,12 +68,10 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Swagger siempre disponible (API de uso local; el frontend Angular y las pruebas lo usan)
-app.UseSwagger();
-app.UseSwaggerUI();
-
 if (app.Environment.IsDevelopment())
 {
+    app.UseSwagger();
+    app.UseSwaggerUI();
     await SeedDevPasswordAsync(app);
 }
 
