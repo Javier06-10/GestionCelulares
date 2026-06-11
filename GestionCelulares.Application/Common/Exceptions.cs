@@ -41,3 +41,9 @@ public class VentaException : Exception
 {
     public VentaException(string message) : base(message) { }
 }
+
+/// <summary>Regla de negocio de créditos violada -> HTTP 400/404 en el controlador.</summary>
+public class CreditoException : Exception
+{
+    public CreditoException(string message) : base(message) { }
+}

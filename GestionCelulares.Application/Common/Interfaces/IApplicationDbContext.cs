@@ -1,3 +1,4 @@
+using GestionCelulares.Application.Creditos;
 using GestionCelulares.Application.Inventario;
 using GestionCelulares.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,10 @@ public interface IApplicationDbContext
     DbSet<Venta> Ventas { get; }
     DbSet<VentaDetalle> VentaDetalles { get; }
     DbSet<VentaPago> VentaPagos { get; }
+    DbSet<Credito> Creditos { get; }
+    DbSet<Cuota> Cuotas { get; }
+    DbSet<PagoCredito> PagosCredito { get; }
+    DbSet<CuotaVencidaDto> CuotasVencidas { get; }
     DbSet<InventarioDisponibleDto> InventarioDisponible { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
