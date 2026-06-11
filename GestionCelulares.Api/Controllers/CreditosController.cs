@@ -80,6 +80,7 @@ public class CreditosController : ControllerBase
         => Ok(await _creditos.CuotasVencidasAsync());
 
     /// <summary>Corre el proceso de mora (usp_Creditos_ActualizarMora); pensado como job diario.</summary>
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost("actualizar-mora")]
     public async Task<IActionResult> ActualizarMora([FromQuery] DateTime? fechaCorte)
     {

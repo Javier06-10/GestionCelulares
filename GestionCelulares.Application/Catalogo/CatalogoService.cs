@@ -100,7 +100,7 @@ public class CatalogoService : ICatalogoService
             CategoriaId = dto.CategoriaId,
             Serializado = dto.Serializado,
             Activo = true,
-            FechaCreacion = DateTime.UtcNow
+            FechaCreacion = DateTime.Now
         };
 
         foreach (var v in dto.Variantes)

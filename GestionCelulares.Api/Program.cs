@@ -16,6 +16,10 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 // --- Autenticación JWT (composición en el host web) ---
 var jwt = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()!;
+if (string.IsNullOrWhiteSpace(jwt.Key) || jwt.Key.Length < 32 || jwt.Key.Contains("CAMBIA"))
+    throw new InvalidOperationException(
+        "Jwt:Key inválida: configura una clave secreta de al menos 32 caracteres " +
+        "(appsettings.{Entorno}.json, user-secrets o variable de entorno) antes de iniciar la API.");
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {

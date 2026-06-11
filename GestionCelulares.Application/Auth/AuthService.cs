@@ -36,7 +36,7 @@ public class AuthService : IAuthService
         if (!_hasher.Verify(req.Contrasena, usuario.HashContrasena))
             throw new AuthException("Usuario o contraseña inválidos.");
 
-        usuario.UltimoAcceso = DateTime.UtcNow;
+        usuario.UltimoAcceso = DateTime.Now;
         var resp = Emitir(usuario);
         await _db.SaveChangesAsync();
         return resp;
@@ -48,7 +48,7 @@ public class AuthService : IAuthService
             .Include(t => t.Usuario).ThenInclude(u => u.Rol)
             .FirstOrDefaultAsync(t => t.Token == refreshToken);
 
-        if (token is null || token.Revocado || token.Expira < DateTime.UtcNow)
+        if (token is null || token.Revocado || token.Expira < DateTime.Now)
             throw new AuthException("Refresh token inválido o expirado.");
 
         token.Revocado = true; // rotación
@@ -68,7 +68,7 @@ public class AuthService : IAuthService
             Token = refresh,
             Expira = refreshExpira,
             Revocado = false,
-            FechaCreacion = DateTime.UtcNow
+            FechaCreacion = DateTime.Now
         });
 
         return new LoginResponse

@@ -57,6 +57,7 @@ public class ClientesController : ControllerBase
     }
 
     /// <summary>Bloquea un cliente (p. ej. moroso) para impedirle nuevas ventas a crédito.</summary>
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost("{id:int}/bloquear")]
     public async Task<IActionResult> Bloquear(int id)
     {
@@ -72,6 +73,7 @@ public class ClientesController : ControllerBase
     }
 
     /// <summary>Desbloquea un cliente.</summary>
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost("{id:int}/desbloquear")]
     public async Task<IActionResult> Desbloquear(int id)
     {

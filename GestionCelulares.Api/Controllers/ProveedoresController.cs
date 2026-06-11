@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace GestionCelulares.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = Roles.Admin)] // gestión de proveedores y pagos es administrativa
 [Route("api/[controller]")]
 public class ProveedoresController : ControllerBase
 {

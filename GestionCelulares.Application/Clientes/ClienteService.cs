@@ -61,7 +61,7 @@ public class ClienteService : IClienteService
             Direccion = Normalizar(dto.Direccion),
             EsMoroso = false,
             Bloqueado = false,
-            FechaCreacion = DateTime.UtcNow
+            FechaCreacion = DateTime.Now
         };
         _db.Clientes.Add(cliente);
         await _db.SaveChangesAsync();

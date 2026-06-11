@@ -42,7 +42,7 @@ public class CajaService : ICajaService
             UsuarioApertura = usuarioId,
             MontoApertura = dto.MontoApertura,
             Estado = "Abierta",
-            FechaApertura = DateTime.UtcNow
+            FechaApertura = DateTime.Now
         };
         _db.SesionesCaja.Add(sesion);
         await _db.SaveChangesAsync();
@@ -118,7 +118,7 @@ public class CajaService : ICajaService
             Concepto = dto.Concepto.Trim(),
             Monto = dto.Monto,
             Referencia = string.IsNullOrWhiteSpace(dto.Referencia) ? null : dto.Referencia.Trim(),
-            Fecha = DateTime.UtcNow
+            Fecha = DateTime.Now
         };
         _db.MovimientosCaja.Add(movimiento);
         await _db.SaveChangesAsync();

@@ -73,14 +73,26 @@ estáticas (no métodos) para que EF Core las traduzca a SQL y cargue las navega
 proveedores, catálogo, inventario IMEI) **completada en la API**. Fase 2: POS, caja, créditos, taller,
 dashboard, reportes, garantías/RMA.
 
+**Hecho además (2026-06-11):** Caja (usp_Caja_Cerrar con OUTPUT), Ventas/POS (usp_Venta_Registrar con
+TVP VentaDetalleTipo como DataTable Structured), Créditos (crear/abonos/mora + vista vw_CuotasVencidas).
+Patrón: puertos ICajaProcedures/IVentaProcedures/ICreditoProcedures en Application, ADO.NET en Infrastructure;
+los RAISERROR clase 16 se convierten en excepciones de módulo → HTTP 400.
+
+**Decisiones transversales aplicadas:**
+- **Fechas en hora local del servidor** (RD, UTC-4 sin DST), igual que la BD (SYSDATETIME). La API usa
+  `DateTime.Now`; solo el JWT usa UTC internamente (estándar del token).
+- **Autorización por roles**: `[Authorize(Roles = Roles.Admin)]` en Proveedores (todo), escritura de
+  Catálogo, registro/transferencia de Inventario, bloquear/desbloquear clientes y actualizar-mora.
+  Vendedor opera POS, caja, clientes y consultas. Usuarios: `admin`/Admin123* (Admin) y `vendedor`/Admin123* (Vendedor).
+- **Jwt:Key real** en `appsettings.Development.json`; `Program.cs` se niega a arrancar con clave corta o placeholder.
+
 ## 4) Pendiente / próximos pasos (en orden acordado)
-1. **Caja** (US-061–070): apertura/cierre de sesión (`usp_Caja_Cerrar`), ingresos/egresos, arqueo. ← siguiente
-2. **Ventas/POS**: invocar `usp_Venta_Registrar` desde Infrastructure (incluye el TVP `VentaDetalleTipo`).
-3. **Créditos**: `usp_Credito_Crear`, `usp_PagoCredito_Registrar`, mora (`usp_Creditos_ActualizarMora` como job).
-4. **Taller**, **Dashboard** y **Reportes** (resto de Fase 2).
-5. **Autorización por roles/permisos** (`[Authorize(Roles=...)]` o políticas con `RolPermiso`).
-6. Integración con frontend **Angular**; proyecto de **tests** (lógica financiera primero).
-7. Cambiar `Jwt:Key` y mover la cadena de conexión a user-secrets antes de cualquier despliegue.
+1. **Taller** (US-111–130), **Dashboard** (US-011–020) y **Reportes** (US-131–160) — resto de Fase 2.
+2. **Garantías/RMA** (épica 19) sobre las tablas Garantia/CasoGarantia y vw_GarantiaVigentePorImei.
+3. Programar `usp_Creditos_ActualizarMora` como job diario (SQL Agent o BackgroundService).
+4. Endpoint de gestión de usuarios (alta/cambio de clave); hoy los usuarios se crean por SQL.
+5. Integración con frontend **Angular**; proyecto de **tests** (lógica financiera primero).
+6. Para despliegue: cadena de conexión y Jwt:Key por user-secrets/variables de entorno.
 
 **Idioma:** español. **SO:** Windows 11, PowerShell. El usuario trabaja con SSMS y Visual Studio
 (cerrar VS antes de mover carpetas, porque bloquea `.vs`).

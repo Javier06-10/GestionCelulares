@@ -59,7 +59,7 @@ public class ProveedorService : IProveedorService
             Direccion = Normalizar(dto.Direccion),
             Balance = 0,
             Activo = true,
-            FechaCreacion = DateTime.UtcNow
+            FechaCreacion = DateTime.Now
         };
         _db.Proveedores.Add(proveedor);
         await _db.SaveChangesAsync();
@@ -116,7 +116,7 @@ public class ProveedorService : IProveedorService
             ProveedorId = proveedorId,
             SucursalId = dto.SucursalId,
             NumeroFactura = Normalizar(dto.NumeroFactura),
-            Fecha = DateTime.UtcNow,
+            Fecha = DateTime.Now,
             Total = dto.Total,
             Notas = Normalizar(dto.Notas)
         };
@@ -174,7 +174,7 @@ public class ProveedorService : IProveedorService
             ProveedorId = proveedorId,
             CompraId = dto.CompraId,
             Monto = dto.Monto,
-            Fecha = DateTime.UtcNow,
+            Fecha = DateTime.Now,
             Referencia = Normalizar(dto.Referencia)
         };
         _db.PagosProveedor.Add(pago);

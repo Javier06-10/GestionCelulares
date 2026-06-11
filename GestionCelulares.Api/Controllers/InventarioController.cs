@@ -40,6 +40,7 @@ public class InventarioController : ControllerBase
     }
 
     /// <summary>Registra un nuevo equipo (IMEI) en el inventario y genera el movimiento de entrada.</summary>
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost]
     public async Task<IActionResult> Registrar([FromBody] ImeiRegistroDto dto)
     {
@@ -55,6 +56,7 @@ public class InventarioController : ControllerBase
     }
 
     /// <summary>Transfiere un equipo a otra sucursal y registra el movimiento.</summary>
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost("{id:int}/transferir")]
     public async Task<IActionResult> Transferir(int id, [FromBody] TransferenciaDto dto)
     {

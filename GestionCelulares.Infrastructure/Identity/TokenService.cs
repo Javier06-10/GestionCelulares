@@ -47,6 +47,7 @@ public class TokenService : ITokenService
     public (string token, DateTime expira) CrearRefreshToken()
     {
         var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-        return (token, DateTime.UtcNow.AddDays(_jwt.RefreshTokenDays));
+        // Hora local: el refresh token se persiste en la BD, que usa SYSDATETIME()
+        return (token, DateTime.Now.AddDays(_jwt.RefreshTokenDays));
     }
 }

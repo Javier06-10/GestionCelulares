@@ -52,7 +52,7 @@ public class InventarioService : IInventarioService
             CompraId = dto.CompraId,
             PrecioCosto = dto.PrecioCosto,
             Estado = "Disponible",
-            FechaIngreso = DateTime.UtcNow
+            FechaIngreso = DateTime.Now
         };
         _db.InventarioImeis.Add(equipo);
         await _db.SaveChangesAsync();
@@ -64,7 +64,7 @@ public class InventarioService : IInventarioService
             SucursalDestino = equipo.SucursalId,
             Referencia = dto.CompraId.HasValue ? $"Compra #{dto.CompraId}" : "Ingreso manual",
             UsuarioId = usuarioId,
-            Fecha = DateTime.UtcNow
+            Fecha = DateTime.Now
         });
         await _db.SaveChangesAsync();
 
@@ -96,7 +96,7 @@ public class InventarioService : IInventarioService
             SucursalDestino = sucursalDestinoId,
             Referencia = $"Transferencia {origen} -> {sucursalDestinoId}",
             UsuarioId = usuarioId,
-            Fecha = DateTime.UtcNow
+            Fecha = DateTime.Now
         });
         await _db.SaveChangesAsync();
     }
