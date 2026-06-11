@@ -35,3 +35,9 @@ public class CajaException : Exception
 {
     public CajaException(string message) : base(message) { }
 }
+
+/// <summary>Regla de negocio de ventas violada -> HTTP 400/404 en el controlador.</summary>
+public class VentaException : Exception
+{
+    public VentaException(string message) : base(message) { }
+}

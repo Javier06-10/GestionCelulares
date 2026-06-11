@@ -25,6 +25,10 @@ public interface IApplicationDbContext
     DbSet<MovimientoInventario> MovimientosInventario { get; }
     DbSet<SesionCaja> SesionesCaja { get; }
     DbSet<MovimientoCaja> MovimientosCaja { get; }
+    DbSet<MetodoPago> MetodosPago { get; }
+    DbSet<Venta> Ventas { get; }
+    DbSet<VentaDetalle> VentaDetalles { get; }
+    DbSet<VentaPago> VentaPagos { get; }
     DbSet<InventarioDisponibleDto> InventarioDisponible { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

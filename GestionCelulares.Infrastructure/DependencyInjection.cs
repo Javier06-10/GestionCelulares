@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
         services.AddScoped<ICajaProcedures, CajaProcedures>();
+        services.AddScoped<IVentaProcedures, VentaProcedures>();
 
         return services;
     }

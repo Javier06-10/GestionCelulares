@@ -4,6 +4,7 @@ using GestionCelulares.Application.Catalogo;
 using GestionCelulares.Application.Clientes;
 using GestionCelulares.Application.Inventario;
 using GestionCelulares.Application.Proveedores;
+using GestionCelulares.Application.Ventas;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GestionCelulares.Application;
@@ -18,6 +19,7 @@ public static class DependencyInjection
         services.AddScoped<IProveedorService, ProveedorService>();
         services.AddScoped<ICatalogoService, CatalogoService>();
         services.AddScoped<ICajaService, CajaService>();
+        services.AddScoped<IVentaService, VentaService>();
         return services;
     }
 }

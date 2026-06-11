@@ -28,6 +28,10 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
     public DbSet<MovimientoInventario> MovimientosInventario => Set<MovimientoInventario>();
     public DbSet<SesionCaja> SesionesCaja => Set<SesionCaja>();
     public DbSet<MovimientoCaja> MovimientosCaja => Set<MovimientoCaja>();
+    public DbSet<MetodoPago> MetodosPago => Set<MetodoPago>();
+    public DbSet<Venta> Ventas => Set<Venta>();
+    public DbSet<VentaDetalle> VentaDetalles => Set<VentaDetalle>();
+    public DbSet<VentaPago> VentaPagos => Set<VentaPago>();
     public DbSet<InventarioDisponibleDto> InventarioDisponible => Set<InventarioDisponibleDto>();
 
     protected override void OnModelCreating(ModelBuilder mb)
@@ -51,6 +55,10 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<MovimientoInventario>().ToTable("MovimientoInventario").HasKey(e => e.MovimientoId);
         mb.Entity<SesionCaja>().ToTable("SesionCaja").HasKey(e => e.SesionCajaId);
         mb.Entity<MovimientoCaja>().ToTable("MovimientoCaja").HasKey(e => e.MovimientoCajaId);
+        mb.Entity<MetodoPago>().ToTable("MetodoPago").HasKey(e => e.MetodoPagoId);
+        mb.Entity<Venta>().ToTable("Venta").HasKey(e => e.VentaId);
+        mb.Entity<VentaDetalle>().ToTable("VentaDetalle").HasKey(e => e.VentaDetalleId);
+        mb.Entity<VentaPago>().ToTable("VentaPago").HasKey(e => e.VentaPagoId);
 
         // Clave compuesta y relaciones de RolPermiso
         mb.Entity<RolPermiso>().ToTable("RolPermiso").HasKey(x => new { x.RolId, x.PermisoId });
@@ -79,6 +87,14 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
 
         mb.Entity<SesionCaja>().HasOne(s => s.Sucursal).WithMany().HasForeignKey(s => s.SucursalId);
         mb.Entity<MovimientoCaja>().HasOne(m => m.Sesion).WithMany(s => s.Movimientos).HasForeignKey(m => m.SesionCajaId);
+
+        mb.Entity<Venta>().HasOne(v => v.Sucursal).WithMany().HasForeignKey(v => v.SucursalId);
+        mb.Entity<Venta>().HasOne(v => v.Cliente).WithMany().HasForeignKey(v => v.ClienteId);
+        mb.Entity<VentaDetalle>().HasOne(d => d.Venta).WithMany(v => v.Detalles).HasForeignKey(d => d.VentaId);
+        mb.Entity<VentaDetalle>().HasOne(d => d.Imei).WithMany().HasForeignKey(d => d.ImeiId);
+        mb.Entity<VentaDetalle>().HasOne(d => d.Variante).WithMany().HasForeignKey(d => d.VarianteId);
+        mb.Entity<VentaPago>().HasOne(p => p.Venta).WithMany(v => v.Pagos).HasForeignKey(p => p.VentaId);
+        mb.Entity<VentaPago>().HasOne(p => p.MetodoPago).WithMany().HasForeignKey(p => p.MetodoPagoId);
 
         // Vista de solo lectura
         mb.Entity<InventarioDisponibleDto>().HasNoKey().ToView("vw_InventarioDisponible");
