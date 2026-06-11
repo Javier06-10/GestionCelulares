@@ -31,6 +31,9 @@ public interface IApplicationDbContext
     DbSet<Venta> Ventas { get; }
     DbSet<VentaDetalle> VentaDetalles { get; }
     DbSet<VentaPago> VentaPagos { get; }
+    DbSet<OrdenTaller> OrdenesTaller { get; }
+    DbSet<OrdenTallerFoto> OrdenTallerFotos { get; }
+    DbSet<OrdenTallerRepuesto> OrdenTallerRepuestos { get; }
     DbSet<Credito> Creditos { get; }
     DbSet<Cuota> Cuotas { get; }
     DbSet<PagoCredito> PagosCredito { get; }

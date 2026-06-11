@@ -33,6 +33,9 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
     public DbSet<Venta> Ventas => Set<Venta>();
     public DbSet<VentaDetalle> VentaDetalles => Set<VentaDetalle>();
     public DbSet<VentaPago> VentaPagos => Set<VentaPago>();
+    public DbSet<OrdenTaller> OrdenesTaller => Set<OrdenTaller>();
+    public DbSet<OrdenTallerFoto> OrdenTallerFotos => Set<OrdenTallerFoto>();
+    public DbSet<OrdenTallerRepuesto> OrdenTallerRepuestos => Set<OrdenTallerRepuesto>();
     public DbSet<Credito> Creditos => Set<Credito>();
     public DbSet<Cuota> Cuotas => Set<Cuota>();
     public DbSet<PagoCredito> PagosCredito => Set<PagoCredito>();
@@ -64,6 +67,9 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<Venta>().ToTable("Venta").HasKey(e => e.VentaId);
         mb.Entity<VentaDetalle>().ToTable("VentaDetalle").HasKey(e => e.VentaDetalleId);
         mb.Entity<VentaPago>().ToTable("VentaPago").HasKey(e => e.VentaPagoId);
+        mb.Entity<OrdenTaller>().ToTable("OrdenTaller").HasKey(e => e.OrdenTallerId);
+        mb.Entity<OrdenTallerFoto>().ToTable("OrdenTallerFoto").HasKey(e => e.Id);
+        mb.Entity<OrdenTallerRepuesto>().ToTable("OrdenTallerRepuesto").HasKey(e => e.Id);
         mb.Entity<Credito>().ToTable("Credito").HasKey(e => e.CreditoId);
         mb.Entity<Cuota>().ToTable("Cuota").HasKey(e => e.CuotaId);
         mb.Entity<PagoCredito>().ToTable("PagoCredito").HasKey(e => e.PagoCreditoId);
@@ -103,6 +109,14 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<VentaDetalle>().HasOne(d => d.Variante).WithMany().HasForeignKey(d => d.VarianteId);
         mb.Entity<VentaPago>().HasOne(p => p.Venta).WithMany(v => v.Pagos).HasForeignKey(p => p.VentaId);
         mb.Entity<VentaPago>().HasOne(p => p.MetodoPago).WithMany().HasForeignKey(p => p.MetodoPagoId);
+
+        mb.Entity<OrdenTaller>().HasOne(o => o.Sucursal).WithMany().HasForeignKey(o => o.SucursalId);
+        mb.Entity<OrdenTaller>().HasOne(o => o.Cliente).WithMany().HasForeignKey(o => o.ClienteId);
+        mb.Entity<OrdenTaller>().HasOne(o => o.Imei).WithMany().HasForeignKey(o => o.ImeiId);
+        mb.Entity<OrdenTaller>().HasOne(o => o.Tecnico).WithMany().HasForeignKey(o => o.TecnicoId);
+        mb.Entity<OrdenTallerFoto>().HasOne(f => f.Orden).WithMany(o => o.Fotos).HasForeignKey(f => f.OrdenTallerId);
+        mb.Entity<OrdenTallerRepuesto>().HasOne(r => r.Orden).WithMany(o => o.Repuestos).HasForeignKey(r => r.OrdenTallerId);
+        mb.Entity<OrdenTallerRepuesto>().HasOne(r => r.Variante).WithMany().HasForeignKey(r => r.VarianteId);
 
         mb.Entity<Credito>().HasOne(c => c.Cliente).WithMany().HasForeignKey(c => c.ClienteId);
         mb.Entity<Credito>().HasOne(c => c.Venta).WithMany().HasForeignKey(c => c.VentaId);

@@ -5,6 +5,7 @@ using GestionCelulares.Application.Clientes;
 using GestionCelulares.Application.Creditos;
 using GestionCelulares.Application.Inventario;
 using GestionCelulares.Application.Proveedores;
+using GestionCelulares.Application.Taller;
 using GestionCelulares.Application.Usuarios;
 using GestionCelulares.Application.Ventas;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IVentaService, VentaService>();
         services.AddScoped<ICreditoService, CreditoService>();
         services.AddScoped<IUsuarioService, UsuarioService>();
+        services.AddScoped<ITallerService, TallerService>();
         return services;
     }
 }

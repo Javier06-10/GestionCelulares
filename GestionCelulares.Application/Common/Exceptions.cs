@@ -53,3 +53,9 @@ public class UsuarioException : Exception
 {
     public UsuarioException(string message) : base(message) { }
 }
+
+/// <summary>Regla de negocio del taller violada -> HTTP 400/404 en el controlador.</summary>
+public class TallerException : Exception
+{
+    public TallerException(string message) : base(message) { }
+}
