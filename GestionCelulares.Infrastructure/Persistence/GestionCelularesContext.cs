@@ -1,5 +1,6 @@
 using GestionCelulares.Application.Common.Interfaces;
 using GestionCelulares.Application.Creditos;
+using GestionCelulares.Application.Garantias;
 using GestionCelulares.Application.Inventario;
 using GestionCelulares.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,10 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
     public DbSet<Cuota> Cuotas => Set<Cuota>();
     public DbSet<PagoCredito> PagosCredito => Set<PagoCredito>();
     public DbSet<CuotaVencidaDto> CuotasVencidas => Set<CuotaVencidaDto>();
+    public DbSet<Garantia> Garantias => Set<Garantia>();
+    public DbSet<CasoGarantia> CasosGarantia => Set<CasoGarantia>();
+    public DbSet<GarantiaVigenteDto> GarantiasVigentes => Set<GarantiaVigenteDto>();
+    public DbSet<IndiceFallaDto> IndiceFallas => Set<IndiceFallaDto>();
     public DbSet<InventarioDisponibleDto> InventarioDisponible => Set<InventarioDisponibleDto>();
 
     protected override void OnModelCreating(ModelBuilder mb)
@@ -70,6 +75,8 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<OrdenTaller>().ToTable("OrdenTaller").HasKey(e => e.OrdenTallerId);
         mb.Entity<OrdenTallerFoto>().ToTable("OrdenTallerFoto").HasKey(e => e.Id);
         mb.Entity<OrdenTallerRepuesto>().ToTable("OrdenTallerRepuesto").HasKey(e => e.Id);
+        mb.Entity<Garantia>().ToTable("Garantia").HasKey(e => e.GarantiaId);
+        mb.Entity<CasoGarantia>().ToTable("CasoGarantia").HasKey(e => e.CasoGarantiaId);
         mb.Entity<Credito>().ToTable("Credito").HasKey(e => e.CreditoId);
         mb.Entity<Cuota>().ToTable("Cuota").HasKey(e => e.CuotaId);
         mb.Entity<PagoCredito>().ToTable("PagoCredito").HasKey(e => e.PagoCreditoId);
@@ -118,6 +125,15 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<OrdenTallerRepuesto>().HasOne(r => r.Orden).WithMany(o => o.Repuestos).HasForeignKey(r => r.OrdenTallerId);
         mb.Entity<OrdenTallerRepuesto>().HasOne(r => r.Variante).WithMany().HasForeignKey(r => r.VarianteId);
 
+        mb.Entity<Garantia>().HasOne(g => g.Venta).WithMany().HasForeignKey(g => g.VentaId);
+        mb.Entity<Garantia>().HasOne(g => g.Imei).WithMany().HasForeignKey(g => g.ImeiId);
+        mb.Entity<Garantia>().HasOne(g => g.Cliente).WithMany().HasForeignKey(g => g.ClienteId);
+        mb.Entity<CasoGarantia>().HasOne(c => c.Garantia).WithMany(g => g.Casos).HasForeignKey(c => c.GarantiaId);
+        mb.Entity<CasoGarantia>().HasOne(c => c.Imei).WithMany().HasForeignKey(c => c.ImeiId);
+        mb.Entity<CasoGarantia>().HasOne(c => c.Cliente).WithMany().HasForeignKey(c => c.ClienteId);
+        mb.Entity<CasoGarantia>().HasOne(c => c.OrdenTaller).WithMany().HasForeignKey(c => c.OrdenTallerId);
+        mb.Entity<CasoGarantia>().HasOne(c => c.ImeiReemplazo).WithMany().HasForeignKey(c => c.ImeiReemplazoId);
+
         mb.Entity<Credito>().HasOne(c => c.Cliente).WithMany().HasForeignKey(c => c.ClienteId);
         mb.Entity<Credito>().HasOne(c => c.Venta).WithMany().HasForeignKey(c => c.VentaId);
         mb.Entity<Cuota>().HasOne(q => q.Credito).WithMany(c => c.Cuotas).HasForeignKey(q => q.CreditoId);
@@ -128,6 +144,8 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         // Vistas de solo lectura
         mb.Entity<InventarioDisponibleDto>().HasNoKey().ToView("vw_InventarioDisponible");
         mb.Entity<CuotaVencidaDto>().HasNoKey().ToView("vw_CuotasVencidas");
+        mb.Entity<GarantiaVigenteDto>().HasNoKey().ToView("vw_GarantiaVigentePorImei");
+        mb.Entity<IndiceFallaDto>().HasNoKey().ToView("vw_IndiceFallasPorModelo");
 
         // Precisión de decimales (la BD ya existe)
         foreach (var prop in mb.Model.GetEntityTypes()

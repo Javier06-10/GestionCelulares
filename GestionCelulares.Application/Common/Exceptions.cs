@@ -59,3 +59,9 @@ public class TallerException : Exception
 {
     public TallerException(string message) : base(message) { }
 }
+
+/// <summary>Regla de negocio de garantías/RMA violada -> HTTP 400/404 en el controlador.</summary>
+public class GarantiaException : Exception
+{
+    public GarantiaException(string message) : base(message) { }
+}

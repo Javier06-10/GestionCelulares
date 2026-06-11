@@ -73,10 +73,17 @@ estáticas (no métodos) para que EF Core las traduzca a SQL y cargue las navega
 proveedores, catálogo, inventario IMEI) **completada en la API**. Fase 2: POS, caja, créditos, taller,
 dashboard, reportes, garantías/RMA.
 
-**Hecho además (2026-06-11):** Caja (usp_Caja_Cerrar con OUTPUT), Ventas/POS (usp_Venta_Registrar con
-TVP VentaDetalleTipo como DataTable Structured), Créditos (crear/abonos/mora + vista vw_CuotasVencidas).
+**Hecho además (2026-06-11) — FASE 2 COMPLETA:** Caja (usp_Caja_Cerrar con OUTPUT), Ventas/POS
+(usp_Venta_Registrar con TVP VentaDetalleTipo como DataTable Structured), Créditos (crear/abonos/mora +
+vista vw_CuotasVencidas), Gestión de usuarios (CRUD Admin + cambio de clave propio con revocación de
+refresh tokens), Taller (flujo Recibido→EnReparacion→Reparado→Entregado/Cancelado, repuestos que
+descuentan StockNoSerial, fotos, Kanban), Dashboard (GET /api/dashboard con todos los indicadores),
+Reportes (ventas/inventario/morosidad/caja/taller/cobros, solo Admin) y Garantías/RMA (garantía por
+venta/IMEI con vigencia, casos con flujo Abierto→EnProceso→Resuelto/Rechazado→Cerrado, reemplazo que
+mueve inventario Devuelto/Vendido con kardex, vistas vw_GarantiaVigentePorImei y vw_IndiceFallasPorModelo).
 Patrón: puertos ICajaProcedures/IVentaProcedures/ICreditoProcedures en Application, ADO.NET en Infrastructure;
 los RAISERROR clase 16 se convierten en excepciones de módulo → HTTP 400.
+Nota POS: al cobrar cuotas en efectivo, el frontend debe enviar sesionCajaId en el abono o el arqueo no lo cuenta.
 
 **Decisiones transversales aplicadas:**
 - **Fechas en hora local del servidor** (RD, UTC-4 sin DST), igual que la BD (SYSDATETIME). La API usa
@@ -87,12 +94,11 @@ los RAISERROR clase 16 se convierten en excepciones de módulo → HTTP 400.
 - **Jwt:Key real** en `appsettings.Development.json`; `Program.cs` se niega a arrancar con clave corta o placeholder.
 
 ## 4) Pendiente / próximos pasos (en orden acordado)
-1. **Taller** (US-111–130), **Dashboard** (US-011–020) y **Reportes** (US-131–160) — resto de Fase 2.
-2. **Garantías/RMA** (épica 19) sobre las tablas Garantia/CasoGarantia y vw_GarantiaVigentePorImei.
+1. Frontend **Angular** (POS, panel admin, dashboard, Kanban del taller) — CORS ya apunta a localhost:4200.
+2. Proyecto de **tests** (lógica financiera primero: cuotas, intereses, mora, arqueo).
 3. Programar `usp_Creditos_ActualizarMora` como job diario (SQL Agent o BackgroundService).
-4. Endpoint de gestión de usuarios (alta/cambio de clave); hoy los usuarios se crean por SQL.
-5. Integración con frontend **Angular**; proyecto de **tests** (lógica financiera primero).
-6. Para despliegue: cadena de conexión y Jwt:Key por user-secrets/variables de entorno.
+4. Para despliegue: cadena de conexión y Jwt:Key por user-secrets/variables de entorno.
+5. Fase 3 del plan: multi-sucursal completo, facturación electrónica e-CF (DGII), auditoría, notificaciones.
 
 **Idioma:** español. **SO:** Windows 11, PowerShell. El usuario trabaja con SSMS y Visual Studio
 (cerrar VS antes de mover carpetas, porque bloquea `.vs`).
