@@ -1,0 +1,34 @@
+<div class="shell">
+  <aside class="sidebar">
+    <div class="marca">📱 <span>Gestión<br />Celulares</span></div>
+
+    <nav>
+      <a routerLink="/" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: true }">📊 Dashboard</a>
+      <span class="proximo">🛒 POS / Ventas</span>
+      <span class="proximo">📦 Inventario</span>
+      <span class="proximo">👥 Clientes</span>
+      <span class="proximo">💳 Créditos</span>
+      <span class="proximo">🔧 Taller</span>
+      <span class="proximo">💰 Caja</span>
+      @if (auth.esAdmin()) {
+        <span class="proximo">📈 Reportes</span>
+        <span class="proximo">⚙️ Usuarios</span>
+      }
+    </nav>
+  </aside>
+
+  <div class="contenido">
+    <header class="topbar">
+      <div></div>
+      <div class="usuario">
+        <span class="nombre">{{ auth.usuario()?.nombreCompleto }}</span>
+        <span class="rol">{{ auth.usuario()?.rol }}</span>
+        <button (click)="auth.logout()">Salir</button>
+      </div>
+    </header>
+
+    <main>
+      <router-outlet />
+    </main>
+  </div>
+</div>

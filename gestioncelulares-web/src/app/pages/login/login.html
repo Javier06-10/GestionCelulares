@@ -1,0 +1,21 @@
+<div class="login-page">
+  <form class="login-card" [formGroup]="form" (ngSubmit)="entrar()">
+    <div class="logo">📱</div>
+    <h1>Gestión Celulares</h1>
+    <p class="subtitulo">Inicia sesión para continuar</p>
+
+    <label for="usuario">Usuario</label>
+    <input id="usuario" type="text" formControlName="nombreUsuario" placeholder="admin" autocomplete="username" />
+
+    <label for="contrasena">Contraseña</label>
+    <input id="contrasena" type="password" formControlName="contrasena" placeholder="••••••••" autocomplete="current-password" />
+
+    @if (error()) {
+      <div class="error">{{ error() }}</div>
+    }
+
+    <button type="submit" [disabled]="cargando()">
+      {{ cargando() ? 'Entrando…' : 'Entrar' }}
+    </button>
+  </form>
+</div>

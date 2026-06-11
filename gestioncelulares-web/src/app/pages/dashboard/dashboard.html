@@ -1,0 +1,104 @@
+<h2>Dashboard</h2>
+
+@if (error()) {
+  <div class="aviso-error">{{ error() }}</div>
+}
+
+@if (datos(); as d) {
+  <section class="tarjetas">
+    <div class="tarjeta venta">
+      <span class="titulo">Ventas de hoy</span>
+      <span class="valor">{{ d.ventasHoy.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</span>
+      <span class="detalle">{{ d.ventasHoy.cantidad }} ventas · ganancia {{ d.ventasHoy.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
+    </div>
+
+    <div class="tarjeta venta">
+      <span class="titulo">Ventas del mes</span>
+      <span class="valor">{{ d.ventasMes.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</span>
+      <span class="detalle">{{ d.ventasMes.cantidad }} ventas · ganancia {{ d.ventasMes.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
+    </div>
+
+    <div class="tarjeta inventario">
+      <span class="titulo">Inventario disponible</span>
+      <span class="valor">{{ d.inventario.equiposDisponibles | number }}</span>
+      <span class="detalle">equipos · costo {{ d.inventario.valorCosto | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
+    </div>
+
+    <div class="tarjeta caja" [class.cerrada]="!d.caja.sesionAbierta">
+      <span class="titulo">Caja</span>
+      <span class="valor">{{ d.caja.sesionAbierta ? 'Abierta' : 'Cerrada' }}</span>
+      @if (d.caja.sesionAbierta) {
+        <span class="detalle">
+          fondo {{ d.caja.montoApertura | currency: 'DOP' : 'RD$' : '1.0-0' }} ·
+          +{{ d.caja.ingresos | currency: 'DOP' : 'RD$' : '1.0-0' }} /
+          -{{ d.caja.egresos | currency: 'DOP' : 'RD$' : '1.0-0' }}
+        </span>
+      } @else {
+        <span class="detalle">abre caja para vender</span>
+      }
+    </div>
+
+    <div class="tarjeta taller">
+      <span class="titulo">Taller pendiente</span>
+      <span class="valor">{{ d.taller.recibidos + d.taller.enReparacion + d.taller.reparados | number }}</span>
+      <span class="detalle">{{ d.taller.recibidos }} recibidos · {{ d.taller.enReparacion }} en reparación · {{ d.taller.reparados }} listos</span>
+    </div>
+
+    <div class="tarjeta creditos" [class.alerta]="d.creditos.cuotasVencidas > 0">
+      <span class="titulo">Créditos</span>
+      <span class="valor">{{ d.creditos.saldoPendiente | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
+      <span class="detalle">
+        {{ d.creditos.activos }} activos · {{ d.creditos.enMora }} en mora ·
+        {{ d.creditos.cuotasVencidas }} cuotas vencidas ({{ d.creditos.montoVencido | currency: 'DOP' : 'RD$' : '1.0-0' }})
+      </span>
+    </div>
+  </section>
+
+  <section class="rankings">
+    <div class="panel">
+      <h3>Top productos del mes</h3>
+      @if (d.topProductosMes.length === 0) {
+        <p class="vacio">Sin ventas este mes.</p>
+      } @else {
+        <table>
+          <thead>
+            <tr><th>Producto</th><th>Unidades</th><th>Total</th></tr>
+          </thead>
+          <tbody>
+            @for (p of d.topProductosMes; track p.producto) {
+              <tr>
+                <td>{{ p.producto }}</td>
+                <td>{{ p.unidades | number }}</td>
+                <td>{{ p.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <div class="panel">
+      <h3>Top vendedores del mes</h3>
+      @if (d.topVendedoresMes.length === 0) {
+        <p class="vacio">Sin ventas este mes.</p>
+      } @else {
+        <table>
+          <thead>
+            <tr><th>Vendedor</th><th>Ventas</th><th>Total</th></tr>
+          </thead>
+          <tbody>
+            @for (v of d.topVendedoresMes; track v.usuarioId) {
+              <tr>
+                <td>{{ v.vendedor }}</td>
+                <td>{{ v.ventas | number }}</td>
+                <td>{{ v.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  </section>
+} @else if (!error()) {
+  <p class="cargando">Cargando indicadores…</p>
+}
