@@ -26,6 +26,8 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
     public DbSet<ProductoVariante> ProductoVariantes => Set<ProductoVariante>();
     public DbSet<InventarioImei> InventarioImeis => Set<InventarioImei>();
     public DbSet<MovimientoInventario> MovimientosInventario => Set<MovimientoInventario>();
+    public DbSet<SesionCaja> SesionesCaja => Set<SesionCaja>();
+    public DbSet<MovimientoCaja> MovimientosCaja => Set<MovimientoCaja>();
     public DbSet<InventarioDisponibleDto> InventarioDisponible => Set<InventarioDisponibleDto>();
 
     protected override void OnModelCreating(ModelBuilder mb)
@@ -47,6 +49,8 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<ProductoVariante>().ToTable("ProductoVariante").HasKey(e => e.VarianteId);
         mb.Entity<InventarioImei>().ToTable("InventarioImei").HasKey(e => e.ImeiId);
         mb.Entity<MovimientoInventario>().ToTable("MovimientoInventario").HasKey(e => e.MovimientoId);
+        mb.Entity<SesionCaja>().ToTable("SesionCaja").HasKey(e => e.SesionCajaId);
+        mb.Entity<MovimientoCaja>().ToTable("MovimientoCaja").HasKey(e => e.MovimientoCajaId);
 
         // Clave compuesta y relaciones de RolPermiso
         mb.Entity<RolPermiso>().ToTable("RolPermiso").HasKey(x => new { x.RolId, x.PermisoId });
@@ -72,6 +76,9 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<Compra>().HasOne(c => c.Sucursal).WithMany().HasForeignKey(c => c.SucursalId);
         mb.Entity<PagoProveedor>().HasOne(p => p.Proveedor).WithMany(x => x.Pagos).HasForeignKey(p => p.ProveedorId);
         mb.Entity<PagoProveedor>().HasOne(p => p.Compra).WithMany().HasForeignKey(p => p.CompraId);
+
+        mb.Entity<SesionCaja>().HasOne(s => s.Sucursal).WithMany().HasForeignKey(s => s.SucursalId);
+        mb.Entity<MovimientoCaja>().HasOne(m => m.Sesion).WithMany(s => s.Movimientos).HasForeignKey(m => m.SesionCajaId);
 
         // Vista de solo lectura
         mb.Entity<InventarioDisponibleDto>().HasNoKey().ToView("vw_InventarioDisponible");

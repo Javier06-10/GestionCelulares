@@ -23,6 +23,8 @@ public interface IApplicationDbContext
     DbSet<ProductoVariante> ProductoVariantes { get; }
     DbSet<InventarioImei> InventarioImeis { get; }
     DbSet<MovimientoInventario> MovimientosInventario { get; }
+    DbSet<SesionCaja> SesionesCaja { get; }
+    DbSet<MovimientoCaja> MovimientosCaja { get; }
     DbSet<InventarioDisponibleDto> InventarioDisponible { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

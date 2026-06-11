@@ -1,4 +1,5 @@
 using GestionCelulares.Application.Auth;
+using GestionCelulares.Application.Caja;
 using GestionCelulares.Application.Catalogo;
 using GestionCelulares.Application.Clientes;
 using GestionCelulares.Application.Inventario;
@@ -16,6 +17,7 @@ public static class DependencyInjection
         services.AddScoped<IClienteService, ClienteService>();
         services.AddScoped<IProveedorService, ProveedorService>();
         services.AddScoped<ICatalogoService, CatalogoService>();
+        services.AddScoped<ICajaService, CajaService>();
         return services;
     }
 }

@@ -29,3 +29,9 @@ public class CatalogoException : Exception
 {
     public CatalogoException(string message) : base(message) { }
 }
+
+/// <summary>Regla de negocio de caja violada -> HTTP 400/404 en el controlador.</summary>
+public class CajaException : Exception
+{
+    public CajaException(string message) : base(message) { }
+}
