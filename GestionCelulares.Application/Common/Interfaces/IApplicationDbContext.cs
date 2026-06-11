@@ -12,6 +12,7 @@ namespace GestionCelulares.Application.Common.Interfaces;
 public interface IApplicationDbContext
 {
     DbSet<Usuario> Usuarios { get; }
+    DbSet<Rol> Roles { get; }
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<Sucursal> Sucursales { get; }
     DbSet<Cliente> Clientes { get; }

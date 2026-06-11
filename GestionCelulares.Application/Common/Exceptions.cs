@@ -47,3 +47,9 @@ public class CreditoException : Exception
 {
     public CreditoException(string message) : base(message) { }
 }
+
+/// <summary>Regla de negocio de gestión de usuarios violada -> HTTP 400/404 en el controlador.</summary>
+public class UsuarioException : Exception
+{
+    public UsuarioException(string message) : base(message) { }
+}
