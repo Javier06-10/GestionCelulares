@@ -1,108 +1,121 @@
-<h2 class="text-2xl font-bold text-tech-charcoal mb-6 tracking-tight">Dashboard</h2>
+<div class="mb-7">
+  <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Dashboard</h2>
+  <p class="text-sm text-tech-steel mt-0.5">Resumen del negocio en tiempo real</p>
+</div>
 
 @if (error()) {
-  <div class="px-4 py-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500">{{ error() }}</div>
+  <div class="px-4 py-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500">{{ error() }}</div>
 }
 
 @if (datos(); as d) {
-  <!-- KPIs glassmorphism -->
-  <section class="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
+  <!-- KPIs -->
+  <section class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-5">
     <!-- Ventas hoy -->
-    <div class="bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 rounded-2xl p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-semibold uppercase tracking-wide text-tech-steel">Ventas de hoy</span>
-        <span class="w-2 h-2 rounded-full bg-tech-accent shadow-[0_0_8px_rgba(0,230,118,0.6)]"></span>
+    <div class="kpi group">
+      <div class="flex items-start justify-between mb-3">
+        <div class="icon-chip bg-tech-accent/10 text-tech-accent">
+          <lucide-icon name="trending-up" [size]="20"></lucide-icon>
+        </div>
+        <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Ventas de hoy</span>
       </div>
-      <div class="text-2xl font-bold text-tech-charcoal">{{ d.ventasHoy.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
-      <div class="text-xs text-tech-steel mt-1">{{ d.ventasHoy.cantidad }} ventas · ganancia {{ d.ventasHoy.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none">{{ d.ventasHoy.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
+      <div class="text-xs text-tech-steel mt-2">{{ d.ventasHoy.cantidad }} ventas · ganancia {{ d.ventasHoy.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
     </div>
 
     <!-- Ventas mes -->
-    <div class="bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 rounded-2xl p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-semibold uppercase tracking-wide text-tech-steel">Ventas del mes</span>
-        <span class="w-2 h-2 rounded-full bg-tech-accent/60"></span>
+    <div class="kpi group">
+      <div class="flex items-start justify-between mb-3">
+        <div class="icon-chip bg-tech-accent/10 text-tech-accent">
+          <lucide-icon name="bar-chart-3" [size]="20"></lucide-icon>
+        </div>
+        <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Ventas del mes</span>
       </div>
-      <div class="text-2xl font-bold text-tech-charcoal">{{ d.ventasMes.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
-      <div class="text-xs text-tech-steel mt-1">{{ d.ventasMes.cantidad }} ventas · ganancia {{ d.ventasMes.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none">{{ d.ventasMes.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
+      <div class="text-xs text-tech-steel mt-2">{{ d.ventasMes.cantidad }} ventas · ganancia {{ d.ventasMes.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
     </div>
 
     <!-- Inventario -->
-    <div class="bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 rounded-2xl p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg">
-      <span class="text-xs font-semibold uppercase tracking-wide text-tech-steel">Inventario disponible</span>
-      <div class="text-2xl font-bold text-tech-charcoal mt-2">{{ d.inventario.equiposDisponibles | number }}</div>
-      <div class="text-xs text-tech-steel mt-1">equipos · costo {{ d.inventario.valorCosto | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+    <div class="kpi group">
+      <div class="flex items-start justify-between mb-3">
+        <div class="icon-chip bg-slate-500/10 text-slate-500">
+          <lucide-icon name="boxes" [size]="20"></lucide-icon>
+        </div>
+        <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Inventario</span>
+      </div>
+      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none">{{ d.inventario.equiposDisponibles | number }}</div>
+      <div class="text-xs text-tech-steel mt-2">equipos · costo {{ d.inventario.valorCosto | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
     </div>
 
-    <!-- Caja (acento esmeralda si abierta) -->
-    <div
-      class="bg-tech-card-light/80 backdrop-blur-md rounded-2xl p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg border"
-      [ngClass]="d.caja.sesionAbierta
-        ? 'border-tech-accent shadow-[0_0_15px_rgba(0,230,118,0.15)]'
-        : 'border-tech-pastel/40'"
-    >
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-semibold uppercase tracking-wide text-tech-steel">Caja</span>
-        @if (d.caja.sesionAbierta) {
-          <span class="text-xs font-semibold text-tech-accent">● Abierta</span>
-        } @else {
-          <span class="text-xs font-semibold text-tech-steel">○ Cerrada</span>
-        }
+    <!-- Caja -->
+    <div class="kpi group" [ngClass]="d.caja.sesionAbierta ? 'ring-1 ring-tech-accent/40 shadow-[0_0_25px_-8px_rgba(0,230,118,0.4)]' : ''">
+      <div class="flex items-start justify-between mb-3">
+        <div class="icon-chip" [ngClass]="d.caja.sesionAbierta ? 'bg-tech-accent/10 text-tech-accent' : 'bg-slate-400/10 text-slate-400'">
+          <lucide-icon name="wallet" [size]="20"></lucide-icon>
+        </div>
+        <span class="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider"
+              [ngClass]="d.caja.sesionAbierta ? 'text-tech-accent' : 'text-tech-steel'">
+          <span class="w-1.5 h-1.5 rounded-full" [ngClass]="d.caja.sesionAbierta ? 'bg-tech-accent animate-pulse' : 'bg-tech-steel'"></span>
+          Caja {{ d.caja.sesionAbierta ? 'abierta' : 'cerrada' }}
+        </span>
       </div>
       @if (d.caja.sesionAbierta) {
-        <div class="text-2xl font-bold text-tech-charcoal">{{ d.caja.montoApertura + d.caja.ingresos - d.caja.egresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
-        <div class="text-xs text-tech-steel mt-1">fondo {{ d.caja.montoApertura | currency: 'DOP' : 'RD$' : '1.0-0' }} · +{{ d.caja.ingresos | currency: 'DOP' : 'RD$' : '1.0-0' }} / -{{ d.caja.egresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+        <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none">{{ d.caja.montoApertura + d.caja.ingresos - d.caja.egresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+        <div class="text-xs text-tech-steel mt-2">fondo {{ d.caja.montoApertura | currency: 'DOP' : 'RD$' : '1.0-0' }} · +{{ d.caja.ingresos | currency: 'DOP' : 'RD$' : '1.0-0' }} / -{{ d.caja.egresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
       } @else {
-        <div class="text-2xl font-bold text-tech-steel">—</div>
-        <div class="text-xs text-tech-steel mt-1">abre caja para vender</div>
+        <div class="text-[1.7rem] font-bold text-tech-steel/50 leading-none">—</div>
+        <div class="text-xs text-tech-steel mt-2">abre caja para vender</div>
       }
     </div>
 
-    <!-- Taller (violeta) -->
-    <div class="bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 rounded-2xl p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-semibold uppercase tracking-wide text-tech-steel">Taller pendiente</span>
-        <span class="w-2 h-2 rounded-full bg-tech-purple shadow-[0_0_8px_rgba(108,92,231,0.5)]"></span>
+    <!-- Taller -->
+    <div class="kpi group">
+      <div class="flex items-start justify-between mb-3">
+        <div class="icon-chip bg-tech-purple/10 text-tech-purple">
+          <lucide-icon name="wrench" [size]="20"></lucide-icon>
+        </div>
+        <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Taller pendiente</span>
       </div>
-      <div class="text-2xl font-bold text-tech-charcoal">{{ d.taller.recibidos + d.taller.enReparacion + d.taller.reparados | number }}</div>
-      <div class="text-xs text-tech-steel mt-1">{{ d.taller.recibidos }} recibidos · {{ d.taller.enReparacion }} en reparación · {{ d.taller.reparados }} listos</div>
+      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none">{{ d.taller.recibidos + d.taller.enReparacion + d.taller.reparados | number }}</div>
+      <div class="text-xs text-tech-steel mt-2">{{ d.taller.recibidos }} recibidos · {{ d.taller.enReparacion }} en reparación · {{ d.taller.reparados }} listos</div>
     </div>
 
-    <!-- Créditos (violeta; rojo si hay mora) -->
-    <div
-      class="bg-tech-card-light/80 backdrop-blur-md rounded-2xl p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg border"
-      [ngClass]="d.creditos.cuotasVencidas > 0 ? 'border-red-400' : 'border-tech-pastel/40'"
-    >
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-semibold uppercase tracking-wide text-tech-steel">Créditos</span>
-        <span class="w-2 h-2 rounded-full" [ngClass]="d.creditos.cuotasVencidas > 0 ? 'bg-red-400' : 'bg-tech-purple'"></span>
+    <!-- Créditos -->
+    <div class="kpi group" [ngClass]="d.creditos.cuotasVencidas > 0 ? 'ring-1 ring-red-400/40' : ''">
+      <div class="flex items-start justify-between mb-3">
+        <div class="icon-chip" [ngClass]="d.creditos.cuotasVencidas > 0 ? 'bg-red-500/10 text-red-500' : 'bg-tech-purple/10 text-tech-purple'">
+          <lucide-icon name="credit-card" [size]="20"></lucide-icon>
+        </div>
+        <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Créditos</span>
       </div>
-      <div class="text-2xl font-bold text-tech-charcoal">{{ d.creditos.saldoPendiente | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
-      <div class="text-xs text-tech-steel mt-1">{{ d.creditos.activos }} activos · {{ d.creditos.enMora }} en mora · {{ d.creditos.cuotasVencidas }} cuotas vencidas ({{ d.creditos.montoVencido | currency: 'DOP' : 'RD$' : '1.0-0' }})</div>
+      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none">{{ d.creditos.saldoPendiente | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+      <div class="text-xs text-tech-steel mt-2">{{ d.creditos.activos }} activos · {{ d.creditos.enMora }} en mora · {{ d.creditos.cuotasVencidas }} cuotas vencidas ({{ d.creditos.montoVencido | currency: 'DOP' : 'RD$' : '1.0-0' }})</div>
     </div>
   </section>
 
   <!-- Rankings -->
-  <section class="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-4">
-    <div class="bg-tech-card-light border border-tech-pastel/40 rounded-2xl p-5">
-      <h3 class="text-base font-semibold text-tech-charcoal mb-3">Top productos del mes</h3>
+  <section class="grid grid-cols-[repeat(auto-fit,minmax(330px,1fr))] gap-4">
+    <div class="panel">
+      <div class="flex items-center gap-2.5 mb-4">
+        <lucide-icon name="trophy" [size]="18" class="text-tech-accent"></lucide-icon>
+        <h3 class="text-base font-semibold text-tech-charcoal">Top productos del mes</h3>
+      </div>
       @if (d.topProductosMes.length === 0) {
-        <p class="text-sm text-tech-steel">Sin ventas este mes.</p>
+        <p class="text-sm text-tech-steel py-4 text-center">Sin ventas este mes.</p>
       } @else {
         <table class="w-full text-sm border-collapse">
           <thead>
             <tr class="text-left text-tech-steel">
               <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Producto</th>
-              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Unid.</th>
-              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Total</th>
+              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40 text-right">Unid.</th>
+              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40 text-right">Total</th>
             </tr>
           </thead>
           <tbody>
             @for (p of d.topProductosMes; track p.producto) {
-              <tr class="transition-colors duration-200 hover:bg-tech-bg-light/60">
-                <td class="py-2 px-2 border-b border-tech-pastel/20 text-tech-charcoal">{{ p.producto }}</td>
-                <td class="py-2 px-2 border-b border-tech-pastel/20 text-tech-charcoal">{{ p.unidades | number }}</td>
-                <td class="py-2 px-2 border-b border-tech-pastel/20 text-tech-charcoal">{{ p.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
+              <tr class="transition-colors duration-200 hover:bg-tech-bg-light/70">
+                <td class="py-2.5 px-2 border-b border-tech-pastel/20 text-tech-charcoal font-medium">{{ p.producto }}</td>
+                <td class="py-2.5 px-2 border-b border-tech-pastel/20 text-tech-charcoal text-right">{{ p.unidades | number }}</td>
+                <td class="py-2.5 px-2 border-b border-tech-pastel/20 text-tech-charcoal text-right">{{ p.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
               </tr>
             }
           </tbody>
@@ -110,25 +123,28 @@
       }
     </div>
 
-    <div class="bg-tech-card-light border border-tech-pastel/40 rounded-2xl p-5">
-      <h3 class="text-base font-semibold text-tech-charcoal mb-3">Top vendedores del mes</h3>
+    <div class="panel">
+      <div class="flex items-center gap-2.5 mb-4">
+        <lucide-icon name="medal" [size]="18" class="text-tech-purple"></lucide-icon>
+        <h3 class="text-base font-semibold text-tech-charcoal">Top vendedores del mes</h3>
+      </div>
       @if (d.topVendedoresMes.length === 0) {
-        <p class="text-sm text-tech-steel">Sin ventas este mes.</p>
+        <p class="text-sm text-tech-steel py-4 text-center">Sin ventas este mes.</p>
       } @else {
         <table class="w-full text-sm border-collapse">
           <thead>
             <tr class="text-left text-tech-steel">
               <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Vendedor</th>
-              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Ventas</th>
-              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Total</th>
+              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40 text-right">Ventas</th>
+              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40 text-right">Total</th>
             </tr>
           </thead>
           <tbody>
             @for (v of d.topVendedoresMes; track v.usuarioId) {
-              <tr class="transition-colors duration-200 hover:bg-tech-bg-light/60">
-                <td class="py-2 px-2 border-b border-tech-pastel/20 text-tech-charcoal">{{ v.vendedor }}</td>
-                <td class="py-2 px-2 border-b border-tech-pastel/20 text-tech-charcoal">{{ v.ventas | number }}</td>
-                <td class="py-2 px-2 border-b border-tech-pastel/20 text-tech-charcoal">{{ v.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
+              <tr class="transition-colors duration-200 hover:bg-tech-bg-light/70">
+                <td class="py-2.5 px-2 border-b border-tech-pastel/20 text-tech-charcoal font-medium">{{ v.vendedor }}</td>
+                <td class="py-2.5 px-2 border-b border-tech-pastel/20 text-tech-charcoal text-right">{{ v.ventas | number }}</td>
+                <td class="py-2.5 px-2 border-b border-tech-pastel/20 text-tech-charcoal text-right">{{ v.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
               </tr>
             }
           </tbody>
@@ -137,5 +153,9 @@
     </div>
   </section>
 } @else if (!error()) {
-  <p class="text-tech-steel">Cargando indicadores…</p>
+  <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
+    @for (i of [1,2,3,4,5,6]; track i) {
+      <div class="kpi animate-pulse h-[120px]"></div>
+    }
+  </div>
 }

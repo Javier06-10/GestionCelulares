@@ -1,11 +1,12 @@
 import { CurrencyPipe, DecimalPipe, NgClass } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 import { DashboardService } from '../../core/dashboard.service';
 import { DashboardDto } from '../../core/models';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CurrencyPipe, DecimalPipe, NgClass],
+  imports: [CurrencyPipe, DecimalPipe, NgClass, LucideAngularModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })

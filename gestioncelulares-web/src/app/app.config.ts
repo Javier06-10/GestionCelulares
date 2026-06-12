@@ -1,8 +1,14 @@
-import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, LOCALE_ID, importProvidersFrom, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { registerLocaleData } from '@angular/common';
 import localeEsDO from '@angular/common/locales/es-DO';
+import {
+  LucideAngularModule,
+  Smartphone, User, Lock, LayoutDashboard, ShoppingCart, Package, Users,
+  CreditCard, Wrench, Wallet, BarChart3, Settings, LogOut, TrendingUp,
+  Boxes, Trophy, Medal, ArrowUpRight
+} from 'lucide-angular';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth-interceptor';
@@ -15,6 +21,13 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
-    { provide: LOCALE_ID, useValue: 'es-DO' }
+    { provide: LOCALE_ID, useValue: 'es-DO' },
+    importProvidersFrom(
+      LucideAngularModule.pick({
+        Smartphone, User, Lock, LayoutDashboard, ShoppingCart, Package, Users,
+        CreditCard, Wrench, Wallet, BarChart3, Settings, LogOut, TrendingUp,
+        Boxes, Trophy, Medal, ArrowUpRight
+      })
+    )
   ]
 };

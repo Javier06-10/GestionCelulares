@@ -1,1 +1,62 @@
-/* Estilos del login en clases utilitarias Tailwind (login.html) */
+.login-bg {
+  background:
+    radial-gradient(circle at 20% 20%, #16181d 0%, #0b0c0f 55%, #08090b 100%);
+}
+
+.aurora {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(110px);
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.aurora-1 {
+  width: 480px;
+  height: 480px;
+  background: rgba(0, 230, 118, 0.35);
+  top: -140px;
+  left: -120px;
+  animation: float-1 14s ease-in-out infinite;
+}
+
+.aurora-2 {
+  width: 420px;
+  height: 420px;
+  background: rgba(108, 92, 231, 0.35);
+  bottom: -120px;
+  right: -100px;
+  animation: float-2 16s ease-in-out infinite;
+}
+
+.aurora-3 {
+  width: 320px;
+  height: 320px;
+  background: rgba(0, 230, 118, 0.14);
+  top: 40%;
+  left: 55%;
+  animation: float-3 18s ease-in-out infinite;
+}
+
+.grid-overlay {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(circle at center, black, transparent 75%);
+}
+
+@keyframes float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(60px, 40px) scale(1.08); }
+}
+
+@keyframes float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-50px, -30px) scale(1.12); }
+}
+
+@keyframes float-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-40px, 50px) scale(0.9); }
+}

@@ -1,1 +1,13 @@
-/* Layout en clases utilitarias Tailwind (layout.html) */
+/* Estado activo del menú (Stealth Tech) */
+:host ::ng-deep a.activo {
+  background: linear-gradient(90deg, rgba(0, 230, 118, 0.18), rgba(0, 230, 118, 0.04));
+  color: #fff;
+}
+
+:host ::ng-deep a.activo .indicador {
+  height: 1.5rem;
+}
+
+:host ::ng-deep a.activo lucide-icon {
+  color: #00e676;
+}
