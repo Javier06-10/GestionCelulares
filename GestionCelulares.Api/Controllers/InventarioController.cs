@@ -23,6 +23,11 @@ public class InventarioController : ControllerBase
     public async Task<IActionResult> Disponibles([FromQuery] int? sucursalId)
         => Ok(await _inv.DisponiblesAsync(sucursalId));
 
+    /// <summary>Lista los IMEIs disponibles de una variante (para elegir en el POS).</summary>
+    [HttpGet("disponibles-imeis")]
+    public async Task<IActionResult> ImeisDisponibles([FromQuery] int varianteId, [FromQuery] int? sucursalId)
+        => Ok(await _inv.ImeisDisponiblesAsync(varianteId, sucursalId));
+
     /// <summary>Consulta un equipo por su IMEI.</summary>
     [HttpGet("imei/{imei}")]
     public async Task<IActionResult> PorImei(string imei)

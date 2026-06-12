@@ -9,6 +9,7 @@ namespace GestionCelulares.Application.Inventario;
 public interface IInventarioService
 {
     Task<IReadOnlyList<InventarioDisponibleDto>> DisponiblesAsync(int? sucursalId);
+    Task<IReadOnlyList<ImeiDto>> ImeisDisponiblesAsync(int varianteId, int? sucursalId);
     Task<ImeiDto?> PorImeiAsync(string imei);
     Task<ImeiDto?> PorIdAsync(int id);
     Task<ImeiDto> RegistrarAsync(ImeiRegistroDto dto, int? usuarioId);
@@ -27,6 +28,29 @@ public class InventarioService : IInventarioService
         if (sucursalId.HasValue)
             q = q.Where(x => x.SucursalId == sucursalId.Value);
         return await q.OrderBy(x => x.Producto).ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<ImeiDto>> ImeisDisponiblesAsync(int varianteId, int? sucursalId)
+    {
+        return await _db.InventarioImeis.AsNoTracking()
+            .Where(i => i.VarianteId == varianteId && i.Estado == "Disponible"
+                && (!sucursalId.HasValue || i.SucursalId == sucursalId.Value))
+            .OrderBy(i => i.FechaIngreso)
+            .Select(i => new ImeiDto
+            {
+                ImeiId = i.ImeiId,
+                Imei = i.Imei,
+                VarianteId = i.VarianteId,
+                Producto = i.Variante.Producto.Nombre,
+                Marca = i.Variante.Producto.Marca!.Nombre,
+                Color = i.Variante.Color,
+                Almacenamiento = i.Variante.Almacenamiento,
+                SucursalId = i.SucursalId,
+                Estado = i.Estado,
+                PrecioCosto = i.PrecioCosto,
+                FechaIngreso = i.FechaIngreso
+            })
+            .ToListAsync();
     }
 
     public Task<ImeiDto?> PorImeiAsync(string imei) => ProyectarAsync(i => i.Imei == imei);

@@ -41,6 +41,34 @@
         }
       </div>
 
+      <!-- Dispositivos disponibles -->
+      @if (dispositivos().length > 0) {
+        <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <lucide-icon name="smartphone" [size]="16" class="text-tech-accent"></lucide-icon>
+            <h3 class="font-semibold text-tech-charcoal text-sm">Dispositivos disponibles</h3>
+          </div>
+          @if (errorDispositivo()) {
+            <div class="mb-2 flex items-center gap-2 text-sm text-red-500">
+              <lucide-icon name="circle-x" [size]="15"></lucide-icon> {{ errorDispositivo() }}
+            </div>
+          }
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            @for (d of dispositivos(); track d.varianteId) {
+              <button (click)="agregarDispositivo(d)"
+                class="text-left p-3 rounded-xl border border-tech-pastel/40 bg-tech-bg-light/40 transition-all duration-200 hover:border-tech-accent/50 hover:shadow-[0_4px_12px_-6px_rgba(0,230,118,0.4)] active:scale-95">
+                <div class="font-medium text-tech-charcoal text-sm truncate">{{ d.producto }}</div>
+                <div class="text-xs text-tech-steel truncate">{{ d.marca }}{{ d.color ? ' · ' + d.color : '' }}{{ d.almacenamiento ? ' · ' + d.almacenamiento : '' }}</div>
+                <div class="flex items-center justify-between mt-1">
+                  <span class="text-sm font-semibold text-tech-accent">{{ d.precioVenta | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
+                  <span class="text-[0.65rem] text-tech-steel">{{ d.disponibles }} disp.</span>
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
       <!-- Accesorios -->
       @if (accesorios().length > 0) {
         <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-4">

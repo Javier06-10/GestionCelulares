@@ -7,7 +7,7 @@ import { AuthService } from '../../core/auth.service';
 import { CajaService } from '../../core/caja.service';
 import { CatalogoService, Producto } from '../../core/catalogo.service';
 import { Cliente, ClienteService } from '../../core/cliente.service';
-import { InventarioService } from '../../core/inventario.service';
+import { InventarioService, StockDisponible } from '../../core/inventario.service';
 import { MetodoPago, VentaService } from '../../core/venta.service';
 
 interface LineaCarrito {
@@ -39,6 +39,9 @@ export class Pos {
 
   // Estado de caja
   cajaAbierta = signal<boolean | null>(null); // null = cargando
+
+  // Dispositivos disponibles (stock por IMEI)
+  dispositivos = signal<StockDisponible[]>([]);
 
   // Catálogo / accesorios
   productos = signal<Producto[]>([]);
@@ -86,6 +89,7 @@ export class Pos {
 
   constructor() {
     this.verificarCaja();
+    this.cargarDispositivos();
     this.catalogo.productos().subscribe(p => this.productos.set(p));
     this.ventas.metodosPago().subscribe(m => {
       this.metodos.set(m);
@@ -100,6 +104,39 @@ export class Pos {
     this.caja.actual(suc).subscribe({
       next: () => this.cajaAbierta.set(true),
       error: () => this.cajaAbierta.set(false)
+    });
+  }
+
+  private cargarDispositivos(): void {
+    this.inventario.disponibles(this.sucursalId ?? undefined)
+      .subscribe(d => this.dispositivos.set(d));
+  }
+
+  errorDispositivo = signal<string | null>(null);
+
+  // Agregar un dispositivo eligiendo automáticamente un IMEI disponible de la variante
+  agregarDispositivo(d: StockDisponible): void {
+    this.errorDispositivo.set(null);
+    this.inventario.imeisDisponibles(d.varianteId, this.sucursalId ?? undefined).subscribe({
+      next: imeis => {
+        const libre = imeis.find(i => !this.carrito().some(l => l.imeiId === i.imeiId));
+        if (!libre) {
+          this.errorDispositivo.set('No quedan equipos disponibles de ese modelo.');
+          return;
+        }
+        this.carrito.update(c => [...c, {
+          key: 'imei-' + libre.imeiId,
+          imeiId: libre.imeiId,
+          varianteId: libre.varianteId,
+          descripcion: `${libre.producto}${libre.color ? ' · ' + libre.color : ''}${libre.almacenamiento ? ' · ' + libre.almacenamiento : ''}`,
+          imei: libre.imei,
+          cantidad: 1,
+          precioUnitario: d.precioVenta,
+          descuento: 0,
+          serializado: true
+        }]);
+      },
+      error: () => this.errorDispositivo.set('No se pudieron cargar los equipos disponibles.')
     });
   }
 
@@ -259,6 +296,7 @@ export class Pos {
 
   nuevaVenta(): void {
     this.ventaOk.set(null);
+    this.cargarDispositivos();
     this.catalogo.productos().subscribe(p => this.productos.set(p)); // refrescar stock/disponibles
   }
 }

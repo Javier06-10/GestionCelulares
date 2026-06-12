@@ -54,6 +54,12 @@ export class InventarioService {
     return this.http.get<Imei>(`${this.base}/imei/${encodeURIComponent(imei)}`);
   }
 
+  imeisDisponibles(varianteId: number, sucursalId?: number) {
+    let params = new HttpParams().set('varianteId', varianteId);
+    if (sucursalId) params = params.set('sucursalId', sucursalId);
+    return this.http.get<Imei[]>(`${this.base}/disponibles-imeis`, { params });
+  }
+
   registrar(dto: ImeiRegistro) {
     return this.http.post<Imei>(this.base, dto);
   }
