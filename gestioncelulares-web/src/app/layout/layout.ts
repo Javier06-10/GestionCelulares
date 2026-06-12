@@ -22,7 +22,7 @@ export class Layout {
   menu: ItemMenu[] = [
     { etiqueta: 'Dashboard', icono: 'layout-dashboard', ruta: '/' },
     { etiqueta: 'POS / Ventas', icono: 'shopping-cart' },
-    { etiqueta: 'Inventario', icono: 'package' },
+    { etiqueta: 'Inventario', icono: 'package', ruta: '/inventario' },
     { etiqueta: 'Clientes', icono: 'users', ruta: '/clientes' },
     { etiqueta: 'Créditos', icono: 'credit-card' },
     { etiqueta: 'Taller', icono: 'wrench' },

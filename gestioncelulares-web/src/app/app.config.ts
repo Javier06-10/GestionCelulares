@@ -9,7 +9,8 @@ import {
   CreditCard, Wrench, Wallet, BarChart3, Settings, LogOut, TrendingUp,
   Boxes, Trophy, Medal, ArrowUpRight,
   Search, Plus, Pencil, Ban, ShieldCheck, X, Phone, Mail, MapPin,
-  CircleAlert, Check, Loader, UserPlus
+  CircleAlert, Check, Loader, UserPlus,
+  ScanLine, PackagePlus, Tag, Hash, CircleCheck, CircleX
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
@@ -30,7 +31,8 @@ export const appConfig: ApplicationConfig = {
         CreditCard, Wrench, Wallet, BarChart3, Settings, LogOut, TrendingUp,
         Boxes, Trophy, Medal, ArrowUpRight,
         Search, Plus, Pencil, Ban, ShieldCheck, X, Phone, Mail, MapPin,
-        CircleAlert, Check, Loader, UserPlus
+        CircleAlert, Check, Loader, UserPlus,
+        ScanLine, PackagePlus, Tag, Hash, CircleCheck, CircleX
       })
     )
   ]
