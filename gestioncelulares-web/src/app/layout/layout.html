@@ -1,59 +1,100 @@
-<div class="grid grid-cols-[260px_1fr] min-h-screen bg-tech-bg-light">
+<div class="shell min-h-screen bg-tech-bg-light" [class.colapsado]="colapsado()">
   <!-- Sidebar -->
-  <aside class="relative bg-tech-bg-dark text-tech-pastel flex flex-col py-6 px-4 gap-8 overflow-hidden">
+  <aside class="sidebar relative bg-tech-bg-dark text-tech-pastel flex flex-col py-5 overflow-hidden">
     <!-- Glow ambiental -->
     <div class="pointer-events-none absolute -top-24 -left-16 w-64 h-64 rounded-full bg-tech-accent/10 blur-[90px]"></div>
 
-    <!-- Marca -->
-    <div class="relative flex items-center gap-3 px-1.5">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-tech-accent/25 to-tech-purple/20 grid place-items-center shadow-[0_0_25px_-4px_rgba(0,230,118,0.5)] ring-1 ring-white/10">
+    <!-- Marca + toggle -->
+    <div class="relative flex items-center gap-3 px-4 mb-7" [class.justify-center]="colapsado()">
+      <div class="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-tech-accent/25 to-tech-purple/20 grid place-items-center shadow-[0_0_25px_-4px_rgba(0,230,118,0.5)] ring-1 ring-white/10">
         <lucide-icon name="smartphone" [size]="20" class="text-tech-accent"></lucide-icon>
       </div>
-      <div class="leading-tight">
-        <div class="font-bold text-white text-[0.95rem]">Gestión</div>
-        <div class="font-medium text-tech-steel text-xs tracking-wide">CELULARES</div>
-      </div>
+      @if (!colapsado()) {
+        <div class="leading-tight flex-1 min-w-0">
+          <div class="font-bold text-white text-[0.95rem]">Gestión</div>
+          <div class="font-medium text-tech-steel text-xs tracking-wide">CELULARES</div>
+        </div>
+        <button
+          (click)="alternar()"
+          title="Contraer menú"
+          class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel transition-all duration-200 hover:bg-white/10 hover:text-white active:scale-90"
+        >
+          <lucide-icon name="panel-left-close" [size]="18"></lucide-icon>
+        </button>
+      }
     </div>
 
+    <!-- Botón expandir (visible solo colapsado) -->
+    @if (colapsado()) {
+      <button
+        (click)="alternar()"
+        title="Expandir menú"
+        class="relative mx-auto mb-4 w-9 h-9 grid place-items-center rounded-lg text-tech-steel transition-all duration-200 hover:bg-white/10 hover:text-white active:scale-90"
+      >
+        <lucide-icon name="panel-left-open" [size]="18"></lucide-icon>
+      </button>
+    }
+
     <!-- Navegación -->
-    <nav class="relative flex flex-col gap-1">
+    <nav class="relative flex flex-col gap-1 px-3">
       @for (item of items; track item.etiqueta) {
         @if (item.ruta) {
           <a
             [routerLink]="item.ruta"
             routerLinkActive="activo"
-            [routerLinkActiveOptions]="{ exact: true }"
-            class="group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tech-pastel transition-all duration-300 ease-out hover:bg-white/[0.06] hover:text-white active:scale-[0.97]"
+            [routerLinkActiveOptions]="{ exact: item.ruta === '/' }"
+            [title]="colapsado() ? item.etiqueta : ''"
+            class="item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tech-pastel transition-all duration-300 ease-out hover:bg-white/[0.06] hover:text-white active:scale-[0.97]"
+            [class.justify-center]="colapsado()"
           >
             <span class="indicador absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 rounded-r-full bg-tech-accent transition-all duration-300"></span>
             <lucide-icon [name]="item.icono" [size]="19" class="shrink-0"></lucide-icon>
-            <span class="font-medium">{{ item.etiqueta }}</span>
+            @if (!colapsado()) {
+              <span class="font-medium whitespace-nowrap">{{ item.etiqueta }}</span>
+            }
           </a>
         } @else {
-          <span class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tech-steel/35 cursor-not-allowed">
+          <span
+            [title]="colapsado() ? item.etiqueta + ' (próximamente)' : ''"
+            class="item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tech-steel/35 cursor-not-allowed"
+            [class.justify-center]="colapsado()"
+          >
             <lucide-icon [name]="item.icono" [size]="19" class="shrink-0"></lucide-icon>
-            <span class="font-medium">{{ item.etiqueta }}</span>
-            <span class="ml-auto text-[0.6rem] uppercase tracking-wider bg-white/5 text-tech-steel/60 px-1.5 py-0.5 rounded">pronto</span>
+            @if (!colapsado()) {
+              <span class="font-medium whitespace-nowrap">{{ item.etiqueta }}</span>
+              <span class="ml-auto text-[0.6rem] uppercase tracking-wider bg-white/5 text-tech-steel/60 px-1.5 py-0.5 rounded">pronto</span>
+            }
           </span>
         }
       }
     </nav>
 
     <!-- Usuario al pie -->
-    <div class="relative mt-auto flex items-center gap-3 px-2 py-3 rounded-xl bg-white/[0.04] border border-white/5">
-      <div class="w-9 h-9 rounded-full bg-gradient-to-br from-tech-accent/30 to-tech-purple/30 grid place-items-center text-white text-xs font-bold ring-1 ring-white/10">
+    <div class="relative mt-auto mx-3 flex items-center gap-3 px-2 py-2.5 rounded-xl bg-white/[0.04] border border-white/5"
+         [class.justify-center]="colapsado()" [title]="colapsado() ? auth.usuario()?.nombreCompleto : ''">
+      <div class="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-tech-accent/30 to-tech-purple/30 grid place-items-center text-white text-xs font-bold ring-1 ring-white/10">
         {{ iniciales(auth.usuario()?.nombreCompleto) }}
       </div>
-      <div class="leading-tight min-w-0">
-        <div class="text-white text-xs font-semibold truncate">{{ auth.usuario()?.nombreCompleto }}</div>
-        <div class="text-tech-accent text-[0.7rem] font-medium">{{ auth.usuario()?.rol }}</div>
-      </div>
+      @if (!colapsado()) {
+        <div class="leading-tight min-w-0">
+          <div class="text-white text-xs font-semibold truncate">{{ auth.usuario()?.nombreCompleto }}</div>
+          <div class="text-tech-accent text-[0.7rem] font-medium">{{ auth.usuario()?.rol }}</div>
+        </div>
+      }
     </div>
   </aside>
 
   <!-- Contenido -->
   <div class="flex flex-col min-w-0">
-    <header class="sticky top-0 z-10 bg-tech-card-light/80 backdrop-blur-md border-b border-tech-pastel/40 px-7 py-3.5 flex justify-end items-center">
+    <header class="sticky top-0 z-10 bg-tech-card-light/80 backdrop-blur-md border-b border-tech-pastel/40 px-7 py-3.5 flex justify-between items-center">
+      <button
+        (click)="alternar()"
+        [title]="colapsado() ? 'Expandir menú' : 'Contraer menú'"
+        class="w-9 h-9 grid place-items-center rounded-xl text-tech-steel transition-all duration-200 hover:bg-tech-bg-light hover:text-tech-charcoal active:scale-90"
+      >
+        <lucide-icon [name]="colapsado() ? 'panel-left-open' : 'panel-left-close'" [size]="19"></lucide-icon>
+      </button>
+
       <button
         (click)="auth.logout()"
         class="group flex items-center gap-2 border border-tech-pastel/60 bg-tech-card-light rounded-xl px-4 py-2 text-sm font-medium text-tech-charcoal transition-all duration-300 ease-out hover:bg-tech-bg-light hover:border-tech-steel/50 active:scale-95"

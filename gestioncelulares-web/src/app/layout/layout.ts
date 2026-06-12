@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../core/auth.service';
@@ -10,6 +10,8 @@ interface ItemMenu {
   soloAdmin?: boolean;
 }
 
+const CLAVE_COLAPSADO = 'gc_sidebar_colapsado';
+
 @Component({
   selector: 'app-layout',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule],
@@ -18,6 +20,17 @@ interface ItemMenu {
 })
 export class Layout {
   auth = inject(AuthService);
+
+  colapsado = signal(localStorage.getItem(CLAVE_COLAPSADO) === '1');
+
+  constructor() {
+    // Persistir la preferencia del usuario
+    effect(() => localStorage.setItem(CLAVE_COLAPSADO, this.colapsado() ? '1' : '0'));
+  }
+
+  alternar(): void {
+    this.colapsado.update(v => !v);
+  }
 
   menu: ItemMenu[] = [
     { etiqueta: 'Dashboard', icono: 'layout-dashboard', ruta: '/' },

@@ -10,7 +10,8 @@ import {
   Boxes, Trophy, Medal, ArrowUpRight,
   Search, Plus, Pencil, Ban, ShieldCheck, X, Phone, Mail, MapPin,
   CircleAlert, Check, Loader, UserPlus,
-  ScanLine, PackagePlus, Tag, Hash, CircleCheck, CircleX
+  ScanLine, PackagePlus, Tag, Hash, CircleCheck, CircleX,
+  PanelLeftClose, PanelLeftOpen
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
@@ -32,7 +33,8 @@ export const appConfig: ApplicationConfig = {
         Boxes, Trophy, Medal, ArrowUpRight,
         Search, Plus, Pencil, Ban, ShieldCheck, X, Phone, Mail, MapPin,
         CircleAlert, Check, Loader, UserPlus,
-        ScanLine, PackagePlus, Tag, Hash, CircleCheck, CircleX
+        ScanLine, PackagePlus, Tag, Hash, CircleCheck, CircleX,
+        PanelLeftClose, PanelLeftOpen
       })
     )
   ]

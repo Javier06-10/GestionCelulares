@@ -1,3 +1,17 @@
+.shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  transition: grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.shell.colapsado {
+  grid-template-columns: 76px 1fr;
+}
+
+.sidebar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Estado activo del menú (Stealth Tech) */
 :host ::ng-deep a.activo {
   background: linear-gradient(90deg, rgba(0, 230, 118, 0.18), rgba(0, 230, 118, 0.04));
