@@ -53,14 +53,30 @@ export class Inventario {
   imeiBuscado = signal<Imei | null>(null);
   imeiNoEncontrado = signal(false);
 
-  // Modal de registro de IMEI
+  // Opciones de accesorios para el selector (variantes no serializadas)
+  accesoriosOpciones = computed(() =>
+    this.accesorios().map(a => ({
+      varianteId: a.variante.varianteId,
+      etiqueta: a.detalle ? `${a.nombre} · ${a.detalle}` : a.nombre,
+      stockActual: a.variante.stockNoSerial
+    }))
+  );
+
+  // Modal de alta al inventario (dispositivo o accesorio)
   modalAbierto = signal(false);
+  tipoAlta = signal<'dispositivo' | 'accesorio'>('dispositivo');
   guardando = signal(false);
   errorForm = signal<string | null>(null);
+
   form = this.fb.nonNullable.group({
     imei: ['', [Validators.required, Validators.maxLength(20)]],
     varianteId: [0, [Validators.required, Validators.min(1)]],
     precioCosto: [0, [Validators.required, Validators.min(0)]]
+  });
+
+  formAcc = this.fb.nonNullable.group({
+    varianteId: [0, [Validators.required, Validators.min(1)]],
+    cantidad: [1, [Validators.required, Validators.min(1)]]
   });
 
   // Modal de ajuste de stock (accesorios, solo Admin)
@@ -98,16 +114,28 @@ export class Inventario {
     });
   }
 
-  // ----- Registrar IMEI -----
+  // ----- Añadir al inventario -----
   abrirRegistro(): void {
     this.errorForm.set(null);
+    this.tipoAlta.set('dispositivo');
     this.form.reset({ imei: '', varianteId: 0, precioCosto: 0 });
+    this.formAcc.reset({ varianteId: 0, cantidad: 1 });
     this.modalAbierto.set(true);
   }
 
   cerrarModal(): void { this.modalAbierto.set(false); }
 
+  cambiarTipoAlta(t: 'dispositivo' | 'accesorio'): void {
+    this.tipoAlta.set(t);
+    this.errorForm.set(null);
+  }
+
   registrar(): void {
+    if (this.tipoAlta() === 'dispositivo') this.registrarDispositivo();
+    else this.agregarAccesorio();
+  }
+
+  private registrarDispositivo(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const sucursalId = this.auth.usuario()?.sucursalId;
     if (!sucursalId) { this.errorForm.set('Tu usuario no tiene una sucursal asignada.'); return; }
@@ -118,6 +146,31 @@ export class Inventario {
     this.servicio.registrar({ imei: v.imei.trim(), varianteId: v.varianteId, sucursalId, precioCosto: v.precioCosto }).subscribe({
       next: () => { this.guardando.set(false); this.modalAbierto.set(false); this.cargar(); },
       error: err => { this.guardando.set(false); this.errorForm.set(err.error?.error ?? 'No se pudo registrar el equipo.'); }
+    });
+  }
+
+  private agregarAccesorio(): void {
+    if (this.formAcc.invalid) { this.formAcc.markAllAsTouched(); return; }
+    const v = this.formAcc.getRawValue();
+    const fila = this.accesorios().find(a => a.variante.varianteId === Number(v.varianteId));
+    if (!fila) { this.errorForm.set('Selecciona un accesorio.'); return; }
+
+    this.guardando.set(true);
+    this.errorForm.set(null);
+    const va = fila.variante;
+    // Suma la cantidad al stock existente (PUT de la variante)
+    this.catalogo.actualizarVariante(va.varianteId, {
+      color: va.color,
+      almacenamiento: va.almacenamiento,
+      condicion: va.condicion,
+      codigoBarras: va.codigoBarras,
+      precioVenta: va.precioVenta,
+      precioCosto: va.precioCosto,
+      stockNoSerial: va.stockNoSerial + Number(v.cantidad),
+      activo: va.activo
+    }).subscribe({
+      next: () => { this.guardando.set(false); this.modalAbierto.set(false); this.cargarCatalogo(); },
+      error: err => { this.guardando.set(false); this.errorForm.set(err.error?.error ?? 'No se pudo agregar el accesorio.'); }
     });
   }
 
