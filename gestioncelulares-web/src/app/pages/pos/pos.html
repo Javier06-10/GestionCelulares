@@ -1,0 +1,223 @@
+<!-- Caja cerrada: bloqueo -->
+@if (cajaAbierta() === false) {
+  <div class="max-w-md mx-auto mt-10 text-center bg-tech-card-light border border-tech-sand/50 rounded-2xl p-8">
+    <div class="w-14 h-14 mx-auto rounded-2xl bg-tech-sand/30 grid place-items-center mb-3">
+      <lucide-icon name="triangle-alert" [size]="28" class="text-amber-600"></lucide-icon>
+    </div>
+    <h3 class="font-bold text-tech-charcoal text-lg">Caja cerrada</h3>
+    <p class="text-sm text-tech-steel mt-1 mb-5">Debes abrir la caja antes de poder vender.</p>
+    <a routerLink="/caja" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-tech-charcoal text-white font-semibold text-sm hover:bg-tech-charcoal/90 active:scale-95 transition-all">
+      <lucide-icon name="wallet" [size]="16"></lucide-icon> Ir a Caja
+    </a>
+  </div>
+}
+
+@else if (cajaAbierta() === true) {
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-5 items-start">
+
+    <!-- ===== COLUMNA IZQUIERDA: productos ===== -->
+    <div class="flex flex-col gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Punto de venta</h2>
+        <p class="text-sm text-tech-steel mt-0.5">Escanea un IMEI o elige un accesorio</p>
+      </div>
+
+      <!-- Escaneo IMEI -->
+      <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-4">
+        <form (ngSubmit)="agregarPorImei()">
+          <div class="relative">
+            <lucide-icon name="scan-line" [size]="20" class="absolute left-4 top-1/2 -translate-y-1/2 text-tech-accent"></lucide-icon>
+            <input
+              [ngModel]="imeiInput()" (ngModelChange)="imeiInput.set($event)" name="imei"
+              autofocus
+              placeholder="Escanea o escribe el IMEI y presiona Enter…"
+              class="w-full pl-12 pr-3.5 py-3.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-lg font-mono outline-none transition-all duration-300 focus:border-tech-accent focus:bg-white focus:shadow-[0_0_20px_rgba(0,230,118,0.25)]" />
+          </div>
+        </form>
+        @if (errorImei()) {
+          <div class="mt-2 flex items-center gap-2 text-sm text-red-500">
+            <lucide-icon name="circle-x" [size]="15"></lucide-icon> {{ errorImei() }}
+          </div>
+        }
+      </div>
+
+      <!-- Accesorios -->
+      @if (accesorios().length > 0) {
+        <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <lucide-icon name="package" [size]="16" class="text-tech-charcoal"></lucide-icon>
+            <h3 class="font-semibold text-tech-charcoal text-sm">Accesorios</h3>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            @for (a of accesorios(); track a.varianteId) {
+              <button (click)="agregarAccesorio(a)" [disabled]="a.stock <= 0"
+                class="text-left p-3 rounded-xl border border-tech-pastel/40 bg-tech-bg-light/40 transition-all duration-200 hover:border-tech-accent/50 hover:shadow-[0_4px_12px_-6px_rgba(0,230,118,0.4)] active:scale-95 disabled:opacity-40 disabled:active:scale-100">
+                <div class="font-medium text-tech-charcoal text-sm truncate">{{ a.nombre }}</div>
+                @if (a.detalle) { <div class="text-xs text-tech-steel truncate">{{ a.detalle }}</div> }
+                <div class="flex items-center justify-between mt-1">
+                  <span class="text-sm font-semibold text-tech-accent">{{ a.precioVenta | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
+                  <span class="text-[0.65rem] text-tech-steel">stock {{ a.stock }}</span>
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ===== COLUMNA DERECHA: carrito + cobro ===== -->
+    <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl flex flex-col max-h-[calc(100vh-7rem)] sticky top-24 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.15)]">
+      <!-- Header carrito -->
+      <div class="flex items-center justify-between px-5 py-3.5 border-b border-tech-pastel/30">
+        <div class="flex items-center gap-2">
+          <lucide-icon name="shopping-cart" [size]="18" class="text-tech-charcoal"></lucide-icon>
+          <h3 class="font-semibold text-tech-charcoal">Carrito</h3>
+          <span class="text-xs text-tech-steel">({{ carrito().length }})</span>
+        </div>
+        @if (carrito().length > 0) {
+          <button (click)="vaciar()" class="text-xs text-tech-steel hover:text-red-500 transition-colors">Vaciar</button>
+        }
+      </div>
+
+      <!-- Líneas -->
+      <div class="flex-1 overflow-y-auto px-3 py-2 min-h-[120px]">
+        @if (carrito().length === 0) {
+          <div class="h-full grid place-items-center text-center py-10">
+            <div>
+              <lucide-icon name="shopping-cart" [size]="32" class="mx-auto mb-2 text-tech-steel/40"></lucide-icon>
+              <p class="text-sm text-tech-steel">Carrito vacío</p>
+            </div>
+          </div>
+        } @else {
+          @for (l of carrito(); track l.key) {
+            <div class="p-3 rounded-xl hover:bg-tech-bg-light/60 transition-colors">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="font-medium text-tech-charcoal text-sm">{{ l.descripcion }}</div>
+                  @if (l.imei) { <div class="text-[0.7rem] font-mono text-tech-steel">{{ l.imei }}</div> }
+                </div>
+                <button (click)="quitar(l.key)" class="w-7 h-7 shrink-0 grid place-items-center rounded-lg text-tech-steel hover:bg-red-500/10 hover:text-red-500 active:scale-90 transition-all">
+                  <lucide-icon name="trash-2" [size]="14"></lucide-icon>
+                </button>
+              </div>
+
+              <div class="flex items-center gap-2 mt-2">
+                <!-- Cantidad (solo accesorios) -->
+                @if (!l.serializado) {
+                  <div class="flex items-center gap-1 bg-tech-bg-light rounded-lg">
+                    <button (click)="cambiarCantidad(l.key, -1)" class="w-6 h-6 grid place-items-center text-tech-steel hover:text-tech-charcoal active:scale-90"><lucide-icon name="minus" [size]="13"></lucide-icon></button>
+                    <span class="w-6 text-center text-sm font-semibold text-tech-charcoal">{{ l.cantidad }}</span>
+                    <button (click)="cambiarCantidad(l.key, 1)" class="w-6 h-6 grid place-items-center text-tech-steel hover:text-tech-charcoal active:scale-90"><lucide-icon name="plus" [size]="13"></lucide-icon></button>
+                  </div>
+                } @else {
+                  <span class="text-xs text-tech-steel">1 unidad</span>
+                }
+
+                <!-- Precio -->
+                <input type="number" [value]="l.precioUnitario" (input)="fijarPrecio(l.key, +$any($event.target).value)"
+                  class="w-24 ml-auto px-2 py-1 rounded-lg bg-tech-bg-light border border-tech-pastel/40 text-right text-sm text-tech-charcoal outline-none focus:border-tech-accent/60" />
+              </div>
+
+              <div class="flex items-center justify-between mt-1.5">
+                <div class="flex items-center gap-1">
+                  <lucide-icon name="percent" [size]="12" class="text-tech-steel"></lucide-icon>
+                  <input type="number" [value]="l.descuento" (input)="fijarDescuento(l.key, +$any($event.target).value)" placeholder="0"
+                    class="w-16 px-2 py-0.5 rounded-md bg-tech-bg-light border border-tech-pastel/40 text-xs text-tech-charcoal outline-none focus:border-tech-accent/60" />
+                  <span class="text-[0.7rem] text-tech-steel">desc.</span>
+                </div>
+                <span class="font-semibold text-tech-charcoal text-sm">{{ (l.precioUnitario * l.cantidad - l.descuento) | currency: 'DOP' : 'RD$' : '1.2-2' }}</span>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Totales + cobro -->
+      <div class="border-t border-tech-pastel/30 p-4 flex flex-col gap-3">
+        <div class="flex flex-col gap-1 text-sm">
+          <div class="flex justify-between text-tech-steel"><span>Subtotal</span><span>{{ subtotal() | currency: 'DOP' : 'RD$' : '1.2-2' }}</span></div>
+          <div class="flex justify-between text-tech-steel"><span>ITBIS (18%)</span><span>{{ impuesto() | currency: 'DOP' : 'RD$' : '1.2-2' }}</span></div>
+          <div class="flex justify-between items-center pt-1 border-t border-tech-pastel/30 mt-1">
+            <span class="font-bold text-tech-charcoal">Total</span>
+            <span class="text-xl font-bold text-tech-charcoal">{{ total() | currency: 'DOP' : 'RD$' : '1.2-2' }}</span>
+          </div>
+        </div>
+
+        <!-- Contado / Crédito -->
+        <div class="grid grid-cols-2 gap-2 p-1 bg-tech-bg-light rounded-xl">
+          <button (click)="alternarCredito(false)" class="py-2 rounded-lg text-sm font-semibold transition-all" [class]="!esCredito() ? 'bg-tech-accent text-tech-bg-dark' : 'text-tech-steel'">Contado</button>
+          <button (click)="alternarCredito(true)" class="py-2 rounded-lg text-sm font-semibold transition-all" [class]="esCredito() ? 'bg-tech-purple text-white' : 'text-tech-steel'">Crédito</button>
+        </div>
+
+        <!-- Método de pago (contado) -->
+        @if (!esCredito()) {
+          <select [ngModel]="metodoPagoId()" (ngModelChange)="metodoPagoId.set(+$event)" name="metodo"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-sm outline-none focus:border-tech-accent/60 focus:bg-white">
+            @for (m of metodos(); track m.metodoPagoId) { <option [value]="m.metodoPagoId">{{ m.nombre }}</option> }
+          </select>
+        }
+
+        <!-- Cliente -->
+        <div>
+          @if (clienteSel(); as c) {
+            <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-tech-accent/10 border border-tech-accent/30">
+              <div class="flex items-center gap-2 min-w-0">
+                <lucide-icon name="user" [size]="15" class="text-tech-accent shrink-0"></lucide-icon>
+                <span class="text-sm font-medium text-tech-charcoal truncate">{{ c.nombre }}</span>
+              </div>
+              <button (click)="quitarCliente()" class="text-tech-steel hover:text-red-500"><lucide-icon name="x" [size]="15"></lucide-icon></button>
+            </div>
+          } @else {
+            <div class="relative">
+              <lucide-icon name="search" [size]="15" class="absolute left-3 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
+              <input [ngModel]="busquedaCliente()" (ngModelChange)="buscarCliente($event)" name="cli"
+                [placeholder]="esCredito() ? 'Cliente (requerido para crédito)…' : 'Cliente (opcional)…'"
+                class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-tech-bg-light/60 border text-tech-charcoal text-sm outline-none focus:border-tech-accent/60 focus:bg-white"
+                [class]="esCredito() ? 'border-tech-purple/40' : 'border-tech-pastel/40'" />
+              @if (resultadosCliente().length > 0) {
+                <div class="absolute z-20 left-0 right-0 mt-1 bg-tech-card-light border border-tech-pastel/40 rounded-xl shadow-xl overflow-hidden">
+                  @for (c of resultadosCliente(); track c.clienteId) {
+                    <button (click)="elegirCliente(c)" class="w-full text-left px-3 py-2 text-sm text-tech-charcoal hover:bg-tech-bg-light transition-colors flex items-center justify-between">
+                      <span>{{ c.nombre }}</span>
+                      @if (c.bloqueado) { <span class="text-[0.65rem] text-red-500">bloqueado</span> }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        @if (errorVenta()) {
+          <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorVenta() }}</div>
+        }
+
+        <button (click)="cobrar()" [disabled]="!puedeCobrar() || procesando()"
+          class="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-bold transition-all hover:shadow-[0_8px_30px_-6px_rgba(0,230,118,0.6)] active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100">
+          @if (procesando()) {
+            <lucide-icon name="loader" [size]="18" class="animate-spin"></lucide-icon> Procesando…
+          } @else {
+            <lucide-icon name="receipt" [size]="18"></lucide-icon> Cobrar {{ total() | currency: 'DOP' : 'RD$' : '1.2-2' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== Modal venta exitosa ===== -->
+@if (ventaOk(); as v) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm">
+    <div class="w-[min(380px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 p-7 text-center">
+      <div class="w-16 h-16 mx-auto rounded-full bg-tech-accent/15 grid place-items-center mb-4 shadow-[0_0_30px_-6px_rgba(0,230,118,0.5)]">
+        <lucide-icon name="circle-check" [size]="36" class="text-tech-accent"></lucide-icon>
+      </div>
+      <h3 class="font-bold text-tech-charcoal text-lg">¡Venta registrada!</h3>
+      <p class="text-sm text-tech-steel mt-1">{{ v.factura }}</p>
+      <div class="text-3xl font-bold text-tech-charcoal my-4">{{ v.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
+      <button (click)="nuevaVenta()" class="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-bold transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
+        <lucide-icon name="plus" [size]="18"></lucide-icon> Nueva venta
+      </button>
+    </div>
+  </div>
+}

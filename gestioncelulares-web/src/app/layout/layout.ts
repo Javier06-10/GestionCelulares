@@ -34,7 +34,7 @@ export class Layout {
 
   menu: ItemMenu[] = [
     { etiqueta: 'Dashboard', icono: 'layout-dashboard', ruta: '/' },
-    { etiqueta: 'POS / Ventas', icono: 'shopping-cart' },
+    { etiqueta: 'POS / Ventas', icono: 'shopping-cart', ruta: '/pos' },
     { etiqueta: 'Inventario', icono: 'package', ruta: '/inventario' },
     { etiqueta: 'Catálogo', icono: 'layers', ruta: '/catalogo' },
     { etiqueta: 'Clientes', icono: 'users', ruta: '/clientes' },

@@ -7,6 +7,7 @@ import { Clientes } from './pages/clientes/clientes';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { Inventario } from './pages/inventario/inventario';
 import { Login } from './pages/login/login';
+import { Pos } from './pages/pos/pos';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -16,11 +17,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: '', component: Dashboard },
+      { path: 'pos', component: Pos },
       { path: 'clientes', component: Clientes },
       { path: 'inventario', component: Inventario },
       { path: 'catalogo', component: Catalogo },
       { path: 'caja', component: Caja }
-      // Pendientes: pos, creditos, taller, reportes, usuarios
+      // Pendientes: creditos, taller, reportes, usuarios
     ]
   },
   { path: '**', redirectTo: '' }

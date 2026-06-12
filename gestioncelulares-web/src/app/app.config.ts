@@ -13,7 +13,8 @@ import {
   ScanLine, PackagePlus, Tag, Hash, CircleCheck, CircleX,
   PanelLeftClose, PanelLeftOpen,
   ArrowDownLeft, Calculator, Banknote, LockKeyhole, DoorOpen, Clock,
-  ChevronDown, ChevronRight, Layers, Bookmark, Folder, CircleDot
+  ChevronDown, ChevronRight, Layers, Bookmark, Folder, CircleDot,
+  Trash2, Percent, Receipt, Minus, TriangleAlert
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
@@ -38,7 +39,8 @@ export const appConfig: ApplicationConfig = {
         ScanLine, PackagePlus, Tag, Hash, CircleCheck, CircleX,
         PanelLeftClose, PanelLeftOpen,
         ArrowDownLeft, Calculator, Banknote, LockKeyhole, DoorOpen, Clock,
-        ChevronDown, ChevronRight, Layers, Bookmark, Folder, CircleDot
+        ChevronDown, ChevronRight, Layers, Bookmark, Folder, CircleDot,
+        Trash2, Percent, Receipt, Minus, TriangleAlert
       })
     )
   ]
