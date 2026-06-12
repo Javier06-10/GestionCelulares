@@ -36,10 +36,11 @@ export class Layout {
     { etiqueta: 'Dashboard', icono: 'layout-dashboard', ruta: '/' },
     { etiqueta: 'POS / Ventas', icono: 'shopping-cart' },
     { etiqueta: 'Inventario', icono: 'package', ruta: '/inventario' },
+    { etiqueta: 'Catálogo', icono: 'layers', ruta: '/catalogo' },
     { etiqueta: 'Clientes', icono: 'users', ruta: '/clientes' },
     { etiqueta: 'Créditos', icono: 'credit-card' },
     { etiqueta: 'Taller', icono: 'wrench' },
-    { etiqueta: 'Caja', icono: 'wallet' },
+    { etiqueta: 'Caja', icono: 'wallet', ruta: '/caja' },
     { etiqueta: 'Reportes', icono: 'bar-chart-3', soloAdmin: true },
     { etiqueta: 'Usuarios', icono: 'settings', soloAdmin: true }
   ];

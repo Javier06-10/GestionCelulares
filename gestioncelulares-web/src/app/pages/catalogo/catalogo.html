@@ -1,0 +1,319 @@
+<!-- Encabezado -->
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+  <div>
+    <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Catálogo</h2>
+    <p class="text-sm text-tech-steel mt-0.5">{{ productos().length }} producto(s)</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <button (click)="modalCatalogos.set(true)"
+      class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm transition-all hover:bg-tech-bg-light active:scale-95">
+      <lucide-icon name="bookmark" [size]="16"></lucide-icon> Marcas y categorías
+    </button>
+    <button (click)="abrirNuevoProducto()"
+      class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
+      <lucide-icon name="plus" [size]="18"></lucide-icon> Nuevo producto
+    </button>
+  </div>
+</div>
+
+<!-- Búsqueda -->
+<div class="relative mb-4 max-w-md">
+  <lucide-icon name="search" [size]="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
+  <input type="text" placeholder="Buscar por nombre o marca…" (input)="buscar($any($event.target).value)"
+    class="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal placeholder:text-tech-steel/60 outline-none transition-all focus:border-tech-accent/60 focus:shadow-[0_0_0_4px_rgba(0,230,118,0.08)]" />
+</div>
+
+<!-- Lista de productos -->
+<div class="flex flex-col gap-3">
+  @if (cargando()) {
+    @for (i of [1,2,3]; track i) {
+      <div class="h-16 rounded-2xl bg-tech-card-light border border-tech-pastel/30 animate-pulse"></div>
+    }
+  } @else if (productos().length === 0) {
+    <div class="py-16 text-center text-tech-steel bg-tech-card-light border border-tech-pastel/30 rounded-2xl">
+      <lucide-icon name="layers" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon>
+      <p>No hay productos. Crea el primero.</p>
+    </div>
+  } @else {
+    @for (p of productos(); track p.productoId) {
+      <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
+        <!-- Cabecera del producto -->
+        <div class="flex items-center gap-3 px-4 py-3.5">
+          <button (click)="alternarExpandir(p.productoId)"
+            class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all">
+            <lucide-icon [name]="expandido() === p.productoId ? 'chevron-down' : 'chevron-right'" [size]="18"></lucide-icon>
+          </button>
+
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-tech-accent/15 to-tech-purple/15 grid place-items-center">
+            <lucide-icon name="smartphone" [size]="20" class="text-tech-charcoal"></lucide-icon>
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-semibold text-tech-charcoal">{{ p.nombre }}</span>
+              @if (!p.activo) {
+                <span class="text-[0.65rem] uppercase font-semibold px-1.5 py-0.5 rounded bg-slate-400/15 text-slate-500">Inactivo</span>
+              }
+              @if (p.serializado) {
+                <span class="text-[0.65rem] uppercase font-semibold px-1.5 py-0.5 rounded bg-tech-purple/10 text-tech-purple">IMEI</span>
+              }
+            </div>
+            <div class="text-xs text-tech-steel">
+              {{ p.marca || 'Sin marca' }}{{ p.categoria ? ' · ' + p.categoria : '' }} · {{ p.variantes.length }} variante(s)
+            </div>
+          </div>
+
+          <button (click)="abrirEditarProducto(p)" title="Editar producto"
+            class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light hover:text-tech-charcoal active:scale-90 transition-all">
+            <lucide-icon name="pencil" [size]="16"></lucide-icon>
+          </button>
+        </div>
+
+        <!-- Variantes (expandible) -->
+        @if (expandido() === p.productoId) {
+          <div class="border-t border-tech-pastel/30 bg-tech-bg-light/40 px-4 py-3">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-tech-steel">Variantes</span>
+              <button (click)="abrirNuevaVariante(p)"
+                class="flex items-center gap-1.5 text-xs font-semibold text-tech-accent hover:underline">
+                <lucide-icon name="plus" [size]="14"></lucide-icon> Agregar variante
+              </button>
+            </div>
+
+            @if (p.variantes.length === 0) {
+              <p class="text-sm text-tech-steel py-2">Este producto aún no tiene variantes.</p>
+            } @else {
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm border-collapse min-w-[560px]">
+                  <thead>
+                    <tr class="text-left text-tech-steel">
+                      <th class="font-semibold py-2 px-2">Variante</th>
+                      <th class="font-semibold py-2 px-2 text-right">Costo</th>
+                      <th class="font-semibold py-2 px-2 text-right">Venta</th>
+                      <th class="font-semibold py-2 px-2 text-center">Stock</th>
+                      <th class="font-semibold py-2 px-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (vr of p.variantes; track vr.varianteId) {
+                      <tr class="border-t border-tech-pastel/20 hover:bg-white/60 transition-colors">
+                        <td class="py-2 px-2 text-tech-charcoal">
+                          <span class="font-medium">{{ vr.color || '—' }}{{ vr.almacenamiento ? ' · ' + vr.almacenamiento : '' }}{{ vr.condicion ? ' · ' + vr.condicion : '' }}</span>
+                          @if (!vr.activo) { <span class="ml-1 text-[0.6rem] uppercase text-slate-400">inactiva</span> }
+                        </td>
+                        <td class="py-2 px-2 text-right text-tech-steel">{{ vr.precioCosto | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
+                        <td class="py-2 px-2 text-right font-semibold text-tech-charcoal">{{ vr.precioVenta | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
+                        <td class="py-2 px-2 text-center text-tech-charcoal">{{ p.serializado ? '—' : vr.stockNoSerial }}</td>
+                        <td class="py-2 px-2 text-right">
+                          <button (click)="abrirEditarVariante(p, vr)" title="Editar variante"
+                            class="w-7 h-7 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light hover:text-tech-charcoal active:scale-90 transition-all ml-auto">
+                            <lucide-icon name="pencil" [size]="14"></lucide-icon>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
+
+<!-- ===== Modal producto ===== -->
+@if (modalProducto()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modalProducto.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="formProducto" (ngSubmit)="guardarProducto()"
+      class="w-[min(480px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">{{ editandoProducto() ? 'Editar producto' : 'Nuevo producto' }}</h3>
+        <button type="button" (click)="modalProducto.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all">
+          <lucide-icon name="x" [size]="18"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Nombre *</label>
+          <input formControlName="nombre" type="text" placeholder="Ej. Galaxy A55"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+          @if (formProducto.controls.nombre.invalid && formProducto.controls.nombre.touched) {
+            <span class="text-xs text-red-500 mt-1 block">El nombre es obligatorio.</span>
+          }
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Marca</label>
+            <select formControlName="marcaId" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white">
+              <option [ngValue]="null">— Sin marca —</option>
+              @for (m of marcas(); track m.marcaId) { <option [ngValue]="m.marcaId">{{ m.nombre }}</option> }
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Categoría</label>
+            <select formControlName="categoriaId" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white">
+              <option [ngValue]="null">— Sin categoría —</option>
+              @for (c of categorias(); track c.categoriaId) { <option [ngValue]="c.categoriaId">{{ c.nombre }}</option> }
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Descripción</label>
+          <input formControlName="descripcion" type="text" placeholder="Opcional"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" formControlName="serializado" class="w-4 h-4 accent-[#00E676]" />
+          <span class="text-sm text-tech-charcoal">Se controla por IMEI (equipo serializado)</span>
+        </label>
+
+        @if (editandoProducto()) {
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="activo" class="w-4 h-4 accent-[#00E676]" />
+            <span class="text-sm text-tech-charcoal">Activo</span>
+          </label>
+        }
+
+        @if (errorProducto()) {
+          <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorProducto() }}</div>
+        }
+        @if (!editandoProducto()) {
+          <p class="text-xs text-tech-steel">Después de crearlo podrás agregar sus variantes (color, almacenamiento, precios).</p>
+        }
+      </div>
+
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalProducto.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" [disabled]="guardandoProducto()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 disabled:opacity-60">
+          @if (guardandoProducto()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Guardando… }
+          @else { <lucide-icon name="check" [size]="16"></lucide-icon> Guardar }
+        </button>
+      </div>
+    </form>
+  </div>
+}
+
+<!-- ===== Modal variante ===== -->
+@if (modalVariante()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modalVariante.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="formVariante" (ngSubmit)="guardarVariante()"
+      class="w-[min(480px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">{{ editandoVariante() ? 'Editar variante' : 'Nueva variante' }} <span class="text-tech-steel font-normal">· {{ productoVariante()?.nombre }}</span></h3>
+        <button type="button" (click)="modalVariante.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all">
+          <lucide-icon name="x" [size]="18"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Color</label>
+            <input formControlName="color" type="text" placeholder="Negro" class="w-full px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Almacen.</label>
+            <input formControlName="almacenamiento" type="text" placeholder="128GB" class="w-full px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Condición</label>
+            <input formControlName="condicion" type="text" placeholder="Nuevo" class="w-full px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Precio costo *</label>
+            <input formControlName="precioCosto" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Precio venta *</label>
+            <input formControlName="precioVenta" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+        </div>
+
+        @if (!productoVariante()?.serializado) {
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Stock (accesorio no serializado)</label>
+            <input formControlName="stockNoSerial" type="number" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+        }
+
+        @if (editandoVariante()) {
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="activo" class="w-4 h-4 accent-[#00E676]" />
+            <span class="text-sm text-tech-charcoal">Activa</span>
+          </label>
+        }
+
+        @if (errorVariante()) {
+          <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorVariante() }}</div>
+        }
+      </div>
+
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalVariante.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" [disabled]="guardandoVariante()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 disabled:opacity-60">
+          @if (guardandoVariante()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Guardando… }
+          @else { <lucide-icon name="check" [size]="16"></lucide-icon> Guardar }
+        </button>
+      </div>
+    </form>
+  </div>
+}
+
+<!-- ===== Modal marcas/categorías ===== -->
+@if (modalCatalogos()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modalCatalogos.set(false)">
+    <div (click)="$event.stopPropagation()" class="w-[min(520px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Marcas y categorías</h3>
+        <button type="button" (click)="modalCatalogos.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all">
+          <lucide-icon name="x" [size]="18"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 grid grid-cols-2 gap-6">
+        <!-- Marcas -->
+        <div>
+          <div class="flex items-center gap-2 mb-3"><lucide-icon name="bookmark" [size]="16" class="text-tech-accent"></lucide-icon><span class="font-semibold text-tech-charcoal text-sm">Marcas</span></div>
+          <div class="flex gap-2 mb-3">
+            <input [value]="nuevaMarca()" (input)="nuevaMarca.set($any($event.target).value)" (keydown.enter)="agregarMarca()" type="text" placeholder="Nueva marca"
+              class="flex-1 px-3 py-2 rounded-lg bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-sm outline-none focus:border-tech-accent/60 focus:bg-white" />
+            <button (click)="agregarMarca()" class="w-9 grid place-items-center rounded-lg bg-tech-accent/15 text-tech-accent hover:bg-tech-accent/25 active:scale-90 transition-all"><lucide-icon name="plus" [size]="16"></lucide-icon></button>
+          </div>
+          <div class="flex flex-col gap-1 max-h-52 overflow-y-auto">
+            @for (m of marcas(); track m.marcaId) {
+              <div class="px-3 py-1.5 rounded-lg bg-tech-bg-light/60 text-sm text-tech-charcoal">{{ m.nombre }}</div>
+            } @empty { <span class="text-xs text-tech-steel">Sin marcas.</span> }
+          </div>
+        </div>
+
+        <!-- Categorías -->
+        <div>
+          <div class="flex items-center gap-2 mb-3"><lucide-icon name="folder" [size]="16" class="text-tech-purple"></lucide-icon><span class="font-semibold text-tech-charcoal text-sm">Categorías</span></div>
+          <div class="flex gap-2 mb-3">
+            <input [value]="nuevaCategoria()" (input)="nuevaCategoria.set($any($event.target).value)" (keydown.enter)="agregarCategoria()" type="text" placeholder="Nueva categoría"
+              class="flex-1 px-3 py-2 rounded-lg bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-sm outline-none focus:border-tech-accent/60 focus:bg-white" />
+            <button (click)="agregarCategoria()" class="w-9 grid place-items-center rounded-lg bg-tech-purple/15 text-tech-purple hover:bg-tech-purple/25 active:scale-90 transition-all"><lucide-icon name="plus" [size]="16"></lucide-icon></button>
+          </div>
+          <div class="flex flex-col gap-1 max-h-52 overflow-y-auto">
+            @for (c of categorias(); track c.categoriaId) {
+              <div class="px-3 py-1.5 rounded-lg bg-tech-bg-light/60 text-sm text-tech-charcoal">{{ c.nombre }}</div>
+            } @empty { <span class="text-xs text-tech-steel">Sin categorías.</span> }
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button (click)="modalCatalogos.set(false); cargar()" class="px-5 py-2.5 rounded-xl bg-tech-charcoal text-white font-semibold text-sm hover:bg-tech-charcoal/90 active:scale-95 transition-all">Listo</button>
+      </div>
+    </div>
+  </div>
+}

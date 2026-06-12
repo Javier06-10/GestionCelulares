@@ -11,7 +11,9 @@ import {
   Search, Plus, Pencil, Ban, ShieldCheck, X, Phone, Mail, MapPin,
   CircleAlert, Check, Loader, UserPlus,
   ScanLine, PackagePlus, Tag, Hash, CircleCheck, CircleX,
-  PanelLeftClose, PanelLeftOpen
+  PanelLeftClose, PanelLeftOpen,
+  ArrowDownLeft, Calculator, Banknote, LockKeyhole, DoorOpen, Clock,
+  ChevronDown, ChevronRight, Layers, Bookmark, Folder, CircleDot
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
@@ -34,7 +36,9 @@ export const appConfig: ApplicationConfig = {
         Search, Plus, Pencil, Ban, ShieldCheck, X, Phone, Mail, MapPin,
         CircleAlert, Check, Loader, UserPlus,
         ScanLine, PackagePlus, Tag, Hash, CircleCheck, CircleX,
-        PanelLeftClose, PanelLeftOpen
+        PanelLeftClose, PanelLeftOpen,
+        ArrowDownLeft, Calculator, Banknote, LockKeyhole, DoorOpen, Clock,
+        ChevronDown, ChevronRight, Layers, Bookmark, Folder, CircleDot
       })
     )
   ]

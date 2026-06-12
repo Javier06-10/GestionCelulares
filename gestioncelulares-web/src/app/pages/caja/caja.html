@@ -1,0 +1,251 @@
+<div class="mb-6">
+  <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Caja</h2>
+  <p class="text-sm text-tech-steel mt-0.5">Apertura, movimientos y arqueo de la sesión</p>
+</div>
+
+@if (cargando()) {
+  <div class="h-40 rounded-2xl bg-tech-card-light border border-tech-pastel/30 animate-pulse"></div>
+}
+
+<!-- SIN SESIÓN: abrir caja -->
+@else if (!sesion()) {
+  <div class="max-w-md mx-auto mt-6 bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-7 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.15)]">
+    <div class="flex flex-col items-center text-center mb-6">
+      <div class="w-14 h-14 rounded-2xl bg-tech-accent/10 grid place-items-center mb-3">
+        <lucide-icon name="door-open" [size]="28" class="text-tech-accent"></lucide-icon>
+      </div>
+      <h3 class="font-bold text-tech-charcoal text-lg">Caja cerrada</h3>
+      <p class="text-sm text-tech-steel mt-1">Abre la caja con el fondo inicial para empezar a vender.</p>
+    </div>
+
+    <form [formGroup]="formApertura" (ngSubmit)="abrir()" class="flex flex-col gap-4">
+      <div>
+        <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Fondo de apertura</label>
+        <div class="relative">
+          <lucide-icon name="banknote" [size]="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
+          <input formControlName="montoApertura" type="number" step="0.01" min="0" placeholder="0.00"
+            class="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-lg font-semibold outline-none transition-all focus:border-tech-accent/60 focus:bg-white focus:shadow-[0_0_0_4px_rgba(0,230,118,0.08)]" />
+        </div>
+      </div>
+
+      @if (errorApertura()) {
+        <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorApertura() }}</div>
+      }
+
+      <button type="submit" [disabled]="abriendo()"
+        class="flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-bold transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 disabled:opacity-60">
+        @if (abriendo()) {
+          <lucide-icon name="loader" [size]="18" class="animate-spin"></lucide-icon> Abriendo…
+        } @else {
+          <lucide-icon name="door-open" [size]="18"></lucide-icon> Abrir caja
+        }
+      </button>
+    </form>
+  </div>
+}
+
+<!-- CON SESIÓN ABIERTA -->
+@else if (sesion(); as s) {
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-5">
+    <!-- Columna principal -->
+    <div class="flex flex-col gap-5">
+      <!-- Resumen -->
+      <div class="bg-tech-card-light border border-tech-accent/40 rounded-2xl p-5 shadow-[0_0_25px_-10px_rgba(0,230,118,0.4)]">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-tech-accent animate-pulse"></span>
+            <span class="font-semibold text-tech-accent text-sm">Caja abierta</span>
+          </div>
+          <span class="flex items-center gap-1.5 text-xs text-tech-steel">
+            <lucide-icon name="clock" [size]="14"></lucide-icon>
+            desde {{ s.fechaApertura | date: 'short' }}
+          </span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <div class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel mb-1">Fondo</div>
+            <div class="text-lg font-bold text-tech-charcoal">{{ s.montoApertura | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
+          </div>
+          <div>
+            <div class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel mb-1">Ingresos</div>
+            <div class="text-lg font-bold text-tech-accent">+{{ s.totalIngresos | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
+          </div>
+          <div>
+            <div class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel mb-1">Egresos</div>
+            <div class="text-lg font-bold text-red-500">-{{ s.totalEgresos | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
+          </div>
+          <div>
+            <div class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel mb-1">En caja</div>
+            <div class="text-lg font-bold text-tech-charcoal">{{ saldoMovimientos() | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
+          </div>
+        </div>
+        <p class="text-[0.7rem] text-tech-steel mt-3">El saldo no incluye las ventas en efectivo; el arqueo se calcula al cerrar.</p>
+      </div>
+
+      <!-- Movimientos -->
+      <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden">
+        <div class="px-5 py-3.5 border-b border-tech-pastel/30 flex items-center gap-2">
+          <lucide-icon name="calculator" [size]="18" class="text-tech-charcoal"></lucide-icon>
+          <h3 class="font-semibold text-tech-charcoal">Movimientos</h3>
+          <span class="ml-auto text-xs text-tech-steel">{{ movimientos().length }}</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse min-w-[480px]">
+            <tbody>
+              @for (m of movimientos(); track m.movimientoCajaId) {
+                <tr class="border-b border-tech-pastel/15 last:border-0 hover:bg-tech-bg-light/50 transition-colors">
+                  <td class="py-3 px-4">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-lg grid place-items-center"
+                           [class]="m.tipo === 'Ingreso' ? 'bg-tech-accent/10 text-tech-accent' : 'bg-red-500/10 text-red-500'">
+                        <lucide-icon [name]="m.tipo === 'Ingreso' ? 'arrow-down-left' : 'arrow-up-right'" [size]="15"></lucide-icon>
+                      </div>
+                      <div>
+                        <div class="font-medium text-tech-charcoal">{{ m.concepto }}</div>
+                        @if (m.referencia) { <div class="text-xs text-tech-steel">{{ m.referencia }}</div> }
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3 px-4 text-right whitespace-nowrap text-xs text-tech-steel">{{ m.fecha | date: 'shortTime' }}</td>
+                  <td class="py-3 px-4 text-right font-semibold whitespace-nowrap"
+                      [class]="m.tipo === 'Ingreso' ? 'text-tech-accent' : 'text-red-500'">
+                    {{ m.tipo === 'Ingreso' ? '+' : '-' }}{{ m.monto | currency: 'DOP' : 'RD$' : '1.2-2' }}
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td class="py-10 text-center text-tech-steel text-sm">Sin movimientos manuales aún.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna lateral: nuevo movimiento + cerrar -->
+    <div class="flex flex-col gap-5">
+      <form [formGroup]="formMov" (ngSubmit)="registrarMovimiento()"
+            class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-5">
+        <h3 class="font-semibold text-tech-charcoal mb-4">Nuevo movimiento</h3>
+
+        <div class="grid grid-cols-2 gap-2 mb-3 p-1 bg-tech-bg-light rounded-xl">
+          <button type="button" (click)="formMov.controls.tipo.setValue('Ingreso')"
+            class="py-2 rounded-lg text-sm font-semibold transition-all"
+            [class]="formMov.controls.tipo.value === 'Ingreso' ? 'bg-tech-accent text-tech-bg-dark' : 'text-tech-steel'">
+            Ingreso
+          </button>
+          <button type="button" (click)="formMov.controls.tipo.setValue('Egreso')"
+            class="py-2 rounded-lg text-sm font-semibold transition-all"
+            [class]="formMov.controls.tipo.value === 'Egreso' ? 'bg-red-500 text-white' : 'text-tech-steel'">
+            Egreso
+          </button>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <input formControlName="concepto" type="text" placeholder="Concepto"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+          <input formControlName="monto" type="number" step="0.01" min="0" placeholder="Monto"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal font-semibold outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+          <input formControlName="referencia" type="text" placeholder="Referencia (opcional)"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+
+        @if (errorMov()) {
+          <div class="mt-3 px-3.5 py-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs">{{ errorMov() }}</div>
+        }
+
+        <button type="submit" [disabled]="guardandoMov()"
+          class="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-tech-charcoal text-white font-semibold text-sm transition-all hover:bg-tech-charcoal/90 active:scale-95 disabled:opacity-60">
+          @if (guardandoMov()) {
+            <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Guardando…
+          } @else {
+            <lucide-icon name="plus" [size]="16"></lucide-icon> Registrar
+          }
+        </button>
+      </form>
+
+      <button (click)="abrirCierre()"
+        class="flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-tech-charcoal/15 text-tech-charcoal font-semibold transition-all hover:bg-tech-charcoal hover:text-white active:scale-95">
+        <lucide-icon name="lock-keyhole" [size]="18"></lucide-icon>
+        Cerrar caja (arqueo)
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de cierre -->
+  @if (modalCierre()) {
+    <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm">
+      <div class="w-[min(440px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+          <h3 class="font-bold text-tech-charcoal">Cierre de caja</h3>
+          <button type="button" (click)="modalCierre.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all">
+            <lucide-icon name="x" [size]="18"></lucide-icon>
+          </button>
+        </div>
+
+        <!-- Resultado del arqueo -->
+        @if (resultado(); as r) {
+          <div class="px-6 py-5">
+            <div class="flex flex-col gap-3">
+              <div class="flex justify-between text-sm">
+                <span class="text-tech-steel">Monto esperado</span>
+                <span class="font-semibold text-tech-charcoal">{{ r.montoEsperado | currency: 'DOP' : 'RD$' : '1.2-2' }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-tech-steel">Monto contado</span>
+                <span class="font-semibold text-tech-charcoal">{{ r.montoContado | currency: 'DOP' : 'RD$' : '1.2-2' }}</span>
+              </div>
+              <div class="h-px bg-tech-pastel/40"></div>
+              <div class="flex justify-between items-center">
+                <span class="font-semibold text-tech-charcoal">Diferencia</span>
+                <span class="text-lg font-bold px-3 py-1 rounded-xl"
+                  [class]="r.diferencia === 0 ? 'bg-tech-accent/10 text-tech-accent' : (r.diferencia > 0 ? 'bg-tech-sand/30 text-amber-700' : 'bg-red-500/10 text-red-500')">
+                  {{ r.diferencia > 0 ? '+' : '' }}{{ r.diferencia | currency: 'DOP' : 'RD$' : '1.2-2' }}
+                </span>
+              </div>
+              <p class="text-xs text-tech-steel text-center mt-1">
+                {{ r.diferencia === 0 ? '¡Caja cuadrada perfectamente!' : (r.diferencia > 0 ? 'Sobrante en caja.' : 'Faltante en caja.') }}
+              </p>
+            </div>
+          </div>
+          <div class="flex justify-end px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+            <button (click)="terminarCierre()"
+              class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
+              <lucide-icon name="check" [size]="16"></lucide-icon> Listo
+            </button>
+          </div>
+        } @else {
+          <!-- Formulario de conteo -->
+          <form [formGroup]="formCierre" (ngSubmit)="confirmarCierre()">
+            <div class="px-6 py-5">
+              <p class="text-sm text-tech-steel mb-4">Cuenta el efectivo físico en la caja e ingrésalo. El sistema calculará la diferencia.</p>
+              <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Efectivo contado</label>
+              <div class="relative">
+                <lucide-icon name="banknote" [size]="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
+                <input formControlName="montoContado" type="number" step="0.01" min="0" placeholder="0.00"
+                  class="w-full pl-11 pr-3.5 py-3 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-lg font-semibold outline-none transition-all focus:border-tech-accent/60 focus:bg-white focus:shadow-[0_0_0_4px_rgba(0,230,118,0.08)]" />
+              </div>
+              @if (errorCierre()) {
+                <div class="mt-3 px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorCierre() }}</div>
+              }
+            </div>
+            <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+              <button type="button" (click)="modalCierre.set(false)"
+                class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">
+                Cancelar
+              </button>
+              <button type="submit" [disabled]="cerrando()"
+                class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-tech-charcoal text-white font-semibold text-sm transition-all hover:bg-tech-charcoal/90 active:scale-95 disabled:opacity-60">
+                @if (cerrando()) {
+                  <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Cerrando…
+                } @else {
+                  <lucide-icon name="lock-keyhole" [size]="16"></lucide-icon> Confirmar cierre
+                }
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+    </div>
+  }
+}
