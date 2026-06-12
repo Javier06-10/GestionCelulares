@@ -23,7 +23,7 @@ export class Layout {
     { etiqueta: 'Dashboard', icono: 'layout-dashboard', ruta: '/' },
     { etiqueta: 'POS / Ventas', icono: 'shopping-cart' },
     { etiqueta: 'Inventario', icono: 'package' },
-    { etiqueta: 'Clientes', icono: 'users' },
+    { etiqueta: 'Clientes', icono: 'users', ruta: '/clientes' },
     { etiqueta: 'Créditos', icono: 'credit-card' },
     { etiqueta: 'Taller', icono: 'wrench' },
     { etiqueta: 'Caja', icono: 'wallet' },

@@ -7,7 +7,9 @@ import {
   LucideAngularModule,
   Smartphone, User, Lock, LayoutDashboard, ShoppingCart, Package, Users,
   CreditCard, Wrench, Wallet, BarChart3, Settings, LogOut, TrendingUp,
-  Boxes, Trophy, Medal, ArrowUpRight
+  Boxes, Trophy, Medal, ArrowUpRight,
+  Search, Plus, Pencil, Ban, ShieldCheck, X, Phone, Mail, MapPin,
+  CircleAlert, Check, Loader, UserPlus
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
@@ -26,7 +28,9 @@ export const appConfig: ApplicationConfig = {
       LucideAngularModule.pick({
         Smartphone, User, Lock, LayoutDashboard, ShoppingCart, Package, Users,
         CreditCard, Wrench, Wallet, BarChart3, Settings, LogOut, TrendingUp,
-        Boxes, Trophy, Medal, ArrowUpRight
+        Boxes, Trophy, Medal, ArrowUpRight,
+        Search, Plus, Pencil, Ban, ShieldCheck, X, Phone, Mail, MapPin,
+        CircleAlert, Check, Loader, UserPlus
       })
     )
   ]

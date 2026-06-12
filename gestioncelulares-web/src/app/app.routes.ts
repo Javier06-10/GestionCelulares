@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth-guard';
 import { Layout } from './layout/layout';
+import { Clientes } from './pages/clientes/clientes';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { Login } from './pages/login/login';
 
@@ -11,8 +12,9 @@ export const routes: Routes = [
     component: Layout,
     canActivate: [authGuard],
     children: [
-      { path: '', component: Dashboard }
-      // Aquí se irán sumando: pos, inventario, clientes, creditos, taller, caja, reportes, usuarios
+      { path: '', component: Dashboard },
+      { path: 'clientes', component: Clientes }
+      // Pendientes: pos, inventario, creditos, taller, caja, reportes, usuarios
     ]
   },
   { path: '**', redirectTo: '' }
