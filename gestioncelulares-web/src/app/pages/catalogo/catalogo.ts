@@ -158,14 +158,16 @@ export class Catalogo {
     this.guardandoVariante.set(true);
     this.errorVariante.set(null);
     const v = this.formVariante.getRawValue();
+    const serializado = !!this.productoVariante()?.serializado;
     const dto = {
       color: v.color?.trim() || null,
       almacenamiento: v.almacenamiento?.trim() || null,
-      condicion: v.condicion?.trim() || null,
-      codigoBarras: v.codigoBarras?.trim() || null,
+      // Condición solo aplica a dispositivos; código de barras y stock solo a accesorios
+      condicion: serializado ? (v.condicion?.trim() || null) : null,
+      codigoBarras: serializado ? null : (v.codigoBarras?.trim() || null),
       precioVenta: v.precioVenta,
       precioCosto: v.precioCosto,
-      stockNoSerial: v.stockNoSerial,
+      stockNoSerial: serializado ? 0 : v.stockNoSerial,
       activo: v.activo
     };
 

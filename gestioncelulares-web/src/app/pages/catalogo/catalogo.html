@@ -168,10 +168,26 @@
             class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
         </div>
 
-        <label class="flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" formControlName="serializado" class="w-4 h-4 accent-[#00E676]" />
-          <span class="text-sm text-tech-charcoal">Se controla por IMEI (equipo serializado)</span>
-        </label>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Tipo de producto *</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" (click)="formProducto.controls.serializado.setValue(true)"
+              class="flex items-center gap-2 px-3 py-3 rounded-xl border text-sm font-medium text-left transition-all active:scale-95"
+              [class]="formProducto.controls.serializado.value ? 'border-tech-accent bg-tech-accent/10 text-tech-charcoal' : 'border-tech-pastel/40 text-tech-steel hover:border-tech-pastel'">
+              <lucide-icon name="smartphone" [size]="18" [class]="formProducto.controls.serializado.value ? 'text-tech-accent' : 'text-tech-steel'"></lucide-icon>
+              <span>Dispositivo<br /><span class="text-[0.7rem] opacity-70">por IMEI único</span></span>
+            </button>
+            <button type="button" (click)="formProducto.controls.serializado.setValue(false)"
+              class="flex items-center gap-2 px-3 py-3 rounded-xl border text-sm font-medium text-left transition-all active:scale-95"
+              [class]="!formProducto.controls.serializado.value ? 'border-tech-purple bg-tech-purple/10 text-tech-charcoal' : 'border-tech-pastel/40 text-tech-steel hover:border-tech-pastel'">
+              <lucide-icon name="tag" [size]="18" [class]="!formProducto.controls.serializado.value ? 'text-tech-purple' : 'text-tech-steel'"></lucide-icon>
+              <span>Accesorio<br /><span class="text-[0.7rem] opacity-70">por código de barras</span></span>
+            </button>
+          </div>
+          @if (editandoProducto() && editandoProducto()!.variantes.length > 0) {
+            <p class="text-[0.7rem] text-tech-steel mt-1.5">El tipo no debería cambiarse si ya tiene variantes con inventario.</p>
+          }
+        </div>
 
         @if (editandoProducto()) {
           <label class="flex items-center gap-3 cursor-pointer">
@@ -212,20 +228,48 @@
       </div>
 
       <div class="px-6 py-5 flex flex-col gap-4">
-        <div class="grid grid-cols-3 gap-3">
+        <!-- Distintivo del tipo -->
+        @if (productoVariante()?.serializado) {
+          <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-tech-accent/10 text-tech-accent text-xs font-semibold">
+            <lucide-icon name="smartphone" [size]="14"></lucide-icon> Dispositivo por IMEI · el stock se controla registrando cada equipo
+          </div>
+        } @else {
+          <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-tech-purple/10 text-tech-purple text-xs font-semibold">
+            <lucide-icon name="tag" [size]="14"></lucide-icon> Accesorio por código de barras · stock por cantidad
+          </div>
+        }
+
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Color</label>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Color / Variante</label>
             <input formControlName="color" type="text" placeholder="Negro" class="w-full px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Almacen.</label>
-            <input formControlName="almacenamiento" type="text" placeholder="128GB" class="w-full px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Condición</label>
-            <input formControlName="condicion" type="text" placeholder="Nuevo" class="w-full px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Almacenamiento</label>
+            <input formControlName="almacenamiento" type="text" placeholder="128GB / —" class="w-full px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
           </div>
         </div>
+
+        <!-- Dispositivo: condición · Accesorio: código de barras -->
+        @if (productoVariante()?.serializado) {
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Condición</label>
+            <select formControlName="condicion" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white">
+              <option value="Nuevo">Nuevo</option>
+              <option value="Usado">Usado</option>
+              <option value="Reacondicionado">Reacondicionado</option>
+            </select>
+          </div>
+        } @else {
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Código de barras</label>
+            <div class="relative">
+              <lucide-icon name="scan-line" [size]="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-tech-purple"></lucide-icon>
+              <input formControlName="codigoBarras" type="text" placeholder="Escanea o escribe el código"
+                class="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal font-mono outline-none transition-all focus:border-tech-purple/60 focus:bg-white" />
+            </div>
+          </div>
+        }
 
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -240,8 +284,8 @@
 
         @if (!productoVariante()?.serializado) {
           <div>
-            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Stock (accesorio no serializado)</label>
-            <input formControlName="stockNoSerial" type="number" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Stock inicial (cantidad)</label>
+            <input formControlName="stockNoSerial" type="number" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-purple/60 focus:bg-white" />
           </div>
         }
 

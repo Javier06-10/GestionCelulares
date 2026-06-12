@@ -5,10 +5,8 @@
     <p class="text-sm text-tech-steel mt-0.5">{{ totalEquipos() | number }} equipos disponibles · {{ valorVenta() | currency: 'DOP' : 'RD$' : '1.0-0' }} en venta</p>
   </div>
   @if (auth.esAdmin()) {
-    <button
-      (click)="abrirRegistro()"
-      class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all duration-300 ease-out hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95"
-    >
+    <button (click)="abrirRegistro()"
+      class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all duration-300 ease-out hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
       <lucide-icon name="package-plus" [size]="18"></lucide-icon>
       Registrar equipo
     </button>
@@ -19,12 +17,8 @@
 <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-4 mb-4 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
   <div class="relative">
     <lucide-icon name="scan-line" [size]="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-accent"></lucide-icon>
-    <input
-      type="text"
-      placeholder="Escanea o escribe un IMEI para consultarlo…"
-      (input)="buscarImei($any($event.target).value)"
-      class="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal placeholder:text-tech-steel/60 outline-none transition-all duration-300 focus:border-tech-accent/60 focus:bg-white focus:shadow-[0_0_15px_rgba(0,230,118,0.2)]"
-    />
+    <input type="text" placeholder="Escanea o escribe un IMEI para consultarlo…" (input)="buscarImei($any($event.target).value)"
+      class="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal placeholder:text-tech-steel/60 outline-none transition-all duration-300 focus:border-tech-accent/60 focus:bg-white focus:shadow-[0_0_15px_rgba(0,230,118,0.2)]" />
   </div>
 
   @if (imeiBuscado(); as e) {
@@ -46,11 +40,12 @@
   }
 </div>
 
-<!-- Tabla de stock disponible -->
-<div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
+<!-- Stock de dispositivos (por IMEI) -->
+<div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden mb-4 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
   <div class="px-5 py-3.5 border-b border-tech-pastel/30 flex items-center gap-2">
-    <lucide-icon name="boxes" [size]="18" class="text-tech-charcoal"></lucide-icon>
-    <h3 class="font-semibold text-tech-charcoal">Stock disponible</h3>
+    <lucide-icon name="smartphone" [size]="18" class="text-tech-accent"></lucide-icon>
+    <h3 class="font-semibold text-tech-charcoal">Dispositivos disponibles</h3>
+    <span class="text-xs text-tech-steel">(controlados por IMEI)</span>
   </div>
   <div class="overflow-x-auto">
     <table class="w-full text-sm border-collapse min-w-[640px]">
@@ -64,14 +59,14 @@
       </thead>
       <tbody>
         @if (cargando()) {
-          @for (i of [1,2,3,4]; track i) {
+          @for (i of [1,2,3]; track i) {
             <tr class="border-t border-tech-pastel/20"><td colspan="4" class="py-3 px-4"><div class="h-5 bg-tech-bg-light rounded animate-pulse"></div></td></tr>
           }
         } @else if (stock().length === 0) {
           <tr>
-            <td colspan="4" class="py-12 text-center text-tech-steel">
-              <lucide-icon name="boxes" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon>
-              <p>No hay equipos disponibles en inventario.</p>
+            <td colspan="4" class="py-10 text-center text-tech-steel">
+              <lucide-icon name="smartphone" [size]="28" class="mx-auto mb-2 opacity-40"></lucide-icon>
+              <p>No hay dispositivos disponibles. Registra un equipo por IMEI.</p>
             </td>
           </tr>
         } @else {
@@ -96,17 +91,63 @@
   </div>
 </div>
 
-<!-- Modal registrar equipo -->
+<!-- Stock de accesorios (por código de barras / cantidad) -->
+@if (accesorios().length > 0) {
+  <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
+    <div class="px-5 py-3.5 border-b border-tech-pastel/30 flex items-center gap-2">
+      <lucide-icon name="tag" [size]="18" class="text-tech-purple"></lucide-icon>
+      <h3 class="font-semibold text-tech-charcoal">Accesorios</h3>
+      <span class="text-xs text-tech-steel">(stock por cantidad)</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse min-w-[640px]">
+        <thead>
+          <tr class="bg-tech-bg-light/80 text-tech-steel text-left">
+            <th class="font-semibold py-3 px-4">Producto</th>
+            <th class="font-semibold py-3 px-4">Código de barras</th>
+            <th class="font-semibold py-3 px-4 text-right">Precio venta</th>
+            <th class="font-semibold py-3 px-4 text-center">Stock</th>
+            @if (auth.esAdmin()) { <th class="font-semibold py-3 px-4 text-right">Ajustar</th> }
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of accesorios(); track a.variante.varianteId) {
+            <tr class="border-t border-tech-pastel/20 transition-colors duration-200 hover:bg-tech-bg-light/60">
+              <td class="py-3 px-4">
+                <div class="font-semibold text-tech-charcoal">{{ a.nombre }}</div>
+                @if (a.detalle) { <div class="text-xs text-tech-steel">{{ a.detalle }}</div> }
+              </td>
+              <td class="py-3 px-4 font-mono text-tech-steel">{{ a.variante.codigoBarras || '—' }}</td>
+              <td class="py-3 px-4 text-right text-tech-charcoal font-medium">{{ a.variante.precioVenta | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
+              <td class="py-3 px-4 text-center">
+                <span class="inline-flex items-center justify-center min-w-[2rem] px-2.5 py-1 rounded-full text-sm font-bold"
+                  [class]="a.variante.stockNoSerial > 0 ? 'bg-tech-purple/10 text-tech-purple' : 'bg-red-500/10 text-red-500'">
+                  {{ a.variante.stockNoSerial }}
+                </span>
+              </td>
+              @if (auth.esAdmin()) {
+                <td class="py-3 px-4 text-right">
+                  <button (click)="abrirAjuste(a)" title="Ajustar stock"
+                    class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-purple/10 hover:text-tech-purple active:scale-90 transition-all ml-auto">
+                    <lucide-icon name="pencil" [size]="16"></lucide-icon>
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- Modal registrar equipo (IMEI) -->
 @if (modalAbierto()) {
   <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="cerrarModal()">
-    <form
-      (click)="$event.stopPropagation()"
-      [formGroup]="form"
-      (ngSubmit)="registrar()"
-      class="w-[min(460px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden"
-    >
+    <form (click)="$event.stopPropagation()" [formGroup]="form" (ngSubmit)="registrar()"
+      class="w-[min(460px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
       <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
-        <h3 class="font-bold text-tech-charcoal">Registrar equipo</h3>
+        <h3 class="font-bold text-tech-charcoal">Registrar equipo por IMEI</h3>
         <button type="button" (click)="cerrarModal()" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all">
           <lucide-icon name="x" [size]="18"></lucide-icon>
         </button>
@@ -114,16 +155,19 @@
 
       <div class="px-6 py-5 flex flex-col gap-4">
         <div>
-          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Modelo / Variante *</label>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Modelo / Variante (dispositivo) *</label>
           <select formControlName="varianteId"
             class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white">
-            <option [value]="0" disabled>Selecciona un modelo…</option>
-            @for (v of variantes(); track v.varianteId) {
+            <option [value]="0" disabled>Selecciona un dispositivo…</option>
+            @for (v of variantesSerializadas(); track v.varianteId) {
               <option [value]="v.varianteId">{{ v.etiqueta }}</option>
             }
           </select>
+          @if (variantesSerializadas().length === 0) {
+            <span class="text-xs text-amber-700 mt-1 block">No hay dispositivos en el catálogo. Crea un producto tipo "Dispositivo" primero.</span>
+          }
           @if (form.controls.varianteId.invalid && form.controls.varianteId.touched) {
-            <span class="text-xs text-red-500 mt-1 block">Selecciona un modelo.</span>
+            <span class="text-xs text-red-500 mt-1 block">Selecciona un dispositivo.</span>
           }
         </div>
 
@@ -151,19 +195,47 @@
       </div>
 
       <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
-        <button type="button" (click)="cerrarModal()"
-          class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">
-          Cancelar
-        </button>
-        <button type="submit" [disabled]="guardando()"
-          class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 disabled:opacity-60">
-          @if (guardando()) {
-            <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Registrando…
-          } @else {
-            <lucide-icon name="check" [size]="16"></lucide-icon> Registrar
-          }
+        <button type="button" (click)="cerrarModal()" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" [disabled]="guardando()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 disabled:opacity-60">
+          @if (guardando()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Registrando… }
+          @else { <lucide-icon name="check" [size]="16"></lucide-icon> Registrar }
         </button>
       </div>
     </form>
+  </div>
+}
+
+<!-- Modal ajustar stock de accesorio (Admin) -->
+@if (modalStock()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modalStock.set(false)">
+    <div (click)="$event.stopPropagation()" class="w-[min(400px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Ajustar stock</h3>
+        <button type="button" (click)="modalStock.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all">
+          <lucide-icon name="x" [size]="18"></lucide-icon>
+        </button>
+      </div>
+      <div class="px-6 py-5">
+        @if (accesorioSel(); as a) {
+          <div class="mb-4">
+            <div class="font-semibold text-tech-charcoal">{{ a.nombre }}</div>
+            <div class="text-xs text-tech-steel">{{ a.detalle || a.variante.codigoBarras || '' }}</div>
+          </div>
+        }
+        <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Nueva cantidad en stock</label>
+        <input type="number" min="0" [value]="nuevoStock()" (input)="nuevoStock.set(+$any($event.target).value)"
+          class="w-full px-3.5 py-3 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-lg font-semibold outline-none transition-all focus:border-tech-purple/60 focus:bg-white focus:shadow-[0_0_0_4px_rgba(108,92,231,0.1)]" />
+        @if (errorStock()) {
+          <div class="mt-3 px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorStock() }}</div>
+        }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalStock.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button (click)="guardarStock()" [disabled]="guardandoStock()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-tech-purple text-white font-semibold text-sm transition-all hover:bg-tech-purple/90 active:scale-95 disabled:opacity-60">
+          @if (guardandoStock()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Guardando… }
+          @else { <lucide-icon name="check" [size]="16"></lucide-icon> Guardar }
+        </button>
+      </div>
+    </div>
   </div>
 }

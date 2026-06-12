@@ -3,8 +3,11 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
-import { CatalogoService, VarianteOpcion } from '../../core/catalogo.service';
+import { CatalogoService, Producto, Variante } from '../../core/catalogo.service';
 import { Imei, InventarioService, StockDisponible } from '../../core/inventario.service';
+
+interface OpcionSerializada { varianteId: number; etiqueta: string; }
+interface AccesorioFila { producto: Producto; variante: Variante; nombre: string; detalle: string; }
 
 @Component({
   selector: 'app-inventario',
@@ -19,7 +22,29 @@ export class Inventario {
 
   stock = signal<StockDisponible[]>([]);
   cargando = signal(false);
-  variantes = signal<VarianteOpcion[]>([]);
+  productos = signal<Producto[]>([]);
+
+  // Solo dispositivos serializados, para registrar IMEI
+  variantesSerializadas = computed<OpcionSerializada[]>(() =>
+    this.productos()
+      .filter(p => p.serializado && p.activo)
+      .flatMap(p => p.variantes.filter(v => v.activo).map(v => ({
+        varianteId: v.varianteId,
+        etiqueta: [p.nombre, v.color, v.almacenamiento, v.condicion].filter(Boolean).join(' · ')
+      })))
+  );
+
+  // Accesorios (no serializados) con su stock por cantidad
+  accesorios = computed<AccesorioFila[]>(() =>
+    this.productos()
+      .filter(p => !p.serializado && p.activo)
+      .flatMap(p => p.variantes.filter(v => v.activo).map(v => ({
+        producto: p,
+        variante: v,
+        nombre: p.nombre,
+        detalle: [v.color, v.almacenamiento].filter(Boolean).join(' · ')
+      })))
+  );
 
   totalEquipos = computed(() => this.stock().reduce((a, s) => a + s.disponibles, 0));
   valorVenta = computed(() => this.stock().reduce((a, s) => a + s.precioVenta * s.disponibles, 0));
@@ -28,31 +53,38 @@ export class Inventario {
   imeiBuscado = signal<Imei | null>(null);
   imeiNoEncontrado = signal(false);
 
-  // Modal de registro
+  // Modal de registro de IMEI
   modalAbierto = signal(false);
   guardando = signal(false);
   errorForm = signal<string | null>(null);
-
   form = this.fb.nonNullable.group({
     imei: ['', [Validators.required, Validators.maxLength(20)]],
     varianteId: [0, [Validators.required, Validators.min(1)]],
     precioCosto: [0, [Validators.required, Validators.min(0)]]
   });
 
+  // Modal de ajuste de stock (accesorios, solo Admin)
+  modalStock = signal(false);
+  accesorioSel = signal<AccesorioFila | null>(null);
+  guardandoStock = signal(false);
+  errorStock = signal<string | null>(null);
+  nuevoStock = signal(0);
+
   constructor() {
     this.cargar();
-    this.catalogo.productos().subscribe(ps => this.variantes.set(this.catalogo.variantesOpciones(ps)));
+    this.cargarCatalogo();
   }
 
   cargar(): void {
     this.cargando.set(true);
     this.servicio.disponibles().subscribe({
-      next: data => {
-        this.stock.set(data);
-        this.cargando.set(false);
-      },
+      next: data => { this.stock.set(data); this.cargando.set(false); },
       error: () => this.cargando.set(false)
     });
+  }
+
+  cargarCatalogo(): void {
+    this.catalogo.productos().subscribe(p => this.productos.set(p));
   }
 
   buscarImei(valor: string): void {
@@ -60,53 +92,62 @@ export class Inventario {
     this.imeiNoEncontrado.set(false);
     this.imeiBuscado.set(null);
     if (imei.length < 4) return;
-
     this.servicio.porImei(imei).subscribe({
       next: dto => this.imeiBuscado.set(dto),
       error: () => this.imeiNoEncontrado.set(true)
     });
   }
 
+  // ----- Registrar IMEI -----
   abrirRegistro(): void {
     this.errorForm.set(null);
     this.form.reset({ imei: '', varianteId: 0, precioCosto: 0 });
     this.modalAbierto.set(true);
   }
 
-  cerrarModal(): void {
-    this.modalAbierto.set(false);
-  }
+  cerrarModal(): void { this.modalAbierto.set(false); }
 
   registrar(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
+    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const sucursalId = this.auth.usuario()?.sucursalId;
-    if (!sucursalId) {
-      this.errorForm.set('Tu usuario no tiene una sucursal asignada.');
-      return;
-    }
+    if (!sucursalId) { this.errorForm.set('Tu usuario no tiene una sucursal asignada.'); return; }
 
     this.guardando.set(true);
     this.errorForm.set(null);
     const v = this.form.getRawValue();
+    this.servicio.registrar({ imei: v.imei.trim(), varianteId: v.varianteId, sucursalId, precioCosto: v.precioCosto }).subscribe({
+      next: () => { this.guardando.set(false); this.modalAbierto.set(false); this.cargar(); },
+      error: err => { this.guardando.set(false); this.errorForm.set(err.error?.error ?? 'No se pudo registrar el equipo.'); }
+    });
+  }
 
-    this.servicio.registrar({
-      imei: v.imei.trim(),
-      varianteId: v.varianteId,
-      sucursalId,
-      precioCosto: v.precioCosto
+  // ----- Ajustar stock de accesorio (Admin) -----
+  abrirAjuste(a: AccesorioFila): void {
+    this.accesorioSel.set(a);
+    this.nuevoStock.set(a.variante.stockNoSerial);
+    this.errorStock.set(null);
+    this.modalStock.set(true);
+  }
+
+  guardarStock(): void {
+    const a = this.accesorioSel();
+    if (!a) return;
+    this.guardandoStock.set(true);
+    this.errorStock.set(null);
+    const v = a.variante;
+    // PUT de la variante conservando sus datos y actualizando solo el stock
+    this.catalogo.actualizarVariante(v.varianteId, {
+      color: v.color,
+      almacenamiento: v.almacenamiento,
+      condicion: v.condicion,
+      codigoBarras: v.codigoBarras,
+      precioVenta: v.precioVenta,
+      precioCosto: v.precioCosto,
+      stockNoSerial: Math.max(0, this.nuevoStock()),
+      activo: v.activo
     }).subscribe({
-      next: () => {
-        this.guardando.set(false);
-        this.modalAbierto.set(false);
-        this.cargar();
-      },
-      error: err => {
-        this.guardando.set(false);
-        this.errorForm.set(err.error?.error ?? 'No se pudo registrar el equipo.');
-      }
+      next: () => { this.guardandoStock.set(false); this.modalStock.set(false); this.cargarCatalogo(); },
+      error: err => { this.guardandoStock.set(false); this.errorStock.set(err.error?.error ?? 'No se pudo ajustar el stock.'); }
     });
   }
 
