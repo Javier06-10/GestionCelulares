@@ -1,75 +1,108 @@
-<h2>Dashboard</h2>
+<h2 class="text-2xl font-bold text-tech-charcoal mb-6 tracking-tight">Dashboard</h2>
 
 @if (error()) {
-  <div class="aviso-error">{{ error() }}</div>
+  <div class="px-4 py-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500">{{ error() }}</div>
 }
 
 @if (datos(); as d) {
-  <section class="tarjetas">
-    <div class="tarjeta venta">
-      <span class="titulo">Ventas de hoy</span>
-      <span class="valor">{{ d.ventasHoy.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</span>
-      <span class="detalle">{{ d.ventasHoy.cantidad }} ventas · ganancia {{ d.ventasHoy.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
+  <!-- KPIs glassmorphism -->
+  <section class="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
+    <!-- Ventas hoy -->
+    <div class="bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 rounded-2xl p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold uppercase tracking-wide text-tech-steel">Ventas de hoy</span>
+        <span class="w-2 h-2 rounded-full bg-tech-accent shadow-[0_0_8px_rgba(0,230,118,0.6)]"></span>
+      </div>
+      <div class="text-2xl font-bold text-tech-charcoal">{{ d.ventasHoy.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
+      <div class="text-xs text-tech-steel mt-1">{{ d.ventasHoy.cantidad }} ventas · ganancia {{ d.ventasHoy.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
     </div>
 
-    <div class="tarjeta venta">
-      <span class="titulo">Ventas del mes</span>
-      <span class="valor">{{ d.ventasMes.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</span>
-      <span class="detalle">{{ d.ventasMes.cantidad }} ventas · ganancia {{ d.ventasMes.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
+    <!-- Ventas mes -->
+    <div class="bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 rounded-2xl p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold uppercase tracking-wide text-tech-steel">Ventas del mes</span>
+        <span class="w-2 h-2 rounded-full bg-tech-accent/60"></span>
+      </div>
+      <div class="text-2xl font-bold text-tech-charcoal">{{ d.ventasMes.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
+      <div class="text-xs text-tech-steel mt-1">{{ d.ventasMes.cantidad }} ventas · ganancia {{ d.ventasMes.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
     </div>
 
-    <div class="tarjeta inventario">
-      <span class="titulo">Inventario disponible</span>
-      <span class="valor">{{ d.inventario.equiposDisponibles | number }}</span>
-      <span class="detalle">equipos · costo {{ d.inventario.valorCosto | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
+    <!-- Inventario -->
+    <div class="bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 rounded-2xl p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg">
+      <span class="text-xs font-semibold uppercase tracking-wide text-tech-steel">Inventario disponible</span>
+      <div class="text-2xl font-bold text-tech-charcoal mt-2">{{ d.inventario.equiposDisponibles | number }}</div>
+      <div class="text-xs text-tech-steel mt-1">equipos · costo {{ d.inventario.valorCosto | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
     </div>
 
-    <div class="tarjeta caja" [class.cerrada]="!d.caja.sesionAbierta">
-      <span class="titulo">Caja</span>
-      <span class="valor">{{ d.caja.sesionAbierta ? 'Abierta' : 'Cerrada' }}</span>
+    <!-- Caja (acento esmeralda si abierta) -->
+    <div
+      class="bg-tech-card-light/80 backdrop-blur-md rounded-2xl p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg border"
+      [ngClass]="d.caja.sesionAbierta
+        ? 'border-tech-accent shadow-[0_0_15px_rgba(0,230,118,0.15)]'
+        : 'border-tech-pastel/40'"
+    >
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold uppercase tracking-wide text-tech-steel">Caja</span>
+        @if (d.caja.sesionAbierta) {
+          <span class="text-xs font-semibold text-tech-accent">● Abierta</span>
+        } @else {
+          <span class="text-xs font-semibold text-tech-steel">○ Cerrada</span>
+        }
+      </div>
       @if (d.caja.sesionAbierta) {
-        <span class="detalle">
-          fondo {{ d.caja.montoApertura | currency: 'DOP' : 'RD$' : '1.0-0' }} ·
-          +{{ d.caja.ingresos | currency: 'DOP' : 'RD$' : '1.0-0' }} /
-          -{{ d.caja.egresos | currency: 'DOP' : 'RD$' : '1.0-0' }}
-        </span>
+        <div class="text-2xl font-bold text-tech-charcoal">{{ d.caja.montoApertura + d.caja.ingresos - d.caja.egresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+        <div class="text-xs text-tech-steel mt-1">fondo {{ d.caja.montoApertura | currency: 'DOP' : 'RD$' : '1.0-0' }} · +{{ d.caja.ingresos | currency: 'DOP' : 'RD$' : '1.0-0' }} / -{{ d.caja.egresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
       } @else {
-        <span class="detalle">abre caja para vender</span>
+        <div class="text-2xl font-bold text-tech-steel">—</div>
+        <div class="text-xs text-tech-steel mt-1">abre caja para vender</div>
       }
     </div>
 
-    <div class="tarjeta taller">
-      <span class="titulo">Taller pendiente</span>
-      <span class="valor">{{ d.taller.recibidos + d.taller.enReparacion + d.taller.reparados | number }}</span>
-      <span class="detalle">{{ d.taller.recibidos }} recibidos · {{ d.taller.enReparacion }} en reparación · {{ d.taller.reparados }} listos</span>
+    <!-- Taller (violeta) -->
+    <div class="bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 rounded-2xl p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold uppercase tracking-wide text-tech-steel">Taller pendiente</span>
+        <span class="w-2 h-2 rounded-full bg-tech-purple shadow-[0_0_8px_rgba(108,92,231,0.5)]"></span>
+      </div>
+      <div class="text-2xl font-bold text-tech-charcoal">{{ d.taller.recibidos + d.taller.enReparacion + d.taller.reparados | number }}</div>
+      <div class="text-xs text-tech-steel mt-1">{{ d.taller.recibidos }} recibidos · {{ d.taller.enReparacion }} en reparación · {{ d.taller.reparados }} listos</div>
     </div>
 
-    <div class="tarjeta creditos" [class.alerta]="d.creditos.cuotasVencidas > 0">
-      <span class="titulo">Créditos</span>
-      <span class="valor">{{ d.creditos.saldoPendiente | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
-      <span class="detalle">
-        {{ d.creditos.activos }} activos · {{ d.creditos.enMora }} en mora ·
-        {{ d.creditos.cuotasVencidas }} cuotas vencidas ({{ d.creditos.montoVencido | currency: 'DOP' : 'RD$' : '1.0-0' }})
-      </span>
+    <!-- Créditos (violeta; rojo si hay mora) -->
+    <div
+      class="bg-tech-card-light/80 backdrop-blur-md rounded-2xl p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg border"
+      [ngClass]="d.creditos.cuotasVencidas > 0 ? 'border-red-400' : 'border-tech-pastel/40'"
+    >
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold uppercase tracking-wide text-tech-steel">Créditos</span>
+        <span class="w-2 h-2 rounded-full" [ngClass]="d.creditos.cuotasVencidas > 0 ? 'bg-red-400' : 'bg-tech-purple'"></span>
+      </div>
+      <div class="text-2xl font-bold text-tech-charcoal">{{ d.creditos.saldoPendiente | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+      <div class="text-xs text-tech-steel mt-1">{{ d.creditos.activos }} activos · {{ d.creditos.enMora }} en mora · {{ d.creditos.cuotasVencidas }} cuotas vencidas ({{ d.creditos.montoVencido | currency: 'DOP' : 'RD$' : '1.0-0' }})</div>
     </div>
   </section>
 
-  <section class="rankings">
-    <div class="panel">
-      <h3>Top productos del mes</h3>
+  <!-- Rankings -->
+  <section class="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-4">
+    <div class="bg-tech-card-light border border-tech-pastel/40 rounded-2xl p-5">
+      <h3 class="text-base font-semibold text-tech-charcoal mb-3">Top productos del mes</h3>
       @if (d.topProductosMes.length === 0) {
-        <p class="vacio">Sin ventas este mes.</p>
+        <p class="text-sm text-tech-steel">Sin ventas este mes.</p>
       } @else {
-        <table>
+        <table class="w-full text-sm border-collapse">
           <thead>
-            <tr><th>Producto</th><th>Unidades</th><th>Total</th></tr>
+            <tr class="text-left text-tech-steel">
+              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Producto</th>
+              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Unid.</th>
+              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Total</th>
+            </tr>
           </thead>
           <tbody>
             @for (p of d.topProductosMes; track p.producto) {
-              <tr>
-                <td>{{ p.producto }}</td>
-                <td>{{ p.unidades | number }}</td>
-                <td>{{ p.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
+              <tr class="transition-colors duration-200 hover:bg-tech-bg-light/60">
+                <td class="py-2 px-2 border-b border-tech-pastel/20 text-tech-charcoal">{{ p.producto }}</td>
+                <td class="py-2 px-2 border-b border-tech-pastel/20 text-tech-charcoal">{{ p.unidades | number }}</td>
+                <td class="py-2 px-2 border-b border-tech-pastel/20 text-tech-charcoal">{{ p.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
               </tr>
             }
           </tbody>
@@ -77,21 +110,25 @@
       }
     </div>
 
-    <div class="panel">
-      <h3>Top vendedores del mes</h3>
+    <div class="bg-tech-card-light border border-tech-pastel/40 rounded-2xl p-5">
+      <h3 class="text-base font-semibold text-tech-charcoal mb-3">Top vendedores del mes</h3>
       @if (d.topVendedoresMes.length === 0) {
-        <p class="vacio">Sin ventas este mes.</p>
+        <p class="text-sm text-tech-steel">Sin ventas este mes.</p>
       } @else {
-        <table>
+        <table class="w-full text-sm border-collapse">
           <thead>
-            <tr><th>Vendedor</th><th>Ventas</th><th>Total</th></tr>
+            <tr class="text-left text-tech-steel">
+              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Vendedor</th>
+              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Ventas</th>
+              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Total</th>
+            </tr>
           </thead>
           <tbody>
             @for (v of d.topVendedoresMes; track v.usuarioId) {
-              <tr>
-                <td>{{ v.vendedor }}</td>
-                <td>{{ v.ventas | number }}</td>
-                <td>{{ v.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
+              <tr class="transition-colors duration-200 hover:bg-tech-bg-light/60">
+                <td class="py-2 px-2 border-b border-tech-pastel/20 text-tech-charcoal">{{ v.vendedor }}</td>
+                <td class="py-2 px-2 border-b border-tech-pastel/20 text-tech-charcoal">{{ v.ventas | number }}</td>
+                <td class="py-2 px-2 border-b border-tech-pastel/20 text-tech-charcoal">{{ v.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
               </tr>
             }
           </tbody>
@@ -100,5 +137,5 @@
     </div>
   </section>
 } @else if (!error()) {
-  <p class="cargando">Cargando indicadores…</p>
+  <p class="text-tech-steel">Cargando indicadores…</p>
 }

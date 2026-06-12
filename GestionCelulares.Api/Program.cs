@@ -74,8 +74,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     await SeedDevPasswordAsync(app);
 }
+else
+{
+    // En desarrollo no redirigimos a HTTPS: el front Angular llama por HTTP
+    // y el redirect 307 rompería el preflight CORS.
+    app.UseHttpsRedirection();
+}
 
-app.UseHttpsRedirection();
 app.UseCors(CorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();

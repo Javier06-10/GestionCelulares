@@ -1,33 +1,47 @@
-<div class="shell">
-  <aside class="sidebar">
-    <div class="marca">📱 <span>Gestión<br />Celulares</span></div>
+<div class="grid grid-cols-[240px_1fr] min-h-screen bg-tech-bg-light">
+  <!-- Sidebar -->
+  <aside class="bg-tech-bg-dark text-tech-pastel flex flex-col py-5 px-3.5 gap-7">
+    <div class="flex items-center gap-2.5 px-2">
+      <div class="w-9 h-9 rounded-xl bg-tech-accent/10 grid place-items-center text-lg shadow-[0_0_18px_rgba(0,230,118,0.2)]">📱</div>
+      <span class="font-bold text-white leading-tight text-[0.95rem]">Gestión<br />Celulares</span>
+    </div>
 
-    <nav>
-      <a routerLink="/" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: true }">📊 Dashboard</a>
-      <span class="proximo">🛒 POS / Ventas</span>
-      <span class="proximo">📦 Inventario</span>
-      <span class="proximo">👥 Clientes</span>
-      <span class="proximo">💳 Créditos</span>
-      <span class="proximo">🔧 Taller</span>
-      <span class="proximo">💰 Caja</span>
+    <nav class="flex flex-col gap-1">
+      <a
+        routerLink="/"
+        routerLinkActive="!bg-tech-accent !text-tech-bg-dark font-semibold"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="px-3 py-2.5 rounded-lg text-sm text-tech-pastel transition-all duration-300 ease-out hover:bg-white/5 hover:text-white active:scale-95"
+      >📊 Dashboard</a>
+
+      <span class="px-3 py-2.5 rounded-lg text-sm text-tech-steel/40 cursor-not-allowed">🛒 POS / Ventas</span>
+      <span class="px-3 py-2.5 rounded-lg text-sm text-tech-steel/40 cursor-not-allowed">📦 Inventario</span>
+      <span class="px-3 py-2.5 rounded-lg text-sm text-tech-steel/40 cursor-not-allowed">👥 Clientes</span>
+      <span class="px-3 py-2.5 rounded-lg text-sm text-tech-steel/40 cursor-not-allowed">💳 Créditos</span>
+      <span class="px-3 py-2.5 rounded-lg text-sm text-tech-steel/40 cursor-not-allowed">🔧 Taller</span>
+      <span class="px-3 py-2.5 rounded-lg text-sm text-tech-steel/40 cursor-not-allowed">💰 Caja</span>
       @if (auth.esAdmin()) {
-        <span class="proximo">📈 Reportes</span>
-        <span class="proximo">⚙️ Usuarios</span>
+        <span class="px-3 py-2.5 rounded-lg text-sm text-tech-steel/40 cursor-not-allowed">📈 Reportes</span>
+        <span class="px-3 py-2.5 rounded-lg text-sm text-tech-steel/40 cursor-not-allowed">⚙️ Usuarios</span>
       }
     </nav>
   </aside>
 
-  <div class="contenido">
-    <header class="topbar">
+  <!-- Contenido -->
+  <div class="flex flex-col">
+    <header class="bg-tech-card-light border-b border-tech-pastel/40 px-6 py-3 flex justify-between items-center">
       <div></div>
-      <div class="usuario">
-        <span class="nombre">{{ auth.usuario()?.nombreCompleto }}</span>
-        <span class="rol">{{ auth.usuario()?.rol }}</span>
-        <button (click)="auth.logout()">Salir</button>
+      <div class="flex items-center gap-3">
+        <span class="font-semibold text-tech-charcoal text-sm">{{ auth.usuario()?.nombreCompleto }}</span>
+        <span class="bg-tech-accent/10 text-tech-accent rounded-full px-2.5 py-0.5 text-xs font-semibold">{{ auth.usuario()?.rol }}</span>
+        <button
+          (click)="auth.logout()"
+          class="border border-tech-pastel/60 bg-tech-card-light rounded-lg px-3.5 py-1.5 text-sm text-tech-charcoal transition-all duration-300 ease-out hover:bg-tech-bg-light active:scale-95"
+        >Salir</button>
       </div>
     </header>
 
-    <main>
+    <main class="p-6">
       <router-outlet />
     </main>
   </div>

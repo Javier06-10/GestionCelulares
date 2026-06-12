@@ -1,20 +1,52 @@
-<div class="login-page">
-  <form class="login-card" [formGroup]="form" (ngSubmit)="entrar()">
-    <div class="logo">📱</div>
-    <h1>Gestión Celulares</h1>
-    <p class="subtitulo">Inicia sesión para continuar</p>
+<div class="min-h-screen grid place-items-center bg-tech-bg-dark relative overflow-hidden">
+  <!-- Halo de profundidad -->
+  <div class="absolute w-[500px] h-[500px] rounded-full bg-tech-accent/10 blur-[120px] -top-20 -left-20"></div>
+  <div class="absolute w-[400px] h-[400px] rounded-full bg-tech-purple/10 blur-[120px] -bottom-20 -right-10"></div>
 
-    <label for="usuario">Usuario</label>
-    <input id="usuario" type="text" formControlName="nombreUsuario" placeholder="admin" autocomplete="username" />
+  <form
+    class="relative w-[min(400px,90vw)] bg-tech-card-dark/80 backdrop-blur-md border border-tech-pastel/20 rounded-2xl p-9 shadow-2xl"
+    [formGroup]="form"
+    (ngSubmit)="entrar()"
+  >
+    <div class="flex flex-col items-center mb-7">
+      <div class="w-14 h-14 rounded-2xl bg-tech-accent/10 grid place-items-center text-3xl mb-3 shadow-[0_0_25px_rgba(0,230,118,0.25)]">
+        📱
+      </div>
+      <h1 class="text-xl font-bold text-white tracking-tight">Gestión Celulares</h1>
+      <p class="text-sm text-tech-steel mt-1">Inicia sesión para continuar</p>
+    </div>
 
-    <label for="contrasena">Contraseña</label>
-    <input id="contrasena" type="password" formControlName="contrasena" placeholder="••••••••" autocomplete="current-password" />
+    <label class="block text-xs font-semibold text-tech-pastel mb-1.5 uppercase tracking-wide" for="usuario">Usuario</label>
+    <input
+      id="usuario"
+      type="text"
+      formControlName="nombreUsuario"
+      placeholder="admin"
+      autocomplete="username"
+      class="w-full mb-4 px-3.5 py-2.5 rounded-lg bg-tech-bg-dark border border-tech-pastel/20 text-white placeholder:text-tech-steel/60 outline-none transition-all duration-300 focus:border-tech-accent focus:shadow-[0_0_0_3px_rgba(0,230,118,0.15)]"
+    />
+
+    <label class="block text-xs font-semibold text-tech-pastel mb-1.5 uppercase tracking-wide" for="contrasena">Contraseña</label>
+    <input
+      id="contrasena"
+      type="password"
+      formControlName="contrasena"
+      placeholder="••••••••"
+      autocomplete="current-password"
+      class="w-full mb-5 px-3.5 py-2.5 rounded-lg bg-tech-bg-dark border border-tech-pastel/20 text-white placeholder:text-tech-steel/60 outline-none transition-all duration-300 focus:border-tech-accent focus:shadow-[0_0_0_3px_rgba(0,230,118,0.15)]"
+    />
 
     @if (error()) {
-      <div class="error">{{ error() }}</div>
+      <div class="mb-5 px-3.5 py-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+        {{ error() }}
+      </div>
     }
 
-    <button type="submit" [disabled]="cargando()">
+    <button
+      type="submit"
+      [disabled]="cargando()"
+      class="w-full py-3 rounded-lg bg-tech-accent text-tech-bg-dark font-bold transition-all duration-300 ease-out hover:shadow-[0_0_20px_rgba(0,230,118,0.4)] active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+    >
       {{ cargando() ? 'Entrando…' : 'Entrar' }}
     </button>
   </form>
