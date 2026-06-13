@@ -14,7 +14,8 @@ import {
   PanelLeftClose, PanelLeftOpen,
   ArrowDownLeft, Calculator, Banknote, LockKeyhole, DoorOpen, Clock,
   ChevronDown, ChevronRight, Layers, Bookmark, Folder, CircleDot,
-  Trash2, Percent, Receipt, Minus, TriangleAlert
+  Trash2, Percent, Receipt, Minus, TriangleAlert,
+  CalendarClock, Coins, RefreshCw, CircleDollarSign
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
@@ -40,7 +41,8 @@ export const appConfig: ApplicationConfig = {
         PanelLeftClose, PanelLeftOpen,
         ArrowDownLeft, Calculator, Banknote, LockKeyhole, DoorOpen, Clock,
         ChevronDown, ChevronRight, Layers, Bookmark, Folder, CircleDot,
-        Trash2, Percent, Receipt, Minus, TriangleAlert
+        Trash2, Percent, Receipt, Minus, TriangleAlert,
+        CalendarClock, Coins, RefreshCw, CircleDollarSign
       })
     )
   ]

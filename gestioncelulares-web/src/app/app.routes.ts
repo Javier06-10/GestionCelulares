@@ -4,6 +4,7 @@ import { Layout } from './layout/layout';
 import { Caja } from './pages/caja/caja';
 import { Catalogo } from './pages/catalogo/catalogo';
 import { Clientes } from './pages/clientes/clientes';
+import { Creditos } from './pages/creditos/creditos';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { Inventario } from './pages/inventario/inventario';
 import { Login } from './pages/login/login';
@@ -21,8 +22,9 @@ export const routes: Routes = [
       { path: 'clientes', component: Clientes },
       { path: 'inventario', component: Inventario },
       { path: 'catalogo', component: Catalogo },
-      { path: 'caja', component: Caja }
-      // Pendientes: creditos, taller, reportes, usuarios
+      { path: 'caja', component: Caja },
+      { path: 'creditos', component: Creditos }
+      // Pendientes: taller, reportes, usuarios
     ]
   },
   { path: '**', redirectTo: '' }

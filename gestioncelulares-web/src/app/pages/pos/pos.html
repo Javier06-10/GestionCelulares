@@ -186,35 +186,7 @@
         }
 
         <!-- Cliente -->
-        <div>
-          @if (clienteSel(); as c) {
-            <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-tech-accent/10 border border-tech-accent/30">
-              <div class="flex items-center gap-2 min-w-0">
-                <lucide-icon name="user" [size]="15" class="text-tech-accent shrink-0"></lucide-icon>
-                <span class="text-sm font-medium text-tech-charcoal truncate">{{ c.nombre }}</span>
-              </div>
-              <button (click)="quitarCliente()" class="text-tech-steel hover:text-red-500"><lucide-icon name="x" [size]="15"></lucide-icon></button>
-            </div>
-          } @else {
-            <div class="relative">
-              <lucide-icon name="search" [size]="15" class="absolute left-3 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
-              <input [ngModel]="busquedaCliente()" (ngModelChange)="buscarCliente($event)" name="cli"
-                [placeholder]="esCredito() ? 'Cliente (requerido para crédito)…' : 'Cliente (opcional)…'"
-                class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-tech-bg-light/60 border text-tech-charcoal text-sm outline-none focus:border-tech-accent/60 focus:bg-white"
-                [class]="esCredito() ? 'border-tech-purple/40' : 'border-tech-pastel/40'" />
-              @if (resultadosCliente().length > 0) {
-                <div class="absolute z-20 left-0 right-0 mt-1 bg-tech-card-light border border-tech-pastel/40 rounded-xl shadow-xl overflow-hidden">
-                  @for (c of resultadosCliente(); track c.clienteId) {
-                    <button (click)="elegirCliente(c)" class="w-full text-left px-3 py-2 text-sm text-tech-charcoal hover:bg-tech-bg-light transition-colors flex items-center justify-between">
-                      <span>{{ c.nombre }}</span>
-                      @if (c.bloqueado) { <span class="text-[0.65rem] text-red-500">bloqueado</span> }
-                    </button>
-                  }
-                </div>
-              }
-            </div>
-          }
-        </div>
+        <app-cliente-selector [cliente]="clienteSel()" (clienteChange)="clienteSel.set($event)" [requerido]="esCredito()" />
 
         @if (errorVenta()) {
           <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorVenta() }}</div>

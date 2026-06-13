@@ -38,7 +38,7 @@ export class Layout {
     { etiqueta: 'Inventario', icono: 'package', ruta: '/inventario' },
     { etiqueta: 'Catálogo', icono: 'layers', ruta: '/catalogo' },
     { etiqueta: 'Clientes', icono: 'users', ruta: '/clientes' },
-    { etiqueta: 'Créditos', icono: 'credit-card' },
+    { etiqueta: 'Créditos', icono: 'credit-card', ruta: '/creditos' },
     { etiqueta: 'Taller', icono: 'wrench' },
     { etiqueta: 'Caja', icono: 'wallet', ruta: '/caja' },
     { etiqueta: 'Reportes', icono: 'bar-chart-3', soloAdmin: true },

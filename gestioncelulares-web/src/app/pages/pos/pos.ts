@@ -6,9 +6,10 @@ import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { CajaService } from '../../core/caja.service';
 import { CatalogoService, Producto } from '../../core/catalogo.service';
-import { Cliente, ClienteService } from '../../core/cliente.service';
+import { Cliente } from '../../core/cliente.service';
 import { InventarioService, StockDisponible } from '../../core/inventario.service';
 import { MetodoPago, VentaService } from '../../core/venta.service';
+import { ClienteSelector } from '../../shared/cliente-selector/cliente-selector';
 
 interface LineaCarrito {
   key: string;
@@ -26,14 +27,13 @@ const ITBIS = 0.18; // 18% — coincide con Empresa.PorcentajeItbis; el total fi
 
 @Component({
   selector: 'app-pos',
-  imports: [FormsModule, RouterLink, LucideAngularModule, CurrencyPipe],
+  imports: [FormsModule, RouterLink, LucideAngularModule, CurrencyPipe, ClienteSelector],
   templateUrl: './pos.html'
 })
 export class Pos {
   private inventario = inject(InventarioService);
   private catalogo = inject(CatalogoService);
   private caja = inject(CajaService);
-  private clientesSrv = inject(ClienteService);
   private ventas = inject(VentaService);
   auth = inject(AuthService);
 
@@ -74,8 +74,6 @@ export class Pos {
   metodoPagoId = signal<number | null>(null);
 
   // Cliente
-  busquedaCliente = signal('');
-  resultadosCliente = signal<Cliente[]>([]);
   clienteSel = signal<Cliente | null>(null);
 
   // Resultado
@@ -229,23 +227,6 @@ export class Pos {
   vaciar(): void {
     this.carrito.set([]);
     this.errorVenta.set(null);
-  }
-
-  // ----- Cliente -----
-  buscarCliente(v: string): void {
-    this.busquedaCliente.set(v);
-    if (v.trim().length < 2) { this.resultadosCliente.set([]); return; }
-    this.clientesSrv.buscar(v.trim()).subscribe(r => this.resultadosCliente.set(r.slice(0, 6)));
-  }
-
-  elegirCliente(c: Cliente): void {
-    this.clienteSel.set(c);
-    this.resultadosCliente.set([]);
-    this.busquedaCliente.set('');
-  }
-
-  quitarCliente(): void {
-    this.clienteSel.set(null);
   }
 
   alternarCredito(valor: boolean): void {
