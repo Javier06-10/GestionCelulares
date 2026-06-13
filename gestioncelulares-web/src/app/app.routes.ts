@@ -9,6 +9,7 @@ import { Dashboard } from './pages/dashboard/dashboard';
 import { Inventario } from './pages/inventario/inventario';
 import { Login } from './pages/login/login';
 import { Pos } from './pages/pos/pos';
+import { Proveedores } from './pages/proveedores/proveedores';
 import { Reportes } from './pages/reportes/reportes';
 import { Taller } from './pages/taller/taller';
 import { Usuarios } from './pages/usuarios/usuarios';
@@ -25,6 +26,7 @@ export const routes: Routes = [
       { path: 'clientes', component: Clientes },
       { path: 'inventario', component: Inventario },
       { path: 'catalogo', component: Catalogo },
+      { path: 'proveedores', component: Proveedores },
       { path: 'caja', component: Caja },
       { path: 'creditos', component: Creditos },
       { path: 'taller', component: Taller },

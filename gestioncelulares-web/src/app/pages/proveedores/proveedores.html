@@ -1,0 +1,213 @@
+<!-- Encabezado -->
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+  <div>
+    <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Proveedores</h2>
+    <p class="text-sm text-tech-steel mt-0.5">{{ proveedores().length }} proveedor(es) · adeudado: <span class="font-semibold text-tech-charcoal">{{ totalAdeudado() | currency: 'DOP':'RD$':'1.2-2' }}</span></p>
+  </div>
+  <button (click)="abrirNuevo()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
+    <lucide-icon name="plus" [size]="18"></lucide-icon> Nuevo proveedor
+  </button>
+</div>
+
+<!-- Búsqueda -->
+<div class="relative mb-4 max-w-md">
+  <lucide-icon name="search" [size]="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
+  <input type="text" placeholder="Buscar por nombre, RNC o teléfono…" (input)="buscar($any($event.target).value)" class="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal placeholder:text-tech-steel/60 outline-none transition-all focus:border-tech-accent/60 focus:shadow-[0_0_0_4px_rgba(0,230,118,0.08)]" />
+</div>
+
+<!-- Tabla -->
+<div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm border-collapse min-w-[680px]">
+      <thead>
+        <tr class="bg-tech-bg-light/80 text-tech-steel text-left">
+          <th class="font-semibold py-3 px-4">Proveedor</th>
+          <th class="font-semibold py-3 px-4">RNC</th>
+          <th class="font-semibold py-3 px-4">Teléfono</th>
+          <th class="font-semibold py-3 px-4 text-right">Balance</th>
+          <th class="font-semibold py-3 px-4 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          @for (i of [1,2,3]; track i) { <tr class="border-t border-tech-pastel/20"><td colspan="5" class="py-3 px-4"><div class="h-5 bg-tech-bg-light rounded animate-pulse"></div></td></tr> }
+        } @else if (proveedores().length === 0) {
+          <tr><td colspan="5" class="py-12 text-center text-tech-steel"><lucide-icon name="truck" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon><p>No hay proveedores.</p></td></tr>
+        } @else {
+          @for (p of proveedores(); track p.proveedorId) {
+            <tr (click)="abrirDetalle(p)" class="border-t border-tech-pastel/20 cursor-pointer transition-colors hover:bg-tech-bg-light/60">
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-tech-accent/15 to-tech-purple/15 grid place-items-center"><lucide-icon name="building-2" [size]="18" class="text-tech-charcoal"></lucide-icon></div>
+                  <div>
+                    <div class="font-semibold text-tech-charcoal">{{ p.nombre }}{{ !p.activo ? ' (inactivo)' : '' }}</div>
+                    @if (p.email) { <div class="text-xs text-tech-steel">{{ p.email }}</div> }
+                  </div>
+                </div>
+              </td>
+              <td class="py-3 px-4 text-tech-charcoal">{{ p.rnc || '—' }}</td>
+              <td class="py-3 px-4 text-tech-charcoal">{{ p.telefono || '—' }}</td>
+              <td class="py-3 px-4 text-right font-semibold" [class]="p.balance > 0 ? 'text-red-500' : 'text-tech-accent'">{{ p.balance | currency: 'DOP':'RD$':'1.2-2' }}</td>
+              <td class="py-3 px-4 text-right">
+                <button (click)="abrirEditar(p); $event.stopPropagation()" title="Editar" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light hover:text-tech-charcoal active:scale-90 transition-all ml-auto"><lucide-icon name="pencil" [size]="16"></lucide-icon></button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Modal detalle (compras / pagos) ===== -->
+@if (detalle(); as p) {
+  <div class="fixed inset-0 z-40 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="cerrarDetalle()">
+    <div (click)="$event.stopPropagation()" class="w-[min(640px,95vw)] max-h-[92vh] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <div>
+          <h3 class="font-bold text-tech-charcoal">{{ p.nombre }}</h3>
+          <span class="text-xs text-tech-steel">{{ p.rnc ? 'RNC ' + p.rnc + ' · ' : '' }}Balance adeudado: <span class="font-semibold" [class]="p.balance > 0 ? 'text-red-500' : 'text-tech-accent'">{{ p.balance | currency: 'DOP':'RD$':'1.2-2' }}</span></span>
+        </div>
+        <button (click)="cerrarDetalle()" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+
+      <!-- Acciones -->
+      <div class="flex gap-2 px-6 py-3 border-b border-tech-pastel/30">
+        <button (click)="abrirCompra()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-tech-charcoal text-white font-semibold text-sm hover:bg-tech-charcoal/90 active:scale-95 transition-all"><lucide-icon name="plus" [size]="16"></lucide-icon> Registrar compra</button>
+        <button (click)="abrirPago()" [disabled]="p.balance <= 0" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 transition-all disabled:opacity-40"><lucide-icon name="hand-coins" [size]="16"></lucide-icon> Registrar pago</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex items-center gap-1 px-6 pt-3">
+        <button (click)="tabDetalle.set('compras')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="tabDetalle() === 'compras' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">Compras ({{ compras().length }})</button>
+        <button (click)="tabDetalle.set('pagos')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="tabDetalle() === 'pagos' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">Pagos ({{ pagos().length }})</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-6 py-4">
+        @if (tabDetalle() === 'compras') {
+          <table class="w-full text-sm border-collapse">
+            <thead><tr class="text-left text-tech-steel"><th class="font-semibold py-2 px-2">Fecha</th><th class="font-semibold py-2 px-2">Factura</th><th class="font-semibold py-2 px-2 text-right">Total</th></tr></thead>
+            <tbody>
+              @for (c of compras(); track c.compraId) { <tr class="border-t border-tech-pastel/20"><td class="py-2 px-2 text-tech-charcoal">{{ c.fecha | date:'dd/MM/yy' }}</td><td class="py-2 px-2 text-tech-steel">{{ c.numeroFactura || '—' }}</td><td class="py-2 px-2 text-right font-medium text-tech-charcoal">{{ c.total | currency: 'DOP':'RD$':'1.2-2' }}</td></tr> }
+              @empty { <tr><td colspan="3" class="py-8 text-center text-tech-steel">Sin compras registradas.</td></tr> }
+            </tbody>
+          </table>
+        } @else {
+          <table class="w-full text-sm border-collapse">
+            <thead><tr class="text-left text-tech-steel"><th class="font-semibold py-2 px-2">Fecha</th><th class="font-semibold py-2 px-2">Referencia</th><th class="font-semibold py-2 px-2 text-right">Monto</th></tr></thead>
+            <tbody>
+              @for (pg of pagos(); track pg.pagoProveedorId) { <tr class="border-t border-tech-pastel/20"><td class="py-2 px-2 text-tech-charcoal">{{ pg.fecha | date:'dd/MM/yy' }}</td><td class="py-2 px-2 text-tech-steel">{{ pg.referencia || '—' }}</td><td class="py-2 px-2 text-right font-medium text-tech-accent">{{ pg.monto | currency: 'DOP':'RD$':'1.2-2' }}</td></tr> }
+              @empty { <tr><td colspan="3" class="py-8 text-center text-tech-steel">Sin pagos registrados.</td></tr> }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== Modal alta / edición ===== -->
+@if (modal()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modal.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="form" (ngSubmit)="guardar()" class="w-[min(460px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">{{ editando() ? 'Editar proveedor' : 'Nuevo proveedor' }}</h3>
+        <button type="button" (click)="modal.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Nombre *</label>
+          <input formControlName="nombre" type="text" placeholder="Distribuidora…" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+          @if (form.controls.nombre.invalid && form.controls.nombre.touched) { <span class="text-xs text-red-500 mt-1 block">El nombre es obligatorio.</span> }
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">RNC</label>
+            <input formControlName="rnc" type="text" placeholder="1-30-00000-0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Teléfono</label>
+            <input formControlName="telefono" type="text" placeholder="809-000-0000" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Email</label>
+          <input formControlName="email" type="email" placeholder="contacto@proveedor.com" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Dirección</label>
+          <input formControlName="direccion" type="text" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        @if (editando()) {
+          <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" formControlName="activo" class="w-4 h-4 accent-[#00E676]" /><span class="text-sm text-tech-charcoal">Proveedor activo</span></label>
+        }
+        @if (errorForm()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorForm() }}</div> }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modal.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" [disabled]="guardando()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 disabled:opacity-60">
+          @if (guardando()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Guardando… } @else { <lucide-icon name="check" [size]="16"></lucide-icon> Guardar }
+        </button>
+      </div>
+    </form>
+  </div>
+}
+
+<!-- ===== Modal compra ===== -->
+@if (modalCompra()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/60 backdrop-blur-sm" (click)="modalCompra.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="formCompra" (ngSubmit)="registrarCompra()" class="w-[min(400px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Registrar compra</h3>
+        <button type="button" (click)="modalCompra.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">N.º factura</label>
+          <input formControlName="numeroFactura" type="text" placeholder="FC-001" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Total *</label>
+          <input formControlName="total" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal font-semibold outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Notas</label>
+          <input formControlName="notas" type="text" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        <p class="text-xs text-tech-steel">La compra aumenta el balance adeudado al proveedor.</p>
+        @if (errorCompra()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorCompra() }}</div> }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalCompra.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-tech-charcoal text-white font-semibold text-sm hover:bg-tech-charcoal/90 active:scale-95 transition-all"><lucide-icon name="check" [size]="16"></lucide-icon> Registrar</button>
+      </div>
+    </form>
+  </div>
+}
+
+<!-- ===== Modal pago ===== -->
+@if (modalPago()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/60 backdrop-blur-sm" (click)="modalPago.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="formPago" (ngSubmit)="registrarPago()" class="w-[min(400px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Registrar pago</h3>
+        <button type="button" (click)="modalPago.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Monto a pagar *</label>
+          <input formControlName="monto" type="number" step="0.01" min="0" class="w-full px-3.5 py-3 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-lg font-semibold outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Referencia</label>
+          <input formControlName="referencia" type="text" placeholder="Transferencia, cheque…" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        @if (errorPago()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorPago() }}</div> }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalPago.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 transition-all"><lucide-icon name="check" [size]="16"></lucide-icon> Pagar</button>
+      </div>
+    </form>
+  </div>
+}
