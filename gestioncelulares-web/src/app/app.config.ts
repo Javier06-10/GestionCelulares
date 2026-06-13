@@ -17,7 +17,7 @@ import {
   Trash2, Percent, Receipt, Minus, TriangleAlert,
   CalendarClock, Coins, RefreshCw, CircleDollarSign,
   Image, ArrowRight, UserCog, ClipboardList, Camera,
-  Download, FileText, Calendar
+  Download, FileText, Calendar, Printer, SlidersHorizontal
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
@@ -46,7 +46,7 @@ export const appConfig: ApplicationConfig = {
         Trash2, Percent, Receipt, Minus, TriangleAlert,
         CalendarClock, Coins, RefreshCw, CircleDollarSign,
         Image, ArrowRight, UserCog, ClipboardList, Camera,
-        Download, FileText, Calendar
+        Download, FileText, Calendar, Printer, SlidersHorizontal
       })
     )
   ]

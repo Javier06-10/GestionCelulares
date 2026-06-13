@@ -26,3 +26,43 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #8d9097;
 }
+
+/* ===== Factura imprimible ===== */
+.factura-print {
+  display: none;
+}
+.factura-print .sep {
+  border-top: 1px dashed #000;
+  margin: 4px 0;
+}
+.factura-print .fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+@media print {
+  /* Ocultar todo y mostrar solo la factura */
+  body * {
+    visibility: hidden;
+  }
+  #factura-print,
+  #factura-print * {
+    visibility: visible;
+  }
+  #factura-print {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 6px;
+    color: #000;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

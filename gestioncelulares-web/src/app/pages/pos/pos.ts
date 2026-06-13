@@ -1,4 +1,4 @@
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -7,9 +7,24 @@ import { AuthService } from '../../core/auth.service';
 import { CajaService } from '../../core/caja.service';
 import { CatalogoService, Producto } from '../../core/catalogo.service';
 import { Cliente } from '../../core/cliente.service';
+import { FacturaConfig, FacturaConfigService } from '../../core/factura-config.service';
 import { InventarioService, StockDisponible } from '../../core/inventario.service';
 import { MetodoPago, VentaService } from '../../core/venta.service';
 import { ClienteSelector } from '../../shared/cliente-selector/cliente-selector';
+
+interface FacturaData {
+  factura: string;
+  fecha: Date;
+  cliente: string | null;
+  vendedor: string;
+  esCredito: boolean;
+  metodoPago: string | null;
+  lineas: { descripcion: string; imei?: string; cantidad: number; precioUnitario: number; total: number }[];
+  subtotal: number;
+  descuento: number;
+  impuesto: number;
+  total: number;
+}
 
 interface LineaCarrito {
   key: string;
@@ -27,7 +42,7 @@ const ITBIS = 0.18; // 18% — coincide con Empresa.PorcentajeItbis; el total fi
 
 @Component({
   selector: 'app-pos',
-  imports: [FormsModule, RouterLink, LucideAngularModule, CurrencyPipe, ClienteSelector],
+  imports: [FormsModule, RouterLink, LucideAngularModule, CurrencyPipe, DatePipe, ClienteSelector],
   templateUrl: './pos.html'
 })
 export class Pos {
@@ -76,10 +91,15 @@ export class Pos {
   // Cliente
   clienteSel = signal<Cliente | null>(null);
 
-  // Resultado
+  // Resultado / Factura
   procesando = signal(false);
   errorVenta = signal<string | null>(null);
-  ventaOk = signal<{ factura: string; total: number } | null>(null);
+  factura = signal<FacturaData | null>(null);
+
+  // Configuración de factura
+  facturaCfg = inject(FacturaConfigService);
+  modalConfig = signal(false);
+  borradorCfg = signal<FacturaConfig>(this.facturaCfg.config());
 
   private get sucursalId(): number | null {
     return this.auth.usuario()?.sucursalId ?? null;
@@ -263,7 +283,27 @@ export class Pos {
     }).subscribe({
       next: v => {
         this.procesando.set(false);
-        this.ventaOk.set({ factura: v.numeroFactura ?? ('Venta #' + v.ventaId), total: v.total });
+        // Armar la factura con el detalle del carrito antes de vaciarlo
+        const metodo = this.metodos().find(m => m.metodoPagoId === this.metodoPagoId());
+        this.factura.set({
+          factura: v.numeroFactura ?? ('Venta #' + v.ventaId),
+          fecha: new Date(),
+          cliente: this.clienteSel()?.nombre ?? null,
+          vendedor: this.auth.usuario()?.nombreCompleto ?? '',
+          esCredito: this.esCredito(),
+          metodoPago: this.esCredito() ? null : (metodo?.nombre ?? null),
+          lineas: this.carrito().map(l => ({
+            descripcion: l.descripcion,
+            imei: l.imei,
+            cantidad: l.cantidad,
+            precioUnitario: l.precioUnitario,
+            total: l.precioUnitario * l.cantidad - l.descuento
+          })),
+          subtotal: this.subtotal(),
+          descuento: this.carrito().reduce((a, l) => a + l.descuento, 0),
+          impuesto: this.impuesto(),
+          total: v.total
+        });
         this.carrito.set([]);
         this.clienteSel.set(null);
         this.esCredito.set(false);
@@ -275,9 +315,28 @@ export class Pos {
     });
   }
 
+  imprimirFactura(): void {
+    window.print();
+  }
+
   nuevaVenta(): void {
-    this.ventaOk.set(null);
+    this.factura.set(null);
     this.cargarDispositivos();
     this.catalogo.productos().subscribe(p => this.productos.set(p)); // refrescar stock/disponibles
+  }
+
+  // ----- Configuración de factura -----
+  abrirConfig(): void {
+    this.borradorCfg.set({ ...this.facturaCfg.config() });
+    this.modalConfig.set(true);
+  }
+
+  setCfg<K extends keyof FacturaConfig>(campo: K, valor: FacturaConfig[K]): void {
+    this.borradorCfg.update(c => ({ ...c, [campo]: valor }));
+  }
+
+  guardarConfig(): void {
+    this.facturaCfg.guardar(this.borradorCfg());
+    this.modalConfig.set(false);
   }
 }
