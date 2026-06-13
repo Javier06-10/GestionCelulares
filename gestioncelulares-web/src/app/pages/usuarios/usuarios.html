@@ -1,0 +1,150 @@
+<!-- Encabezado -->
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+  <div>
+    <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Usuarios</h2>
+    <p class="text-sm text-tech-steel mt-0.5">{{ usuarios().length }} usuario(s) · técnicos, vendedores y administradores</p>
+  </div>
+  <button (click)="abrirNuevo()"
+    class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
+    <lucide-icon name="user-plus" [size]="18"></lucide-icon> Nuevo usuario
+  </button>
+</div>
+
+<!-- Tabla -->
+<div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm border-collapse min-w-[680px]">
+      <thead>
+        <tr class="bg-tech-bg-light/80 text-tech-steel text-left">
+          <th class="font-semibold py-3 px-4">Usuario</th>
+          <th class="font-semibold py-3 px-4">Rol</th>
+          <th class="font-semibold py-3 px-4">Último acceso</th>
+          <th class="font-semibold py-3 px-4 text-center">Estado</th>
+          <th class="font-semibold py-3 px-4 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          @for (i of [1,2,3]; track i) { <tr class="border-t border-tech-pastel/20"><td colspan="5" class="py-3 px-4"><div class="h-5 bg-tech-bg-light rounded animate-pulse"></div></td></tr> }
+        } @else if (usuarios().length === 0) {
+          <tr><td colspan="5" class="py-12 text-center text-tech-steel"><lucide-icon name="users" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon><p>No hay usuarios.</p></td></tr>
+        } @else {
+          @for (u of usuarios(); track u.usuarioId) {
+            <tr class="border-t border-tech-pastel/20 transition-colors hover:bg-tech-bg-light/60">
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-gradient-to-br from-tech-accent/20 to-tech-purple/20 grid place-items-center text-tech-charcoal text-xs font-bold ring-1 ring-tech-pastel/40">
+                    {{ u.nombreCompleto.charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <div class="font-semibold text-tech-charcoal">{{ u.nombreCompleto }}</div>
+                    <div class="text-xs text-tech-steel">{{ '@' + u.nombreUsuario }}{{ u.email ? ' · ' + u.email : '' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3 px-4"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold" [class]="rolClase(u.rol)">{{ u.rol }}</span></td>
+              <td class="py-3 px-4 text-tech-steel">{{ u.ultimoAcceso ? (u.ultimoAcceso | date: 'dd/MM/yy HH:mm') : 'Nunca' }}</td>
+              <td class="py-3 px-4 text-center">
+                @if (u.activo) { <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-tech-accent/10 text-tech-accent"><lucide-icon name="check" [size]="12"></lucide-icon> Activo</span> }
+                @else { <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-400/15 text-slate-500"><lucide-icon name="ban" [size]="12"></lucide-icon> Inactivo</span> }
+              </td>
+              <td class="py-3 px-4">
+                <div class="flex items-center justify-end gap-1.5">
+                  <button (click)="abrirEditar(u)" title="Editar" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light hover:text-tech-charcoal active:scale-90 transition-all"><lucide-icon name="pencil" [size]="16"></lucide-icon></button>
+                  <button (click)="abrirReset(u)" title="Restablecer contraseña" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-purple/10 hover:text-tech-purple active:scale-90 transition-all"><lucide-icon name="lock-keyhole" [size]="16"></lucide-icon></button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Modal crear / editar ===== -->
+@if (modal()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modal.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="form" (ngSubmit)="guardar()" class="w-[min(460px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">{{ editando() ? 'Editar usuario' : 'Nuevo usuario' }}</h3>
+        <button type="button" (click)="modal.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Usuario *</label>
+            <input formControlName="nombreUsuario" type="text" placeholder="jperez" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white disabled:opacity-60" />
+            @if (form.controls.nombreUsuario.invalid && form.controls.nombreUsuario.touched) { <span class="text-xs text-red-500 mt-1 block">Mínimo 3 caracteres.</span> }
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Rol *</label>
+            <select formControlName="rolId" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white">
+              <option [value]="0" disabled>Selecciona…</option>
+              @for (r of roles(); track r.rolId) { <option [value]="r.rolId">{{ r.nombre }}</option> }
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Nombre completo *</label>
+          <input formControlName="nombreCompleto" type="text" placeholder="Juan Pérez" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Email</label>
+          <input formControlName="email" type="email" placeholder="correo@empresa.com" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        @if (!editando()) {
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Contraseña inicial *</label>
+            <input formControlName="contrasena" type="text" placeholder="Mínimo 8 caracteres" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal font-mono outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+            @if (form.controls.contrasena.invalid && form.controls.contrasena.touched) { <span class="text-xs text-red-500 mt-1 block">Mínimo 8 caracteres.</span> }
+          </div>
+        } @else {
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="activo" class="w-4 h-4 accent-[#00E676]" />
+            <span class="text-sm text-tech-charcoal">Usuario activo</span>
+          </label>
+        }
+        @if (errorForm()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorForm() }}</div> }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modal.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" [disabled]="guardando()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 disabled:opacity-60">
+          @if (guardando()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Guardando… } @else { <lucide-icon name="check" [size]="16"></lucide-icon> Guardar }
+        </button>
+      </div>
+    </form>
+  </div>
+}
+
+<!-- ===== Modal reset contraseña ===== -->
+@if (modalReset()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/60 backdrop-blur-sm" (click)="modalReset.set(false)">
+    <div (click)="$event.stopPropagation()" class="w-[min(400px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Restablecer contraseña</h3>
+        <button type="button" (click)="modalReset.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5">
+        @if (okReset()) {
+          <div class="flex flex-col items-center text-center py-2">
+            <div class="w-12 h-12 rounded-full bg-tech-accent/15 grid place-items-center mb-3"><lucide-icon name="circle-check" [size]="26" class="text-tech-accent"></lucide-icon></div>
+            <p class="text-sm text-tech-charcoal">Contraseña restablecida. El usuario deberá usar la nueva clave en su próximo inicio de sesión.</p>
+          </div>
+        } @else {
+          <p class="text-sm text-tech-steel mb-3">Nueva contraseña para <span class="font-semibold text-tech-charcoal">{{ usuarioReset()?.nombreCompleto }}</span>:</p>
+          <input [value]="nuevaClave()" (input)="nuevaClave.set($any($event.target).value)" type="text" placeholder="Mínimo 8 caracteres" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal font-mono outline-none transition-all focus:border-tech-purple/60 focus:bg-white" />
+          @if (errorReset()) { <div class="mt-3 px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorReset() }}</div> }
+        }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        @if (okReset()) {
+          <button (click)="modalReset.set(false)" class="px-5 py-2.5 rounded-xl bg-tech-charcoal text-white font-semibold text-sm hover:bg-tech-charcoal/90 active:scale-95 transition-all">Listo</button>
+        } @else {
+          <button (click)="modalReset.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+          <button (click)="confirmarReset()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-tech-purple text-white font-semibold text-sm transition-all hover:bg-tech-purple/90 active:scale-95"><lucide-icon name="lock-keyhole" [size]="16"></lucide-icon> Restablecer</button>
+        }
+      </div>
+    </div>
+  </div>
+}

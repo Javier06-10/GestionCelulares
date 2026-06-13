@@ -42,7 +42,7 @@ export class Layout {
     { etiqueta: 'Taller', icono: 'wrench', ruta: '/taller' },
     { etiqueta: 'Caja', icono: 'wallet', ruta: '/caja' },
     { etiqueta: 'Reportes', icono: 'bar-chart-3', soloAdmin: true },
-    { etiqueta: 'Usuarios', icono: 'settings', soloAdmin: true }
+    { etiqueta: 'Usuarios', icono: 'settings', ruta: '/usuarios', soloAdmin: true }
   ];
 
   get items(): ItemMenu[] {
