@@ -16,7 +16,8 @@ import {
   ChevronDown, ChevronRight, Layers, Bookmark, Folder, CircleDot,
   Trash2, Percent, Receipt, Minus, TriangleAlert,
   CalendarClock, Coins, RefreshCw, CircleDollarSign,
-  Image, ArrowRight, UserCog, ClipboardList, Camera
+  Image, ArrowRight, UserCog, ClipboardList, Camera,
+  Download, FileText, Calendar
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
@@ -44,7 +45,8 @@ export const appConfig: ApplicationConfig = {
         ChevronDown, ChevronRight, Layers, Bookmark, Folder, CircleDot,
         Trash2, Percent, Receipt, Minus, TriangleAlert,
         CalendarClock, Coins, RefreshCw, CircleDollarSign,
-        Image, ArrowRight, UserCog, ClipboardList, Camera
+        Image, ArrowRight, UserCog, ClipboardList, Camera,
+        Download, FileText, Calendar
       })
     )
   ]

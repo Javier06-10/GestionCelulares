@@ -1,0 +1,157 @@
+<!-- Encabezado -->
+<div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+  <div>
+    <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Reportes</h2>
+    <p class="text-sm text-tech-steel mt-0.5">Indicadores gerenciales del negocio</p>
+  </div>
+  <button (click)="exportar()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm transition-all hover:bg-tech-bg-light active:scale-95">
+    <lucide-icon name="download" [size]="16"></lucide-icon> Exportar CSV
+  </button>
+</div>
+
+<!-- Pestañas -->
+<div class="flex flex-wrap items-center gap-1 mb-4 p-1 bg-tech-card-light border border-tech-pastel/40 rounded-xl w-fit">
+  @for (t of tabs; track t.id) {
+    <button (click)="cambiarTab(t.id)" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="tab() === t.id ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">
+      <lucide-icon [name]="t.icono" [size]="15"></lucide-icon> {{ t.label }}
+    </button>
+  }
+</div>
+
+<!-- Filtro de fechas -->
+@if (tabActual.conFecha) {
+  <div class="flex flex-wrap items-end gap-3 mb-4">
+    <div>
+      <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Desde</label>
+      <input [value]="desde()" (input)="desde.set($any($event.target).value)" type="date" class="px-3.5 py-2 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal text-sm outline-none focus:border-tech-accent/60" />
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Hasta</label>
+      <input [value]="hasta()" (input)="hasta.set($any($event.target).value)" type="date" class="px-3.5 py-2 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal text-sm outline-none focus:border-tech-accent/60" />
+    </div>
+    <button (click)="generar()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
+      <lucide-icon name="calendar" [size]="16"></lucide-icon> Generar
+    </button>
+  </div>
+}
+
+@if (cargando()) {
+  <div class="h-40 rounded-2xl bg-tech-card-light border border-tech-pastel/30 animate-pulse"></div>
+}
+
+<!-- ===== VENTAS ===== -->
+@else if (tab() === 'ventas' && ventas(); as r) {
+  <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
+    <div class="kpi"><span class="t">Ventas</span><span class="v">{{ r.cantidad | number }}</span></div>
+    <div class="kpi"><span class="t">Subtotal</span><span class="v">{{ r.subtotal | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+    <div class="kpi"><span class="t">ITBIS</span><span class="v">{{ r.impuesto | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+    <div class="kpi"><span class="t">Total</span><span class="v">{{ r.total | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+    <div class="kpi accent"><span class="t">Ganancia</span><span class="v">{{ r.ganancia | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+  </div>
+  <div class="panel">
+    <table class="w-full text-sm border-collapse">
+      <thead><tr class="text-left text-tech-steel"><th class="th">Día</th><th class="th text-right">Ventas</th><th class="th text-right">Total</th><th class="th text-right">Ganancia</th></tr></thead>
+      <tbody>
+        @for (d of r.porDia; track d.fecha) {
+          <tr class="row"><td class="td">{{ d.fecha | date:'dd/MM/yyyy' }}</td><td class="td text-right">{{ d.cantidad }}</td><td class="td text-right">{{ d.total | currency: 'DOP':'RD$':'1.2-2' }}</td><td class="td text-right text-tech-accent font-medium">{{ d.ganancia | currency: 'DOP':'RD$':'1.2-2' }}</td></tr>
+        } @empty { <tr><td colspan="4" class="py-8 text-center text-tech-steel">Sin ventas en el período.</td></tr> }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- ===== INVENTARIO ===== -->
+@else if (tab() === 'inventario' && inventario(); as r) {
+  <div class="grid grid-cols-3 gap-3 mb-4">
+    <div class="kpi"><span class="t">Equipos</span><span class="v">{{ r.equipos | number }}</span></div>
+    <div class="kpi"><span class="t">Valor a costo</span><span class="v">{{ r.valorCosto | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+    <div class="kpi accent"><span class="t">Valor en venta</span><span class="v">{{ r.valorVenta | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+  </div>
+  <div class="panel">
+    <table class="w-full text-sm border-collapse">
+      <thead><tr class="text-left text-tech-steel"><th class="th">Producto</th><th class="th">Variante</th><th class="th text-center">Disp.</th><th class="th text-right">P. venta</th><th class="th text-right">Valor costo</th></tr></thead>
+      <tbody>
+        @for (l of r.lineas; track $index) {
+          <tr class="row"><td class="td font-medium text-tech-charcoal">{{ l.producto }} <span class="text-tech-steel text-xs">{{ l.marca }}</span></td><td class="td">{{ l.color }}{{ l.almacenamiento ? ' · ' + l.almacenamiento : '' }}</td><td class="td text-center">{{ l.disponibles }}</td><td class="td text-right">{{ l.precioVenta | currency: 'DOP':'RD$':'1.2-2' }}</td><td class="td text-right">{{ l.valorCosto | currency: 'DOP':'RD$':'1.2-2' }}</td></tr>
+        } @empty { <tr><td colspan="5" class="py-8 text-center text-tech-steel">Sin inventario disponible.</td></tr> }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- ===== MOROSIDAD ===== -->
+@else if (tab() === 'morosidad' && morosidad(); as r) {
+  <div class="grid grid-cols-2 gap-3 mb-4">
+    <div class="kpi"><span class="t">Clientes en mora</span><span class="v">{{ r.clientesEnMora | number }}</span></div>
+    <div class="kpi danger"><span class="t">Monto vencido</span><span class="v">{{ r.montoVencidoTotal | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+  </div>
+  <div class="panel">
+    <table class="w-full text-sm border-collapse">
+      <thead><tr class="text-left text-tech-steel"><th class="th">Cliente</th><th class="th">Teléfono</th><th class="th text-center">Cuotas</th><th class="th text-center">Días máx</th><th class="th text-right">Monto vencido</th></tr></thead>
+      <tbody>
+        @for (c of r.clientes; track c.clienteId) {
+          <tr class="row"><td class="td font-medium text-tech-charcoal">{{ c.cliente }}</td><td class="td text-tech-steel">{{ c.telefono || '—' }}</td><td class="td text-center">{{ c.cuotasVencidas }}</td><td class="td text-center"><span class="px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 text-xs font-bold">{{ c.diasMaxVencido }}</span></td><td class="td text-right font-medium">{{ c.montoVencido | currency: 'DOP':'RD$':'1.2-2' }}</td></tr>
+        } @empty { <tr><td colspan="5" class="py-8 text-center text-tech-accent">¡Sin clientes en mora!</td></tr> }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- ===== CAJA ===== -->
+@else if (tab() === 'caja' && caja(); as r) {
+  <div class="grid grid-cols-2 gap-3 mb-4">
+    <div class="kpi"><span class="t">Sesiones</span><span class="v">{{ r.sesiones | number }}</span></div>
+    <div class="kpi"><span class="t">Suma de diferencias</span><span class="v" [class.text-red-500]="r.totalDiferencias < 0">{{ r.totalDiferencias | currency: 'DOP':'RD$':'1.2-2' }}</span></div>
+  </div>
+  <div class="panel">
+    <table class="w-full text-sm border-collapse">
+      <thead><tr class="text-left text-tech-steel"><th class="th">Sesión</th><th class="th">Apertura</th><th class="th text-right">Fondo</th><th class="th text-right">Cierre</th><th class="th text-right">Diferencia</th><th class="th text-center">Estado</th></tr></thead>
+      <tbody>
+        @for (s of r.detalle; track s.sesionCajaId) {
+          <tr class="row"><td class="td">#{{ s.sesionCajaId }}</td><td class="td">{{ s.fechaApertura | date:'dd/MM HH:mm' }}</td><td class="td text-right">{{ s.montoApertura | currency: 'DOP':'RD$':'1.0-0' }}</td><td class="td text-right">{{ s.montoCierre != null ? (s.montoCierre | currency: 'DOP':'RD$':'1.0-0') : '—' }}</td>
+            <td class="td text-right font-medium" [class]="(s.diferencia ?? 0) === 0 ? 'text-tech-accent' : ((s.diferencia ?? 0) > 0 ? 'text-amber-700' : 'text-red-500')">{{ s.diferencia != null ? (s.diferencia | currency: 'DOP':'RD$':'1.2-2') : '—' }}</td>
+            <td class="td text-center"><span class="px-2 py-0.5 rounded-full text-xs font-semibold" [class]="s.estado === 'Abierta' ? 'bg-tech-accent/10 text-tech-accent' : 'bg-slate-400/15 text-slate-500'">{{ s.estado }}</span></td></tr>
+        } @empty { <tr><td colspan="6" class="py-8 text-center text-tech-steel">Sin sesiones en el período.</td></tr> }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- ===== TALLER ===== -->
+@else if (tab() === 'taller' && taller(); as r) {
+  <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
+    <div class="kpi"><span class="t">Entregadas</span><span class="v">{{ r.entregadas | number }}</span></div>
+    <div class="kpi"><span class="t">Canceladas</span><span class="v">{{ r.canceladas | number }}</span></div>
+    <div class="kpi accent"><span class="t">Ingresos</span><span class="v">{{ r.ingresosPorReparacion | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+    <div class="kpi"><span class="t">Repuestos</span><span class="v">{{ r.costoRepuestos | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+    <div class="kpi"><span class="t">Comisiones</span><span class="v">{{ r.comisionesTecnicos | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+  </div>
+  <div class="panel">
+    <table class="w-full text-sm border-collapse">
+      <thead><tr class="text-left text-tech-steel"><th class="th">Técnico</th><th class="th text-center">Órdenes</th><th class="th text-right">Ingresos</th><th class="th text-right">Comisión</th></tr></thead>
+      <tbody>
+        @for (t of r.porTecnico; track t.tecnicoId) {
+          <tr class="row"><td class="td font-medium text-tech-charcoal">{{ t.tecnico }}</td><td class="td text-center">{{ t.ordenesEntregadas }}</td><td class="td text-right">{{ t.ingresos | currency: 'DOP':'RD$':'1.2-2' }}</td><td class="td text-right text-tech-purple font-medium">{{ t.comision | currency: 'DOP':'RD$':'1.2-2' }}</td></tr>
+        } @empty { <tr><td colspan="4" class="py-8 text-center text-tech-steel">Sin entregas en el período.</td></tr> }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- ===== COBROS ===== -->
+@else if (tab() === 'cobros' && cobros(); as r) {
+  <div class="grid grid-cols-2 gap-3 mb-4">
+    <div class="kpi"><span class="t">Pagos recibidos</span><span class="v">{{ r.pagos | number }}</span></div>
+    <div class="kpi accent"><span class="t">Total cobrado</span><span class="v">{{ r.totalCobrado | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+  </div>
+  <div class="panel">
+    <table class="w-full text-sm border-collapse">
+      <thead><tr class="text-left text-tech-steel"><th class="th">Día</th><th class="th text-center">Pagos</th><th class="th text-right">Total</th></tr></thead>
+      <tbody>
+        @for (d of r.porDia; track d.fecha) {
+          <tr class="row"><td class="td">{{ d.fecha | date:'dd/MM/yyyy' }}</td><td class="td text-center">{{ d.pagos }}</td><td class="td text-right font-medium">{{ d.total | currency: 'DOP':'RD$':'1.2-2' }}</td></tr>
+        } @empty { <tr><td colspan="3" class="py-8 text-center text-tech-steel">Sin cobros en el período.</td></tr> }
+      </tbody>
+    </table>
+  </div>
+}

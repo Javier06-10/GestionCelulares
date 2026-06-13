@@ -1,0 +1,27 @@
+.kpi {
+  @apply bg-tech-card-light rounded-2xl p-4 border border-tech-pastel/30 flex flex-col gap-1;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -16px rgba(15, 23, 42, 0.12);
+
+  .t { @apply text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel; }
+  .v { @apply text-xl font-bold text-tech-charcoal; }
+
+  &.accent { @apply border-tech-accent/40; }
+  &.accent .v { @apply text-tech-accent; }
+  &.danger { @apply border-red-400/40; }
+  &.danger .v { @apply text-red-500; }
+}
+
+.panel {
+  @apply bg-tech-card-light rounded-2xl border border-tech-pastel/30 overflow-hidden;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -16px rgba(15, 23, 42, 0.12);
+
+  table { @apply min-w-[560px]; }
+}
+
+.th { @apply font-semibold py-3 px-4 border-b border-tech-pastel/40; }
+.td { @apply py-2.5 px-4 border-b border-tech-pastel/20 text-tech-charcoal; }
+.row { @apply transition-colors duration-150; }
+.row:hover { @apply bg-tech-bg-light/60; }
+
+/* La tabla necesita scroll horizontal en móvil */
+.panel { @apply overflow-x-auto; }

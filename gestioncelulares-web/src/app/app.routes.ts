@@ -9,6 +9,7 @@ import { Dashboard } from './pages/dashboard/dashboard';
 import { Inventario } from './pages/inventario/inventario';
 import { Login } from './pages/login/login';
 import { Pos } from './pages/pos/pos';
+import { Reportes } from './pages/reportes/reportes';
 import { Taller } from './pages/taller/taller';
 import { Usuarios } from './pages/usuarios/usuarios';
 
@@ -27,8 +28,8 @@ export const routes: Routes = [
       { path: 'caja', component: Caja },
       { path: 'creditos', component: Creditos },
       { path: 'taller', component: Taller },
-      { path: 'usuarios', component: Usuarios }
-      // Pendientes: reportes
+      { path: 'usuarios', component: Usuarios },
+      { path: 'reportes', component: Reportes }
     ]
   },
   { path: '**', redirectTo: '' }
