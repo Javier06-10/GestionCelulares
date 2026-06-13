@@ -1,0 +1,257 @@
+<!-- Encabezado -->
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+  <div>
+    <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Taller</h2>
+    <p class="text-sm text-tech-steel mt-0.5">{{ ordenes().length }} orden(es) en el tablero</p>
+  </div>
+  <button (click)="abrirNueva()"
+    class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-purple to-indigo-400 text-white font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(108,92,231,0.6)] active:scale-95">
+    <lucide-icon name="plus" [size]="18"></lucide-icon> Nueva orden
+  </button>
+</div>
+
+<!-- Kanban -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+  @for (col of columnas; track col.estado) {
+    <div class="bg-tech-bg-light/60 rounded-2xl border-t-4 {{ col.color }} border border-tech-pastel/30 flex flex-col min-h-[200px]">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-tech-pastel/30">
+        <h3 class="font-semibold text-tech-charcoal text-sm">{{ col.titulo }}</h3>
+        <span class="px-2 py-0.5 rounded-full bg-tech-card-light text-tech-steel text-xs font-bold">{{ porColumna()[col.estado].length }}</span>
+      </div>
+      <div class="flex-1 p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[calc(100vh-16rem)]">
+        @if (cargando()) {
+          <div class="h-20 rounded-xl bg-tech-card-light animate-pulse"></div>
+        } @else {
+          @for (o of porColumna()[col.estado]; track o.ordenTallerId) {
+            <button (click)="abrirDetalle(o.ordenTallerId)"
+              class="text-left p-3 rounded-xl bg-tech-card-light border border-tech-pastel/30 transition-all duration-200 hover:border-tech-purple/40 hover:shadow-[0_4px_12px_-6px_rgba(108,92,231,0.4)] active:scale-[0.98]">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-mono text-tech-steel">{{ o.numeroOrden || '#' + o.ordenTallerId }}</span>
+                <span class="text-xs text-tech-steel">{{ o.fechaRecepcion | date: 'dd/MM' }}</span>
+              </div>
+              <div class="font-semibold text-tech-charcoal text-sm truncate">{{ o.equipo || 'Equipo' }}</div>
+              @if (o.cliente) { <div class="text-xs text-tech-steel truncate">{{ o.cliente }}</div> }
+              <div class="flex items-center justify-between mt-2">
+                @if (o.tecnico) {
+                  <span class="flex items-center gap-1 text-[0.7rem] text-tech-purple"><lucide-icon name="user-cog" [size]="12"></lucide-icon> {{ o.tecnico }}</span>
+                } @else { <span class="text-[0.7rem] text-tech-steel/60">sin técnico</span> }
+                <span class="text-xs font-semibold text-tech-charcoal">{{ o.costoEstimado | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
+              </div>
+            </button>
+          } @empty {
+            <div class="text-center text-tech-steel/50 text-xs py-6">Vacío</div>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ===== Modal detalle ===== -->
+@if (detalle(); as o) {
+  <div class="fixed inset-0 z-40 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="cerrarDetalle()">
+    <div (click)="$event.stopPropagation()" class="w-[min(640px,95vw)] max-h-[92vh] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="font-bold text-tech-charcoal">{{ o.equipoDescripcion || 'Equipo' }}</h3>
+            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold" [class]="estadoClase(o.estado)">{{ o.estado }}</span>
+          </div>
+          <span class="text-xs text-tech-steel">{{ o.numeroOrden || 'Orden #' + o.ordenTallerId }}{{ o.cliente ? ' · ' + o.cliente : '' }}</span>
+        </div>
+        <button (click)="cerrarDetalle()" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
+        @if (errorDetalle()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorDetalle() }}</div> }
+
+        @if (o.diagnostico) {
+          <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel mb-1">Diagnóstico</div><p class="text-sm text-tech-charcoal">{{ o.diagnostico }}</p></div>
+        }
+
+        <!-- Técnico -->
+        <div>
+          <label class="block text-[0.7rem] uppercase font-semibold text-tech-steel mb-1.5">Técnico asignado</label>
+          @if (o.estado === 'Entregado' || o.estado === 'Cancelado') {
+            <div class="text-sm text-tech-charcoal">{{ o.tecnico || '—' }}</div>
+          } @else {
+            <select [value]="o.tecnicoId" (change)="asignarTecnico($any($event.target).value || null)"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white">
+              <option [value]="">— Sin técnico —</option>
+              @for (t of tecnicos(); track t.usuarioId) { <option [value]="t.usuarioId">{{ t.nombreCompleto }}</option> }
+            </select>
+          }
+        </div>
+
+        <!-- Montos -->
+        <div class="grid grid-cols-3 gap-3 text-sm">
+          <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">Anticipo</div><div class="font-semibold text-tech-charcoal">{{ o.anticipo | currency: 'DOP' : 'RD$' : '1.0-0' }}</div></div>
+          <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">Estimado</div><div class="font-semibold text-tech-charcoal">{{ o.costoEstimado | currency: 'DOP' : 'RD$' : '1.0-0' }}</div></div>
+          <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">{{ o.costoFinal != null ? 'Final' : 'Repuestos' }}</div><div class="font-semibold text-tech-charcoal">{{ (o.costoFinal != null ? o.costoFinal : o.totalRepuestos) | currency: 'DOP' : 'RD$' : '1.0-0' }}</div></div>
+        </div>
+
+        <!-- Repuestos -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[0.7rem] uppercase font-semibold text-tech-steel">Repuestos</span>
+            @if (o.estado !== 'Entregado' && o.estado !== 'Cancelado') {
+              <button (click)="abrirRepuesto()" class="flex items-center gap-1 text-xs font-semibold text-tech-purple hover:underline"><lucide-icon name="plus" [size]="14"></lucide-icon> Agregar</button>
+            }
+          </div>
+          @if (o.repuestos.length === 0) { <p class="text-sm text-tech-steel">Sin repuestos.</p> }
+          @else {
+            <div class="flex flex-col gap-1">
+              @for (r of o.repuestos; track r.id) {
+                <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-tech-bg-light/60 text-sm">
+                  <span class="text-tech-charcoal">{{ r.cantidad }}× {{ r.descripcion }}</span>
+                  <span class="font-medium text-tech-charcoal">{{ (r.costo * r.cantidad) | currency: 'DOP' : 'RD$' : '1.2-2' }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Fotos -->
+        <div>
+          <span class="text-[0.7rem] uppercase font-semibold text-tech-steel">Fotos</span>
+          <div class="flex flex-wrap gap-2 mt-2">
+            @for (f of o.fotos; track f.id) {
+              <a [href]="f.url" target="_blank" class="w-14 h-14 rounded-lg bg-tech-bg-light border border-tech-pastel/40 grid place-items-center text-tech-steel hover:border-tech-purple/40">
+                <lucide-icon name="image" [size]="18"></lucide-icon>
+              </a>
+            }
+          </div>
+          @if (o.estado !== 'Entregado' && o.estado !== 'Cancelado') {
+            <div class="flex gap-2 mt-2">
+              <input [value]="urlFoto()" (input)="urlFoto.set($any($event.target).value)" type="text" placeholder="URL de la foto…" class="flex-1 px-3 py-2 rounded-lg bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-sm outline-none focus:border-tech-purple/60 focus:bg-white" />
+              <button (click)="agregarFoto()" class="w-9 grid place-items-center rounded-lg bg-tech-purple/15 text-tech-purple hover:bg-tech-purple/25 active:scale-90 transition-all"><lucide-icon name="camera" [size]="16"></lucide-icon></button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Acciones de estado -->
+      @if (siguientes().length > 0) {
+        <div class="px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40 flex flex-wrap gap-2 justify-end">
+          @for (s of siguientes(); track s) {
+            <button (click)="mover(s)"
+              class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all active:scale-95"
+              [class]="s === 'Cancelado' ? 'border border-red-300 text-red-500 hover:bg-red-50' : (s === 'Entregado' ? 'bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)]' : 'bg-tech-purple text-white hover:bg-tech-purple/90')">
+              <lucide-icon [name]="s === 'Cancelado' ? 'ban' : (s === 'Entregado' ? 'circle-check' : 'arrow-right')" [size]="16"></lucide-icon>
+              {{ s === 'EnReparacion' ? 'En reparación' : s }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- ===== Modal entrega ===== -->
+@if (modalEntrega()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/60 backdrop-blur-sm" (click)="modalEntrega.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="formEntrega" (ngSubmit)="confirmarEntrega()" class="w-[min(400px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Entregar equipo</h3>
+        <button type="button" (click)="modalEntrega.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Costo final de la reparación</label>
+          <input formControlName="costoFinal" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Comisión del técnico</label>
+          <input formControlName="comisionTecnico" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalEntrega.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95"><lucide-icon name="circle-check" [size]="16"></lucide-icon> Entregar</button>
+      </div>
+    </form>
+  </div>
+}
+
+<!-- ===== Modal repuesto ===== -->
+@if (modalRepuesto()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/60 backdrop-blur-sm" (click)="modalRepuesto.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="formRepuesto" (ngSubmit)="agregarRepuesto()" class="w-[min(400px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Agregar repuesto</h3>
+        <button type="button" (click)="modalRepuesto.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Descripción *</label>
+          <input formControlName="descripcion" type="text" placeholder="Pantalla, batería…" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Cantidad</label>
+            <input formControlName="cantidad" type="number" min="1" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Costo unit.</label>
+            <input formControlName="costo" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalRepuesto.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-tech-purple text-white font-semibold text-sm transition-all hover:bg-tech-purple/90 active:scale-95"><lucide-icon name="check" [size]="16"></lucide-icon> Agregar</button>
+      </div>
+    </form>
+  </div>
+}
+
+<!-- ===== Modal nueva orden ===== -->
+@if (modalNueva()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modalNueva.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="formNueva" (ngSubmit)="crearOrden()" class="w-[min(480px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal flex items-center gap-2"><lucide-icon name="clipboard-list" [size]="18" class="text-tech-purple"></lucide-icon> Nueva orden de taller</h3>
+        <button type="button" (click)="modalNueva.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Cliente</label>
+          <app-cliente-selector [cliente]="clienteSel()" (clienteChange)="clienteSel.set($event)" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Equipo *</label>
+          <input formControlName="equipoDescripcion" type="text" placeholder="iPhone 11 pantalla rota…" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
+          @if (formNueva.controls.equipoDescripcion.invalid && formNueva.controls.equipoDescripcion.touched) { <span class="text-xs text-red-500 mt-1 block">Describe el equipo.</span> }
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Diagnóstico inicial</label>
+          <input formControlName="diagnostico" type="text" placeholder="Falla reportada…" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Técnico</label>
+          <select formControlName="tecnicoId" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white">
+            <option [ngValue]="null">— Asignar luego —</option>
+            @for (t of tecnicos(); track t.usuarioId) { <option [ngValue]="t.usuarioId">{{ t.nombreCompleto }}</option> }
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Anticipo</label>
+            <input formControlName="anticipo" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Costo estimado</label>
+            <input formControlName="costoEstimado" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
+          </div>
+        </div>
+        @if (errorNueva()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorNueva() }}</div> }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalNueva.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" [disabled]="guardandoNueva()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-purple to-indigo-400 text-white font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(108,92,231,0.6)] active:scale-95 disabled:opacity-60">
+          @if (guardandoNueva()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Creando… } @else { <lucide-icon name="check" [size]="16"></lucide-icon> Crear orden }
+        </button>
+      </div>
+    </form>
+  </div>
+}

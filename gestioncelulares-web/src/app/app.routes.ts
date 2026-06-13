@@ -9,6 +9,7 @@ import { Dashboard } from './pages/dashboard/dashboard';
 import { Inventario } from './pages/inventario/inventario';
 import { Login } from './pages/login/login';
 import { Pos } from './pages/pos/pos';
+import { Taller } from './pages/taller/taller';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -23,8 +24,9 @@ export const routes: Routes = [
       { path: 'inventario', component: Inventario },
       { path: 'catalogo', component: Catalogo },
       { path: 'caja', component: Caja },
-      { path: 'creditos', component: Creditos }
-      // Pendientes: taller, reportes, usuarios
+      { path: 'creditos', component: Creditos },
+      { path: 'taller', component: Taller }
+      // Pendientes: reportes, usuarios
     ]
   },
   { path: '**', redirectTo: '' }
