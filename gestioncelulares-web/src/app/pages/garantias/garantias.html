@@ -1,0 +1,199 @@
+<!-- Encabezado -->
+<div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+  <div>
+    <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Garantías / RMA</h2>
+    <p class="text-sm text-tech-steel mt-0.5">Cobertura de equipos y casos de reclamación</p>
+  </div>
+  <button (click)="abrirModalCaso()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-purple to-indigo-400 text-white font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(108,92,231,0.6)] active:scale-95">
+    <lucide-icon name="plus" [size]="18"></lucide-icon> Abrir caso RMA
+  </button>
+</div>
+
+<!-- Consulta por IMEI -->
+<div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-4 mb-4">
+  <div class="relative">
+    <lucide-icon name="scan-line" [size]="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-accent"></lucide-icon>
+    <input type="text" placeholder="Consulta la garantía por IMEI…" (input)="buscarImei($any($event.target).value)" class="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal placeholder:text-tech-steel/60 outline-none transition-all focus:border-tech-accent/60 focus:bg-white focus:shadow-[0_0_15px_rgba(0,230,118,0.2)]" />
+  </div>
+  @if (imeiBuscado(); as g) {
+    <div class="mt-3 flex flex-wrap items-center gap-4 px-4 py-3 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/30">
+      <span class="font-mono text-sm text-tech-charcoal">{{ g.imei }}</span>
+      <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold" [class]="estadoGarClase(g.estado, g.vigente)">{{ g.vigente ? 'Vigente' : g.estado }}</span>
+      <span class="text-sm text-tech-steel">Cobertura {{ g.mesesCobertura }} meses · vence {{ g.fechaVencimiento | date:'dd/MM/yyyy' }}</span>
+      @if (g.vigente) { <button (click)="abrirModalCaso(g)" class="ml-auto text-sm font-semibold text-tech-purple hover:underline">Abrir caso →</button> }
+    </div>
+  } @else if (imeiNoEncontrado()) {
+    <div class="mt-3 flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm"><lucide-icon name="circle-x" [size]="16"></lucide-icon> Ese IMEI no tiene garantía registrada.</div>
+  }
+</div>
+
+<!-- Pestañas -->
+<div class="flex items-center gap-1 mb-4 p-1 bg-tech-card-light border border-tech-pastel/40 rounded-xl w-fit">
+  <button (click)="cambiarVista('garantias')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="vista() === 'garantias' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">Garantías</button>
+  <button (click)="cambiarVista('casos')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="vista() === 'casos' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">Casos RMA</button>
+  <button (click)="cambiarVista('fallas')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="vista() === 'fallas' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">Índice de fallas</button>
+</div>
+
+@if (cargando()) { <div class="h-40 rounded-2xl bg-tech-card-light border border-tech-pastel/30 animate-pulse"></div> }
+
+<!-- ===== GARANTÍAS ===== -->
+@else if (vista() === 'garantias') {
+  <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse min-w-[640px]">
+        <thead><tr class="bg-tech-bg-light/80 text-tech-steel text-left"><th class="font-semibold py-3 px-4">IMEI</th><th class="font-semibold py-3 px-4">Cliente</th><th class="font-semibold py-3 px-4 text-center">Cobertura</th><th class="font-semibold py-3 px-4">Vence</th><th class="font-semibold py-3 px-4 text-center">Estado</th></tr></thead>
+        <tbody>
+          @for (g of garantias(); track g.garantiaId) {
+            <tr class="border-t border-tech-pastel/20 hover:bg-tech-bg-light/60 transition-colors">
+              <td class="py-3 px-4 font-mono text-tech-charcoal">{{ g.imei || '—' }}</td>
+              <td class="py-3 px-4 text-tech-charcoal">{{ g.cliente || '—' }}</td>
+              <td class="py-3 px-4 text-center text-tech-charcoal">{{ g.mesesCobertura }} m</td>
+              <td class="py-3 px-4 text-tech-charcoal">{{ g.fechaVencimiento | date:'dd/MM/yyyy' }}</td>
+              <td class="py-3 px-4 text-center"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold" [class]="estadoGarClase(g.estado, g.vigente)">{{ g.vigente ? 'Vigente' : g.estado }}</span></td>
+            </tr>
+          } @empty { <tr><td colspan="5" class="py-12 text-center text-tech-steel"><lucide-icon name="shield-check" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon><p>No hay garantías registradas.</p></td></tr> }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- ===== CASOS RMA ===== -->
+@else if (vista() === 'casos') {
+  <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse min-w-[680px]">
+        <thead><tr class="bg-tech-bg-light/80 text-tech-steel text-left"><th class="font-semibold py-3 px-4">Caso</th><th class="font-semibold py-3 px-4">IMEI</th><th class="font-semibold py-3 px-4">Cliente</th><th class="font-semibold py-3 px-4">Falla</th><th class="font-semibold py-3 px-4 text-center">Estado</th></tr></thead>
+        <tbody>
+          @for (c of casos(); track c.casoGarantiaId) {
+            <tr (click)="abrirDetalleCaso(c.casoGarantiaId)" class="border-t border-tech-pastel/20 cursor-pointer hover:bg-tech-bg-light/60 transition-colors">
+              <td class="py-3 px-4 font-mono text-tech-steel">{{ c.numeroCaso || '#' + c.casoGarantiaId }}</td>
+              <td class="py-3 px-4 font-mono text-tech-charcoal">{{ c.imei || '—' }}</td>
+              <td class="py-3 px-4 text-tech-charcoal">{{ c.cliente || '—' }}</td>
+              <td class="py-3 px-4 text-tech-charcoal truncate max-w-[200px]">{{ c.tipoFalla || '—' }}</td>
+              <td class="py-3 px-4 text-center"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold" [class]="estadoCasoClase(c.estado)">{{ c.estado }}</span></td>
+            </tr>
+          } @empty { <tr><td colspan="5" class="py-12 text-center text-tech-steel"><lucide-icon name="shield-alert" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon><p>No hay casos abiertos.</p></td></tr> }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- ===== ÍNDICE DE FALLAS ===== -->
+@else {
+  <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse min-w-[480px]">
+        <thead><tr class="bg-tech-bg-light/80 text-tech-steel text-left"><th class="font-semibold py-3 px-4">Producto</th><th class="font-semibold py-3 px-4">Marca</th><th class="font-semibold py-3 px-4 text-right">Casos</th></tr></thead>
+        <tbody>
+          @for (f of fallas(); track f.productoId) {
+            <tr class="border-t border-tech-pastel/20 hover:bg-tech-bg-light/60 transition-colors">
+              <td class="py-3 px-4 font-medium text-tech-charcoal">{{ f.producto }}</td>
+              <td class="py-3 px-4 text-tech-steel">{{ f.marca || '—' }}</td>
+              <td class="py-3 px-4 text-right"><span class="inline-flex px-2.5 py-1 rounded-full text-sm font-bold bg-red-500/10 text-red-500">{{ f.totalCasos }}</span></td>
+            </tr>
+          } @empty { <tr><td colspan="3" class="py-12 text-center text-tech-accent"><lucide-icon name="circle-check" [size]="32" class="mx-auto mb-2 opacity-50"></lucide-icon><p>Sin fallas registradas.</p></td></tr> }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- ===== Modal detalle de caso ===== -->
+@if (caso(); as c) {
+  <div class="fixed inset-0 z-40 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="cerrarDetalleCaso()">
+    <div (click)="$event.stopPropagation()" class="w-[min(520px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <div>
+          <div class="flex items-center gap-2"><h3 class="font-bold text-tech-charcoal">{{ c.numeroCaso || 'Caso #' + c.casoGarantiaId }}</h3><span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold" [class]="estadoCasoClase(c.estado)">{{ c.estado }}</span></div>
+          <span class="text-xs text-tech-steel">{{ c.imei ? 'IMEI ' + c.imei : '' }}{{ c.cliente ? ' · ' + c.cliente : '' }}</span>
+        </div>
+        <button (click)="cerrarDetalleCaso()" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-3 text-sm">
+        @if (errorCaso()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500">{{ errorCaso() }}</div> }
+        @if (c.tipoFalla) { <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">Falla</div><div class="text-tech-charcoal">{{ c.tipoFalla }}</div></div> }
+        @if (c.descripcionFalla) { <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">Descripción</div><p class="text-tech-charcoal">{{ c.descripcionFalla }}</p></div> }
+        @if (c.tipoResolucion) { <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">Resolución</div><div class="text-tech-charcoal">{{ c.tipoResolucion }}{{ c.imeiReemplazo ? ' · reemplazo IMEI ' + c.imeiReemplazo : '' }}</div></div> }
+        @if (c.notas) { <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">Notas</div><p class="text-tech-charcoal">{{ c.notas }}</p></div> }
+        <div class="text-xs text-tech-steel">Abierto: {{ c.fechaApertura | date:'dd/MM/yy HH:mm' }}{{ c.fechaCierre ? ' · Cerrado: ' + (c.fechaCierre | date:'dd/MM/yy') : '' }}</div>
+      </div>
+      <div class="px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40 flex flex-wrap gap-2 justify-end">
+        @if (c.estado === 'Abierto') { <button (click)="iniciarCaso()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-tech-purple text-white font-semibold text-sm hover:bg-tech-purple/90 active:scale-95 transition-all"><lucide-icon name="arrow-right" [size]="16"></lucide-icon> Iniciar proceso</button> }
+        @if (c.estado === 'Abierto' || c.estado === 'EnProceso') { <button (click)="abrirResolver()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 transition-all"><lucide-icon name="check" [size]="16"></lucide-icon> Resolver</button> }
+        @if (c.estado === 'Resuelto' || c.estado === 'Rechazado') { <button (click)="cerrarCaso()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-tech-charcoal text-white font-semibold text-sm hover:bg-tech-charcoal/90 active:scale-95 transition-all"><lucide-icon name="circle-check" [size]="16"></lucide-icon> Cerrar caso</button> }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== Modal abrir caso ===== -->
+@if (modalCaso()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modalCaso.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="formCaso" (ngSubmit)="crearCaso()" class="w-[min(440px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Abrir caso de garantía</h3>
+        <button type="button" (click)="modalCaso.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">ID del equipo (ImeiId) *</label>
+          <input formControlName="imeiId" type="number" placeholder="Usa la consulta por IMEI de arriba" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
+          <span class="text-[0.7rem] text-tech-steel mt-1 block">Tip: consulta el IMEI arriba y usa "Abrir caso →" para precargarlo.</span>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Tipo de falla</label>
+          <input formControlName="tipoFalla" type="text" placeholder="No enciende, pantalla…" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Descripción</label>
+          <input formControlName="descripcionFalla" type="text" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
+        </div>
+        @if (errorAbrir()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorAbrir() }}</div> }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalCaso.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-purple to-indigo-400 text-white font-semibold text-sm hover:shadow-[0_8px_24px_-8px_rgba(108,92,231,0.6)] active:scale-95 transition-all"><lucide-icon name="check" [size]="16"></lucide-icon> Abrir caso</button>
+      </div>
+    </form>
+  </div>
+}
+
+<!-- ===== Modal resolver caso ===== -->
+@if (modalResolver()) {
+  <div class="fixed inset-0 z-[55] grid place-items-center p-4 bg-tech-bg-dark/60 backdrop-blur-sm" (click)="modalResolver.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="formResolver" (ngSubmit)="resolver()" class="w-[min(420px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Resolver caso</h3>
+        <button type="button" (click)="modalResolver.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Tipo de resolución *</label>
+          <select formControlName="tipoResolucion" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white">
+            <option value="Reparacion">Reparación</option>
+            <option value="Reemplazo">Reemplazo</option>
+            <option value="NotaCredito">Nota de crédito</option>
+            <option value="Rechazado">Rechazado</option>
+          </select>
+        </div>
+        @if (formResolver.controls.tipoResolucion.value === 'Reemplazo') {
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">IMEI de reemplazo (ImeiId) *</label>
+            <input formControlName="imeiReemplazoId" type="number" placeholder="Id del equipo disponible que se entrega" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+        }
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Notas</label>
+          <input formControlName="notas" type="text" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        @if (errorResolver()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorResolver() }}</div> }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalResolver.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 transition-all"><lucide-icon name="check" [size]="16"></lucide-icon> Resolver</button>
+      </div>
+    </form>
+  </div>
+}

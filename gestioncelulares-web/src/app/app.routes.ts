@@ -6,6 +6,7 @@ import { Catalogo } from './pages/catalogo/catalogo';
 import { Clientes } from './pages/clientes/clientes';
 import { Creditos } from './pages/creditos/creditos';
 import { Dashboard } from './pages/dashboard/dashboard';
+import { Garantias } from './pages/garantias/garantias';
 import { Inventario } from './pages/inventario/inventario';
 import { Login } from './pages/login/login';
 import { Pos } from './pages/pos/pos';
@@ -30,6 +31,7 @@ export const routes: Routes = [
       { path: 'caja', component: Caja },
       { path: 'creditos', component: Creditos },
       { path: 'taller', component: Taller },
+      { path: 'garantias', component: Garantias },
       { path: 'usuarios', component: Usuarios },
       { path: 'reportes', component: Reportes }
     ]

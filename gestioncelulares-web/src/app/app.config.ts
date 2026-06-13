@@ -18,7 +18,7 @@ import {
   CalendarClock, Coins, RefreshCw, CircleDollarSign,
   Image, ArrowRight, UserCog, ClipboardList, Camera,
   Download, FileText, Calendar, Printer, SlidersHorizontal,
-  Truck, Building2, HandCoins
+  Truck, Building2, HandCoins, ShieldAlert, RefreshCcw
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
@@ -48,7 +48,7 @@ export const appConfig: ApplicationConfig = {
         CalendarClock, Coins, RefreshCw, CircleDollarSign,
         Image, ArrowRight, UserCog, ClipboardList, Camera,
         Download, FileText, Calendar, Printer, SlidersHorizontal,
-        Truck, Building2, HandCoins
+        Truck, Building2, HandCoins, ShieldAlert, RefreshCcw
       })
     )
   ]

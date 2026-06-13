@@ -41,6 +41,7 @@ export class Layout {
     { etiqueta: 'Clientes', icono: 'users', ruta: '/clientes' },
     { etiqueta: 'Créditos', icono: 'credit-card', ruta: '/creditos' },
     { etiqueta: 'Taller', icono: 'wrench', ruta: '/taller' },
+    { etiqueta: 'Garantías', icono: 'shield-alert', ruta: '/garantias' },
     { etiqueta: 'Caja', icono: 'wallet', ruta: '/caja' },
     { etiqueta: 'Reportes', icono: 'bar-chart-3', ruta: '/reportes', soloAdmin: true },
     { etiqueta: 'Usuarios', icono: 'settings', ruta: '/usuarios', soloAdmin: true }
