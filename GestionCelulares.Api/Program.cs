@@ -1,4 +1,5 @@
 using System.Text;
+using GestionCelulares.Api.Services;
 using GestionCelulares.Application;
 using GestionCelulares.Application.Common.Interfaces;
 using GestionCelulares.Infrastructure;
@@ -13,6 +14,9 @@ var builder = WebApplication.CreateBuilder(args);
 // --- Capas de la aplicación (Clean Architecture) ---
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// --- Job diario de mora (actualiza cuotas vencidas y clientes morosos) ---
+builder.Services.AddHostedService<MoraDiariaService>();
 
 // --- Autenticación JWT (composición en el host web) ---
 var jwt = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()!;
