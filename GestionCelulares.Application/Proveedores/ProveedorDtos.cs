@@ -40,6 +40,8 @@ public class CompraRegistroDto
     [StringLength(50)] public string? NumeroFactura { get; set; }
     [Range(0.01, double.MaxValue)] public decimal Total { get; set; }
     [StringLength(300)] public string? Notas { get; set; }
+    /// <summary>true = pago inmediato completo (no afecta el balance); false = a crédito (aumenta lo adeudado).</summary>
+    public bool Contado { get; set; }
 }
 
 public class CompraDto
@@ -51,6 +53,7 @@ public class CompraDto
     public DateTime Fecha { get; set; }
     public decimal Total { get; set; }
     public string? Notas { get; set; }
+    public bool Contado { get; set; }
 }
 
 public class PagoProveedorRegistroDto

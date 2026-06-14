@@ -98,7 +98,8 @@ public class ProveedorService : IProveedorService
                 NumeroFactura = c.NumeroFactura,
                 Fecha = c.Fecha,
                 Total = c.Total,
-                Notas = c.Notas
+                Notas = c.Notas,
+                Contado = _db.PagosProveedor.Any(p => p.CompraId == c.CompraId)
             })
             .ToListAsync();
     }
@@ -122,8 +123,25 @@ public class ProveedorService : IProveedorService
         };
         _db.Compras.Add(compra);
 
-        // La compra a crédito aumenta lo adeudado al proveedor
-        proveedor.Balance += dto.Total;
+        if (dto.Contado)
+        {
+            // Compra al contado: se paga completa de inmediato, el balance no se afecta
+            // (la compra y el pago se netean). Se deja registro del pago vinculado a la compra.
+            _db.PagosProveedor.Add(new PagoProveedor
+            {
+                Proveedor = proveedor,
+                Compra = compra,
+                Monto = dto.Total,
+                Fecha = compra.Fecha,
+                Referencia = "Pago al contado"
+            });
+        }
+        else
+        {
+            // La compra a crédito aumenta lo adeudado al proveedor
+            proveedor.Balance += dto.Total;
+        }
+
         await _db.SaveChangesAsync();
 
         return new CompraDto
@@ -134,7 +152,8 @@ public class ProveedorService : IProveedorService
             NumeroFactura = compra.NumeroFactura,
             Fecha = compra.Fecha,
             Total = compra.Total,
-            Notas = compra.Notas
+            Notas = compra.Notas,
+            Contado = dto.Contado
         };
     }
 

@@ -45,6 +45,7 @@ export class Proveedores {
   modalCompra = signal(false);
   errorCompra = signal<string | null>(null);
   formCompra = this.fb.nonNullable.group({
+    tipo: ['contado' as 'contado' | 'credito'],
     numeroFactura: [''],
     total: [0, [Validators.required, Validators.min(0.01)]],
     notas: ['']
@@ -106,14 +107,14 @@ export class Proveedores {
   cerrarDetalle(): void { this.detalle.set(null); }
 
   // ----- Compra -----
-  abrirCompra(): void { this.errorCompra.set(null); this.formCompra.reset({ numeroFactura: '', total: 0, notas: '' }); this.modalCompra.set(true); }
+  abrirCompra(): void { this.errorCompra.set(null); this.formCompra.reset({ tipo: 'contado', numeroFactura: '', total: 0, notas: '' }); this.modalCompra.set(true); }
   registrarCompra(): void {
     const p = this.detalle();
     if (this.formCompra.invalid || !p) { this.formCompra.markAllAsTouched(); return; }
     const suc = this.auth.usuario()?.sucursalId;
     if (!suc) { this.errorCompra.set('Tu usuario no tiene sucursal asignada.'); return; }
     const v = this.formCompra.getRawValue();
-    this.servicio.registrarCompra(p.proveedorId, { sucursalId: suc, numeroFactura: v.numeroFactura?.trim() || null, total: v.total, notas: v.notas?.trim() || null }).subscribe({
+    this.servicio.registrarCompra(p.proveedorId, { sucursalId: suc, numeroFactura: v.numeroFactura?.trim() || null, total: v.total, notas: v.notas?.trim() || null, contado: v.tipo === 'contado' }).subscribe({
       next: () => { this.modalCompra.set(false); this.refrescarDetalle(p.proveedorId); },
       error: err => this.errorCompra.set(err.error?.error ?? 'No se pudo registrar la compra.')
     });

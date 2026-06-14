@@ -31,6 +31,7 @@ export interface Compra {
   fecha: string;
   total: number;
   notas: string | null;
+  contado: boolean;
 }
 
 export interface Pago {
@@ -59,7 +60,7 @@ export class ProveedorService {
   actualizar(id: number, dto: ProveedorGuardar) { return this.http.put<Proveedor>(`${this.base}/${id}`, dto); }
 
   compras(id: number) { return this.http.get<Compra[]>(`${this.base}/${id}/compras`); }
-  registrarCompra(id: number, dto: { sucursalId: number; numeroFactura?: string | null; total: number; notas?: string | null }) {
+  registrarCompra(id: number, dto: { sucursalId: number; numeroFactura?: string | null; total: number; notas?: string | null; contado: boolean }) {
     return this.http.post<Compra>(`${this.base}/${id}/compras`, dto);
   }
   pagos(id: number) { return this.http.get<Pago[]>(`${this.base}/${id}/pagos`); }
