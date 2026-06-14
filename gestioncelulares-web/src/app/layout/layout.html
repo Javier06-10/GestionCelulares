@@ -1,4 +1,4 @@
-<div class="shell min-h-screen bg-tech-bg-light" [class.colapsado]="colapsado()">
+<div class="shell h-screen overflow-hidden bg-tech-bg-light" [class.colapsado]="colapsado()">
   <!-- Sidebar -->
   <aside class="sidebar relative bg-tech-bg-dark text-tech-pastel flex flex-col py-5 overflow-hidden">
     <!-- Glow ambiental -->
@@ -36,7 +36,7 @@
     }
 
     <!-- Navegación -->
-    <nav class="relative flex flex-col gap-1 px-3">
+    <nav class="nav-scroll relative flex-1 min-h-0 overflow-y-auto flex flex-col gap-1 px-3">
       @for (item of items; track item.etiqueta) {
         @if (item.ruta) {
           <a
@@ -85,8 +85,8 @@
   </aside>
 
   <!-- Contenido -->
-  <div class="flex flex-col min-w-0">
-    <header class="sticky top-0 z-10 bg-tech-card-light/80 backdrop-blur-md border-b border-tech-pastel/40 px-7 py-3.5 flex justify-between items-center">
+  <div class="flex flex-col min-w-0 min-h-0">
+    <header class="shrink-0 z-10 bg-tech-card-light/80 backdrop-blur-md border-b border-tech-pastel/40 px-7 py-3.5 flex justify-between items-center">
       <button
         (click)="alternar()"
         [title]="colapsado() ? 'Expandir menú' : 'Contraer menú'"
@@ -104,7 +104,7 @@
       </button>
     </header>
 
-    <main class="p-7">
+    <main class="flex-1 min-h-0 overflow-y-auto p-7">
       <router-outlet />
     </main>
   </div>
