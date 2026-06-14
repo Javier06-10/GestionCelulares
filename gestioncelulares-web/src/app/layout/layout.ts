@@ -1,6 +1,8 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
+import { filter, map } from 'rxjs';
 import { AuthService } from '../core/auth.service';
 
 interface ItemMenu {
@@ -20,8 +22,26 @@ const CLAVE_COLAPSADO = 'gc_sidebar_colapsado';
 })
 export class Layout {
   auth = inject(AuthService);
+  private router = inject(Router);
 
   colapsado = signal(localStorage.getItem(CLAVE_COLAPSADO) === '1');
+
+  // URL actual, reactiva ante cada navegación
+  private urlActual = toSignal(
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      map(() => this.router.url)
+    ),
+    { initialValue: this.router.url }
+  );
+
+  // Sección activa (para mostrar su nombre/ícono en el header)
+  seccionActual = computed<ItemMenu>(() => {
+    const url = this.urlActual().split('?')[0];
+    return this.menu.find(i =>
+      i.ruta === url || (i.ruta && i.ruta !== '/' && url.startsWith(i.ruta))
+    ) ?? this.menu[0];
+  });
 
   constructor() {
     // Persistir la preferencia del usuario

@@ -86,7 +86,14 @@
 
   <!-- Contenido -->
   <div class="flex flex-col min-w-0 min-h-0">
-    <header class="shrink-0 z-10 bg-tech-card-light/80 backdrop-blur-md border-b border-tech-pastel/40 px-7 py-3.5 flex justify-end items-center">
+    <header class="shrink-0 z-10 bg-tech-card-light/80 backdrop-blur-md border-b border-tech-pastel/40 px-7 py-3.5 flex justify-between items-center">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 grid place-items-center rounded-xl bg-gradient-to-br from-tech-accent/15 to-tech-purple/15">
+          <lucide-icon [name]="seccionActual().icono" [size]="19" class="text-tech-accent"></lucide-icon>
+        </div>
+        <h1 class="text-lg font-bold text-tech-charcoal tracking-tight">{{ seccionActual().etiqueta }}</h1>
+      </div>
+
       <button
         (click)="auth.logout()"
         class="group flex items-center gap-2 border border-tech-pastel/60 bg-tech-card-light rounded-xl px-4 py-2 text-sm font-medium text-tech-charcoal transition-all duration-300 ease-out hover:bg-tech-bg-light hover:border-tech-steel/50 active:scale-95"
