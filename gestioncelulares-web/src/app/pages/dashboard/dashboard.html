@@ -92,6 +92,41 @@
     </div>
   </section>
 
+  <!-- Gráfica de tendencia de ventas (últimos 14 días) -->
+  <section class="panel mb-4">
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2.5">
+        <lucide-icon name="trending-up" [size]="18" class="text-tech-accent"></lucide-icon>
+        <h3 class="text-base font-semibold text-tech-charcoal">Ventas · últimos 14 días</h3>
+      </div>
+      <span class="text-sm text-tech-steel">Total: <span class="font-semibold text-tech-charcoal">{{ totalPeriodo() | currency: 'DOP' : 'RD$' : '1.0-0' }}</span></span>
+    </div>
+
+    @if (puntos().length > 0) {
+      <svg [attr.viewBox]="'0 0 ' + ancho + ' ' + alto" class="w-full" preserveAspectRatio="none" style="height: 200px;">
+        <defs>
+          <linearGradient id="gradVentas" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#00E676" stop-opacity="0.35" />
+            <stop offset="100%" stop-color="#00E676" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+        <!-- Área -->
+        <path [attr.d]="area()" fill="url(#gradVentas)" />
+        <!-- Línea -->
+        <path [attr.d]="linea()" fill="none" stroke="#00E676" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+        <!-- Puntos + etiquetas de día -->
+        @for (p of puntos(); track p.fecha) {
+          <circle [attr.cx]="p.x" [attr.cy]="p.y" r="3" fill="#00E676">
+            <title>{{ diaCorto(p.fecha) }}: {{ p.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</title>
+          </circle>
+          <text [attr.x]="p.x" [attr.y]="alto - 8" text-anchor="middle" font-size="10" fill="#8D9097">{{ diaCorto(p.fecha) }}</text>
+        }
+      </svg>
+    } @else {
+      <p class="text-sm text-tech-steel py-8 text-center">Sin datos de ventas en el período.</p>
+    }
+  </section>
+
   <!-- Rankings -->
   <section class="grid grid-cols-[repeat(auto-fit,minmax(330px,1fr))] gap-4">
     <div class="panel">

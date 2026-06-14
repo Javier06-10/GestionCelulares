@@ -42,4 +42,5 @@ export interface DashboardDto {
   };
   topProductosMes: { producto: string; unidades: number; total: number }[];
   topVendedoresMes: { usuarioId: number; vendedor: string; ventas: number; total: number }[];
+  ventasUltimos14Dias: { fecha: string; total: number; ganancia: number }[];
 }

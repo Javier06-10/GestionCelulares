@@ -31,9 +31,26 @@ public class DashboardService : IDashboardService
             Creditos = await CreditosAsync(),
             Caja = await CajaAsync(sucursalId),
             TopProductosMes = await TopProductosAsync(inicioMes, inicioMesSiguiente, sucursalId),
-            TopVendedoresMes = await TopVendedoresAsync(inicioMes, inicioMesSiguiente, sucursalId)
+            TopVendedoresMes = await TopVendedoresAsync(inicioMes, inicioMesSiguiente, sucursalId),
+            VentasUltimos14Dias = await VentasPorDiaAsync(hoy.AddDays(-13), manana, sucursalId)
         };
         return dto;
+    }
+
+    private async Task<List<VentaDiaDto>> VentasPorDiaAsync(DateTime desde, DateTime hasta, int? sucursalId)
+    {
+        // Totales por día existentes en el rango
+        var porDia = await VentasCompletadas(desde, hasta, sucursalId)
+            .GroupBy(v => v.Fecha.Date)
+            .Select(g => new { Fecha = g.Key, Total = g.Sum(v => v.Total) })
+            .ToListAsync();
+
+        // Rellenar los días sin ventas con 0 para una serie continua
+        var mapa = porDia.ToDictionary(x => x.Fecha, x => x.Total);
+        var serie = new List<VentaDiaDto>();
+        for (var d = desde.Date; d < hasta.Date; d = d.AddDays(1))
+            serie.Add(new VentaDiaDto { Fecha = d, Total = mapa.GetValueOrDefault(d, 0), Ganancia = 0 });
+        return serie;
     }
 
     private IQueryable<Venta> VentasCompletadas(DateTime desde, DateTime hasta, int? sucursalId)

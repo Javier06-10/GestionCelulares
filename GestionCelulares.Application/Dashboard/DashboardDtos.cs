@@ -10,6 +10,15 @@ public class DashboardDto
     public CajaIndicadorDto Caja { get; set; } = new();
     public List<TopProductoDto> TopProductosMes { get; set; } = new();
     public List<TopVendedorDto> TopVendedoresMes { get; set; } = new();
+    /// <summary>Serie de ventas de los últimos 14 días (para la gráfica de tendencia).</summary>
+    public List<VentaDiaDto> VentasUltimos14Dias { get; set; } = new();
+}
+
+public class VentaDiaDto
+{
+    public DateTime Fecha { get; set; }
+    public decimal Total { get; set; }
+    public decimal Ganancia { get; set; }
 }
 
 public class VentasIndicadorDto

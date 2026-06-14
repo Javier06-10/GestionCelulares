@@ -1,8 +1,15 @@
 import { CurrencyPipe, DecimalPipe, NgClass } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { DashboardService } from '../../core/dashboard.service';
 import { DashboardDto } from '../../core/models';
+
+interface PuntoGrafica { x: number; y: number; fecha: string; total: number; }
+
+// Dimensiones del lienzo SVG de la gráfica
+const ANCHO = 720;
+const ALTO = 200;
+const PAD = { top: 16, right: 16, bottom: 28, left: 16 };
 
 @Component({
   selector: 'app-dashboard',
@@ -13,13 +20,58 @@ import { DashboardDto } from '../../core/models';
 export class Dashboard {
   private servicio = inject(DashboardService);
 
+  readonly ancho = ANCHO;
+  readonly alto = ALTO;
+
   datos = signal<DashboardDto | null>(null);
   error = signal<string | null>(null);
+
+  // Máximo de la serie (para escalar el eje Y)
+  maxVenta = computed(() => {
+    const serie = this.datos()?.ventasUltimos14Dias ?? [];
+    return Math.max(1, ...serie.map(d => d.total));
+  });
+
+  totalPeriodo = computed(() =>
+    (this.datos()?.ventasUltimos14Dias ?? []).reduce((a, d) => a + d.total, 0)
+  );
+
+  // Puntos (x,y) escalados al lienzo
+  puntos = computed<PuntoGrafica[]>(() => {
+    const serie = this.datos()?.ventasUltimos14Dias ?? [];
+    if (serie.length === 0) return [];
+    const max = this.maxVenta();
+    const w = ANCHO - PAD.left - PAD.right;
+    const h = ALTO - PAD.top - PAD.bottom;
+    const paso = serie.length > 1 ? w / (serie.length - 1) : 0;
+    return serie.map((d, i) => ({
+      x: PAD.left + i * paso,
+      y: PAD.top + h - (d.total / max) * h,
+      fecha: d.fecha,
+      total: d.total
+    }));
+  });
+
+  // Path de la línea
+  linea = computed(() => this.puntos().map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' '));
+
+  // Path del área bajo la curva (relleno)
+  area = computed(() => {
+    const pts = this.puntos();
+    if (pts.length === 0) return '';
+    const base = ALTO - PAD.bottom;
+    const linea = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+    return `${linea} L ${pts[pts.length - 1].x.toFixed(1)} ${base} L ${pts[0].x.toFixed(1)} ${base} Z`;
+  });
 
   constructor() {
     this.servicio.obtener().subscribe({
       next: d => this.datos.set(d),
       error: () => this.error.set('No se pudieron cargar los indicadores. ¿Está corriendo la API?')
     });
+  }
+
+  diaCorto(fecha: string): string {
+    return new Date(fecha).toLocaleDateString('es-DO', { day: '2-digit', month: '2-digit' });
   }
 }
