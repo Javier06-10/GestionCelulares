@@ -327,6 +327,28 @@
           <input [value]="c.mensajePie" (input)="setCfg('mensajePie', $any($event.target).value)" type="text" placeholder="¡Gracias por su compra!" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
         </div>
 
+        <!-- Numeración de factura (servidor) -->
+        @if (secuencia(); as s) {
+          <div class="border-t border-tech-pastel/30 pt-3">
+            <div class="text-xs font-semibold uppercase tracking-wider text-tech-steel mb-2">Numeración de factura</div>
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Prefijo</label>
+                <input [value]="s.prefijo" (input)="setSec('prefijo', $any($event.target).value)" type="text" placeholder="FAC-" class="w-full px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Próximo #</label>
+                <input [value]="s.proximo" (input)="setSec('proximo', $any($event.target).value)" type="number" min="1" class="w-full px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Dígitos</label>
+                <input [value]="s.longitud" (input)="setSec('longitud', $any($event.target).value)" type="number" min="1" max="12" class="w-full px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+              </div>
+            </div>
+            <p class="text-[0.7rem] text-tech-steel mt-1.5">Próxima factura: <span class="font-mono font-semibold text-tech-charcoal">{{ s.prefijo }}{{ (s.proximo + '').padStart(+s.longitud, '0') }}</span></p>
+          </div>
+        }
+
         <div class="border-t border-tech-pastel/30 pt-3">
           <div class="text-xs font-semibold uppercase tracking-wider text-tech-steel mb-2">Mostrar en la factura</div>
           <div class="grid grid-cols-2 gap-2">

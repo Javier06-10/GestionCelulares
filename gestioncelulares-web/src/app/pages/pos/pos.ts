@@ -9,7 +9,7 @@ import { CatalogoService, Producto } from '../../core/catalogo.service';
 import { Cliente } from '../../core/cliente.service';
 import { FacturaConfig, FacturaConfigService } from '../../core/factura-config.service';
 import { InventarioService, StockDisponible } from '../../core/inventario.service';
-import { MetodoPago, VentaService } from '../../core/venta.service';
+import { MetodoPago, SecuenciaFactura, VentaService } from '../../core/venta.service';
 import { ClienteSelector } from '../../shared/cliente-selector/cliente-selector';
 
 interface FacturaData {
@@ -100,6 +100,8 @@ export class Pos {
   facturaCfg = inject(FacturaConfigService);
   modalConfig = signal(false);
   borradorCfg = signal<FacturaConfig>(this.facturaCfg.config());
+  // Numeración (secuencia en el servidor)
+  secuencia = signal<SecuenciaFactura | null>(null);
 
   private get sucursalId(): number | null {
     return this.auth.usuario()?.sucursalId ?? null;
@@ -328,6 +330,8 @@ export class Pos {
   // ----- Configuración de factura -----
   abrirConfig(): void {
     this.borradorCfg.set({ ...this.facturaCfg.config() });
+    this.secuencia.set(null);
+    this.ventas.obtenerSecuencia().subscribe({ next: s => this.secuencia.set(s) });
     this.modalConfig.set(true);
   }
 
@@ -335,8 +339,18 @@ export class Pos {
     this.borradorCfg.update(c => ({ ...c, [campo]: valor }));
   }
 
+  setSec<K extends keyof SecuenciaFactura>(campo: K, valor: SecuenciaFactura[K]): void {
+    this.secuencia.update(s => s ? { ...s, [campo]: valor } : s);
+  }
+
   guardarConfig(): void {
     this.facturaCfg.guardar(this.borradorCfg());
-    this.modalConfig.set(false);
+    const s = this.secuencia();
+    if (s) {
+      this.ventas.guardarSecuencia({ prefijo: s.prefijo, proximo: Number(s.proximo), longitud: Number(s.longitud) })
+        .subscribe({ next: () => this.modalConfig.set(false), error: () => this.modalConfig.set(false) });
+    } else {
+      this.modalConfig.set(false);
+    }
   }
 }

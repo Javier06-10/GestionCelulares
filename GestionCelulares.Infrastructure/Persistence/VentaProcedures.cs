@@ -7,11 +7,65 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GestionCelulares.Infrastructure.Persistence;
 
-public class VentaProcedures : IVentaProcedures
+public class VentaProcedures : IVentaProcedures, ISecuenciaFactura
 {
     private readonly GestionCelularesContext _db;
 
     public VentaProcedures(GestionCelularesContext db) => _db = db;
+
+    private async Task<System.Data.Common.DbConnection> AbrirAsync()
+    {
+        var conn = _db.Database.GetDbConnection();
+        if (conn.State != ConnectionState.Open)
+            await conn.OpenAsync();
+        return conn;
+    }
+
+    public async Task<string> ProximoNumeroFacturaAsync()
+    {
+        var conn = await AbrirAsync();
+        await using var cmd = conn.CreateCommand();
+        // UPDATE ... OUTPUT incrementa y devuelve el nuevo valor en una sola operación atómica
+        cmd.CommandText = @"
+            UPDATE dbo.Secuencia
+               SET Valor = Valor + 1
+             OUTPUT Prefijo = inserted.Prefijo, inserted.Valor, inserted.Longitud
+             WHERE Nombre = N'Factura';";
+        await using var reader = await cmd.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+            return string.Empty; // sin secuencia configurada -> la venta usará null
+        var prefijo = reader.GetString(0);
+        var valor = reader.GetInt32(1);
+        var longitud = reader.GetInt32(2);
+        return prefijo + valor.ToString().PadLeft(longitud, '0');
+    }
+
+    public async Task<(string prefijo, int proximo, int longitud)> ObtenerAsync()
+    {
+        var conn = await AbrirAsync();
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT Prefijo, Valor, Longitud FROM dbo.Secuencia WHERE Nombre = N'Factura';";
+        await using var reader = await cmd.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+            return ("FAC-", 1, 6);
+        return (reader.GetString(0), reader.GetInt32(1) + 1, reader.GetInt32(2));
+    }
+
+    public async Task GuardarAsync(string prefijo, int proximo, int longitud)
+    {
+        var conn = await AbrirAsync();
+        await using var cmd = conn.CreateCommand();
+        // 'proximo' es el siguiente a emitir; guardamos Valor = proximo - 1
+        cmd.CommandText = @"
+            MERGE dbo.Secuencia AS t
+            USING (SELECT N'Factura' AS Nombre) AS s ON t.Nombre = s.Nombre
+            WHEN MATCHED THEN UPDATE SET Prefijo = @p, Valor = @v, Longitud = @l
+            WHEN NOT MATCHED THEN INSERT (Nombre, Prefijo, Valor, Longitud) VALUES (N'Factura', @p, @v, @l);";
+        cmd.Parameters.Add(new SqlParameter("@p", SqlDbType.NVarChar, 15) { Value = prefijo ?? string.Empty });
+        cmd.Parameters.Add(new SqlParameter("@v", SqlDbType.Int) { Value = Math.Max(0, proximo - 1) });
+        cmd.Parameters.Add(new SqlParameter("@l", SqlDbType.Int) { Value = Math.Clamp(longitud, 1, 12) });
+        await cmd.ExecuteNonQueryAsync();
+    }
 
     public async Task<int> RegistrarAsync(VentaRegistroDto dto, int usuarioId, int? sesionCajaId)
     {

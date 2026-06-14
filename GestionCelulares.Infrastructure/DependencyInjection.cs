@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
         services.AddScoped<ICajaProcedures, CajaProcedures>();
         services.AddScoped<IVentaProcedures, VentaProcedures>();
+        services.AddScoped<ISecuenciaFactura>(sp => (VentaProcedures)sp.GetRequiredService<IVentaProcedures>());
         services.AddScoped<ICreditoProcedures, CreditoProcedures>();
 
         return services;

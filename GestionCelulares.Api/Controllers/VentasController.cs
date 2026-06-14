@@ -1,10 +1,19 @@
 using System.Security.Claims;
 using GestionCelulares.Application.Common;
+using GestionCelulares.Application.Common.Interfaces;
 using GestionCelulares.Application.Ventas;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GestionCelulares.Api.Controllers;
+
+/// <summary>Configuración de la numeración secuencial de facturas.</summary>
+public class SecuenciaFacturaDto
+{
+    public string Prefijo { get; set; } = "";
+    public int Proximo { get; set; }
+    public int Longitud { get; set; } = 6;
+}
 
 [ApiController]
 [Authorize]
@@ -12,8 +21,13 @@ namespace GestionCelulares.Api.Controllers;
 public class VentasController : ControllerBase
 {
     private readonly IVentaService _ventas;
+    private readonly ISecuenciaFactura _secuencia;
 
-    public VentasController(IVentaService ventas) => _ventas = ventas;
+    public VentasController(IVentaService ventas, ISecuenciaFactura secuencia)
+    {
+        _ventas = ventas;
+        _secuencia = secuencia;
+    }
 
     private int? UsuarioId =>
         int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
@@ -36,6 +50,24 @@ public class VentasController : ControllerBase
     /// <summary>Métodos de pago disponibles para el POS.</summary>
     [HttpGet("metodos-pago")]
     public async Task<IActionResult> MetodosPago() => Ok(await _ventas.MetodosPagoAsync());
+
+    /// <summary>Configuración actual de la numeración de facturas (prefijo, próximo número, longitud).</summary>
+    [Authorize(Roles = Roles.Admin)]
+    [HttpGet("secuencia")]
+    public async Task<IActionResult> ObtenerSecuencia()
+    {
+        var (prefijo, proximo, longitud) = await _secuencia.ObtenerAsync();
+        return Ok(new SecuenciaFacturaDto { Prefijo = prefijo, Proximo = proximo, Longitud = longitud });
+    }
+
+    /// <summary>Actualiza la numeración de facturas.</summary>
+    [Authorize(Roles = Roles.Admin)]
+    [HttpPut("secuencia")]
+    public async Task<IActionResult> GuardarSecuencia([FromBody] SecuenciaFacturaDto dto)
+    {
+        await _secuencia.GuardarAsync(dto.Prefijo ?? "", dto.Proximo, dto.Longitud);
+        return NoContent();
+    }
 
     /// <summary>
     /// Registra una venta (usp_Venta_Registrar): exige caja abierta, valida cliente y stock,

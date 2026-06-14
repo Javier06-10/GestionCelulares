@@ -4,6 +4,8 @@ import { environment } from '../../environments/environment';
 
 export interface MetodoPago { metodoPagoId: number; nombre: string; }
 
+export interface SecuenciaFactura { prefijo: string; proximo: number; longitud: number; }
+
 export interface VentaDetalleRegistro {
   imeiId?: number | null;
   varianteId: number;
@@ -43,5 +45,12 @@ export class VentaService {
 
   registrar(dto: VentaRegistro) {
     return this.http.post<Venta>(this.base, dto);
+  }
+
+  obtenerSecuencia() {
+    return this.http.get<SecuenciaFactura>(`${this.base}/secuencia`);
+  }
+  guardarSecuencia(dto: SecuenciaFactura) {
+    return this.http.put<void>(`${this.base}/secuencia`, dto);
   }
 }

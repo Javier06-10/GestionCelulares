@@ -73,6 +73,10 @@ public class VentaService : IVentaService
                     $"Stock insuficiente de la variante {linea.VarianteId}: hay {variante.StockNoSerial} y se piden {linea.Cantidad}.");
         }
 
+        // Número de factura secuencial (si el cliente no lo envía explícito)
+        if (string.IsNullOrWhiteSpace(dto.NumeroFactura))
+            dto.NumeroFactura = await _procedures.ProximoNumeroFacturaAsync();
+
         // usp_Venta_Registrar hace el resto en una transacción:
         // valida IMEIs, inserta cabecera/detalle/pago, marca vendidos, kardex y totales
         var ventaId = await _procedures.RegistrarAsync(dto, usuarioId, sesionCajaId);
