@@ -65,3 +65,9 @@ public class GarantiaException : Exception
 {
     public GarantiaException(string message) : base(message) { }
 }
+
+/// <summary>Regla de negocio de faltantes violada -> HTTP 400/404 en el controlador.</summary>
+public class FaltanteException : Exception
+{
+    public FaltanteException(string message) : base(message) { }
+}

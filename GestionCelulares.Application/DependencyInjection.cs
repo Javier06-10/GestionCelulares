@@ -4,6 +4,7 @@ using GestionCelulares.Application.Catalogo;
 using GestionCelulares.Application.Clientes;
 using GestionCelulares.Application.Creditos;
 using GestionCelulares.Application.Dashboard;
+using GestionCelulares.Application.Faltantes;
 using GestionCelulares.Application.Garantias;
 using GestionCelulares.Application.Inventario;
 using GestionCelulares.Application.Proveedores;
@@ -32,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IReporteService, ReporteService>();
         services.AddScoped<IGarantiaService, GarantiaService>();
+        services.AddScoped<IFaltanteService, FaltanteService>();
         return services;
     }
 }

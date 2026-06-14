@@ -36,6 +36,7 @@ export class Layout {
     { etiqueta: 'Dashboard', icono: 'layout-dashboard', ruta: '/' },
     { etiqueta: 'POS / Ventas', icono: 'shopping-cart', ruta: '/pos' },
     { etiqueta: 'Inventario', icono: 'package', ruta: '/inventario' },
+    { etiqueta: 'Faltantes', icono: 'package-x', ruta: '/faltantes' },
     { etiqueta: 'Catálogo', icono: 'layers', ruta: '/catalogo' },
     { etiqueta: 'Proveedores', icono: 'truck', ruta: '/proveedores', soloAdmin: true },
     { etiqueta: 'Clientes', icono: 'users', ruta: '/clientes' },

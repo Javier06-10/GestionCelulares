@@ -26,6 +26,7 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
     public DbSet<Categoria> Categorias => Set<Categoria>();
     public DbSet<Producto> Productos => Set<Producto>();
     public DbSet<ProductoVariante> ProductoVariantes => Set<ProductoVariante>();
+    public DbSet<Faltante> Faltantes => Set<Faltante>();
     public DbSet<InventarioImei> InventarioImeis => Set<InventarioImei>();
     public DbSet<MovimientoInventario> MovimientosInventario => Set<MovimientoInventario>();
     public DbSet<SesionCaja> SesionesCaja => Set<SesionCaja>();
@@ -64,6 +65,7 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<Categoria>().ToTable("Categoria").HasKey(e => e.CategoriaId);
         mb.Entity<Producto>().ToTable("Producto").HasKey(e => e.ProductoId);
         mb.Entity<ProductoVariante>().ToTable("ProductoVariante").HasKey(e => e.VarianteId);
+        mb.Entity<Faltante>().ToTable("Faltante").HasKey(e => e.FaltanteId);
         mb.Entity<InventarioImei>().ToTable("InventarioImei").HasKey(e => e.ImeiId);
         mb.Entity<MovimientoInventario>().ToTable("MovimientoInventario").HasKey(e => e.MovimientoId);
         mb.Entity<SesionCaja>().ToTable("SesionCaja").HasKey(e => e.SesionCajaId);
@@ -94,6 +96,7 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<Producto>().HasOne(p => p.Marca).WithMany(m => m.Productos).HasForeignKey(p => p.MarcaId);
         mb.Entity<Producto>().HasOne(p => p.Categoria).WithMany(c => c.Productos).HasForeignKey(p => p.CategoriaId);
         mb.Entity<ProductoVariante>().HasOne(v => v.Producto).WithMany(p => p.Variantes).HasForeignKey(v => v.ProductoId);
+        mb.Entity<Faltante>().HasOne(f => f.Variante).WithMany().HasForeignKey(f => f.VarianteId);
 
         mb.Entity<InventarioImei>().HasOne(i => i.Variante).WithMany(v => v.Imeis).HasForeignKey(i => i.VarianteId);
         mb.Entity<InventarioImei>().HasOne(i => i.Sucursal).WithMany(s => s.Inventario).HasForeignKey(i => i.SucursalId);
