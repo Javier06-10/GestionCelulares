@@ -102,3 +102,12 @@ public class OrdenResumenDto
     public decimal CostoEstimado { get; set; }
     public DateTime FechaRecepcion { get; set; }
 }
+
+/// <summary>Comisión acumulada de un técnico (sobre órdenes entregadas).</summary>
+public class ComisionTecnicoDto
+{
+    public int TecnicoId { get; set; }
+    public string Tecnico { get; set; } = null!;
+    public int OrdenesEntregadas { get; set; }
+    public decimal TotalComision { get; set; }
+}

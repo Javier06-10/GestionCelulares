@@ -4,10 +4,18 @@
     <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Taller</h2>
     <p class="text-sm text-tech-steel mt-0.5">{{ ordenes().length }} orden(es) en el tablero</p>
   </div>
-  <button (click)="abrirNueva()"
-    class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-purple to-indigo-400 text-white font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(108,92,231,0.6)] active:scale-95">
-    <lucide-icon name="plus" [size]="18"></lucide-icon> Nueva orden
-  </button>
+  <div class="flex items-center gap-2">
+    @if (auth.esAdmin()) {
+      <button (click)="abrirComisiones()"
+        class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-semibold text-sm transition-all hover:bg-tech-bg-light active:scale-95">
+        <lucide-icon name="hand-coins" [size]="18" class="text-tech-accent"></lucide-icon> Comisiones
+      </button>
+    }
+    <button (click)="abrirNueva()"
+      class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-purple to-indigo-400 text-white font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(108,92,231,0.6)] active:scale-95">
+      <lucide-icon name="plus" [size]="18"></lucide-icon> Nueva orden
+    </button>
+  </div>
 </div>
 
 <!-- Kanban -->
@@ -253,5 +261,77 @@
         </button>
       </div>
     </form>
+  </div>
+}
+
+<!-- ===== Modal comisiones por técnico (solo Admin) ===== -->
+@if (modalComisiones()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modalComisiones.set(false)">
+    <div (click)="$event.stopPropagation()" class="w-[min(640px,95vw)] max-h-[92vh] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-tech-accent/10 grid place-items-center"><lucide-icon name="hand-coins" [size]="18" class="text-tech-accent"></lucide-icon></div>
+          <div>
+            <h3 class="font-bold text-tech-charcoal">Comisiones por técnico</h3>
+            <p class="text-xs text-tech-steel">Sobre órdenes entregadas</p>
+          </div>
+        </div>
+        <button (click)="modalComisiones.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+
+      <!-- Filtro de fechas -->
+      <div class="flex flex-wrap items-end gap-3 px-6 py-3 border-b border-tech-pastel/30 bg-tech-bg-light/40">
+        <div>
+          <label class="block text-[0.7rem] font-semibold text-tech-steel mb-1">Desde</label>
+          <input type="date" [value]="desde()" (change)="desde.set($any($event.target).value)" class="px-3 py-2 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal text-sm outline-none focus:border-tech-accent/60" />
+        </div>
+        <div>
+          <label class="block text-[0.7rem] font-semibold text-tech-steel mb-1">Hasta</label>
+          <input type="date" [value]="hasta()" (change)="hasta.set($any($event.target).value)" class="px-3 py-2 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal text-sm outline-none focus:border-tech-accent/60" />
+        </div>
+        <button (click)="cargarComisiones()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-tech-charcoal text-white font-semibold text-sm hover:bg-tech-charcoal/90 active:scale-95 transition-all"><lucide-icon name="search" [size]="15"></lucide-icon> Filtrar</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-6 py-4">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="text-left text-tech-steel">
+              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Técnico</th>
+              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40 text-right">Órdenes</th>
+              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40 text-right">Comisión</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (cargandoComisiones()) {
+              @for (i of [1,2,3]; track i) { <tr class="border-b border-tech-pastel/20"><td colspan="3" class="py-3 px-2"><div class="h-5 bg-tech-bg-light rounded animate-pulse"></div></td></tr> }
+            } @else if (comisiones().length === 0) {
+              <tr><td colspan="3" class="py-10 text-center text-tech-steel"><lucide-icon name="hand-coins" [size]="28" class="mx-auto mb-2 opacity-40"></lucide-icon><p>No hay comisiones en el período.</p></td></tr>
+            } @else {
+              @for (c of comisiones(); track c.tecnicoId) {
+                <tr class="border-b border-tech-pastel/20 transition-colors hover:bg-tech-bg-light/60">
+                  <td class="py-2.5 px-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-tech-purple/15 to-tech-accent/15 grid place-items-center text-xs font-bold text-tech-charcoal">{{ c.tecnico.charAt(0) }}</div>
+                      <span class="font-semibold text-tech-charcoal">{{ c.tecnico }}</span>
+                    </div>
+                  </td>
+                  <td class="py-2.5 px-2 text-right text-tech-charcoal">{{ c.ordenesEntregadas }}</td>
+                  <td class="py-2.5 px-2 text-right font-semibold text-tech-accent">{{ c.totalComision | currency: 'DOP':'RD$':'1.2-2' }}</td>
+                </tr>
+              }
+            }
+          </tbody>
+          @if (comisiones().length > 0) {
+            <tfoot>
+              <tr class="font-bold text-tech-charcoal">
+                <td class="py-3 px-2">Total</td>
+                <td class="py-3 px-2"></td>
+                <td class="py-3 px-2 text-right">{{ totalComisiones() | currency: 'DOP':'RD$':'1.2-2' }}</td>
+              </tr>
+            </tfoot>
+          }
+        </table>
+      </div>
+    </div>
   </div>
 }

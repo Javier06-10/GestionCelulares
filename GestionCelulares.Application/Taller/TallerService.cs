@@ -15,6 +15,7 @@ public interface ITallerService
     Task<OrdenDto> CambiarEstadoAsync(int id, CambioEstadoDto dto);
     Task<OrdenDto> AgregarRepuestoAsync(int id, RepuestoAgregarDto dto);
     Task<OrdenDto> AgregarFotoAsync(int id, FotoAgregarDto dto);
+    Task<IReadOnlyList<ComisionTecnicoDto>> ComisionesPorTecnicoAsync(DateTime? desde, DateTime? hasta);
 }
 
 public class TallerService : ITallerService
@@ -191,6 +192,28 @@ public class TallerService : ITallerService
         await _db.SaveChangesAsync();
 
         return (await PorIdAsync(id))!;
+    }
+
+    public async Task<IReadOnlyList<ComisionTecnicoDto>> ComisionesPorTecnicoAsync(DateTime? desde, DateTime? hasta)
+    {
+        // Solo cuentan las órdenes entregadas (es cuando se fija la comisión)
+        var q = _db.OrdenesTaller.AsNoTracking()
+            .Where(o => o.Estado == "Entregado" && o.TecnicoId != null);
+
+        if (desde.HasValue) q = q.Where(o => o.FechaEntrega >= desde.Value.Date);
+        if (hasta.HasValue) q = q.Where(o => o.FechaEntrega < hasta.Value.Date.AddDays(1));
+
+        return await q
+            .GroupBy(o => new { o.TecnicoId, o.Tecnico!.NombreCompleto })
+            .Select(g => new ComisionTecnicoDto
+            {
+                TecnicoId = g.Key.TecnicoId!.Value,
+                Tecnico = g.Key.NombreCompleto,
+                OrdenesEntregadas = g.Count(),
+                TotalComision = g.Sum(o => o.ComisionTecnico)
+            })
+            .OrderByDescending(c => c.TotalComision)
+            .ToListAsync();
     }
 
     private async Task<OrdenTaller> ObtenerEditableAsync(int id)

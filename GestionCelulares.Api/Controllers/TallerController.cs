@@ -21,6 +21,12 @@ public class TallerController : ControllerBase
         [FromQuery] int? tecnicoId, [FromQuery] int? clienteId)
         => Ok(await _taller.BuscarAsync(estado, sucursalId, tecnicoId, clienteId));
 
+    /// <summary>Comisiones acumuladas por técnico (órdenes entregadas). Solo administrador.</summary>
+    [Authorize(Roles = Roles.Admin)]
+    [HttpGet("comisiones")]
+    public async Task<IActionResult> Comisiones([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
+        => Ok(await _taller.ComisionesPorTecnicoAsync(desde, hasta));
+
     /// <summary>Consulta una orden con sus repuestos y fotos.</summary>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> PorId(int id)

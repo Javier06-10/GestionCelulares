@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { Cliente } from '../../core/cliente.service';
-import { Orden, OrdenResumen, TallerService } from '../../core/taller.service';
+import { ComisionTecnico, Orden, OrdenResumen, TallerService } from '../../core/taller.service';
 import { Usuario, UsuarioService } from '../../core/usuario.service';
 import { ClienteSelector } from '../../shared/cliente-selector/cliente-selector';
 
@@ -76,6 +76,14 @@ export class Taller {
 
   // Foto
   urlFoto = signal('');
+
+  // Comisiones por técnico (solo Admin)
+  modalComisiones = signal(false);
+  comisiones = signal<ComisionTecnico[]>([]);
+  cargandoComisiones = signal(false);
+  desde = signal<string>('');
+  hasta = signal<string>('');
+  totalComisiones = computed(() => this.comisiones().reduce((a, c) => a + c.totalComision, 0));
 
   // Entrega
   modalEntrega = signal(false);
@@ -196,6 +204,19 @@ export class Taller {
     }).subscribe({
       next: o => { this.guardandoNueva.set(false); this.modalNueva.set(false); this.cargar(); this.detalle.set(o); },
       error: e => { this.guardandoNueva.set(false); this.errorNueva.set(e.error?.error ?? 'No se pudo crear la orden.'); }
+    });
+  }
+
+  // ----- Comisiones -----
+  abrirComisiones(): void {
+    this.modalComisiones.set(true);
+    this.cargarComisiones();
+  }
+  cargarComisiones(): void {
+    this.cargandoComisiones.set(true);
+    this.servicio.comisiones(this.desde() || null, this.hasta() || null).subscribe({
+      next: c => { this.comisiones.set(c); this.cargandoComisiones.set(false); },
+      error: () => { this.comisiones.set([]); this.cargandoComisiones.set(false); }
     });
   }
 

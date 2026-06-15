@@ -76,6 +76,13 @@ export interface RepuestoAgregar {
   costo: number;
 }
 
+export interface ComisionTecnico {
+  tecnicoId: number;
+  tecnico: string;
+  ordenesEntregadas: number;
+  totalComision: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TallerService {
   private http = inject(HttpClient);
@@ -112,5 +119,12 @@ export class TallerService {
 
   agregarFoto(id: number, url: string) {
     return this.http.post<Orden>(`${this.base}/${id}/fotos`, { url });
+  }
+
+  comisiones(desde?: string | null, hasta?: string | null) {
+    let params = new HttpParams();
+    if (desde) params = params.set('desde', desde);
+    if (hasta) params = params.set('hasta', hasta);
+    return this.http.get<ComisionTecnico[]>(`${this.base}/comisiones`, { params });
   }
 }
