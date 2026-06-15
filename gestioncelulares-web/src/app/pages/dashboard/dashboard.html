@@ -9,7 +9,7 @@
 
 @if (datos(); as d) {
   <!-- KPIs -->
-  <section class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-5">
+  <section class="gc-stagger grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-5">
     <!-- Ventas hoy -->
     <div class="kpi group">
       <div class="flex items-start justify-between mb-3">
@@ -18,7 +18,7 @@
         </div>
         <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Ventas de hoy</span>
       </div>
-      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none">{{ d.ventasHoy.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
+      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.ventasHoy.total" countPrefix="RD$" [countDecimals]="2"></div>
       <div class="text-xs text-tech-steel mt-2">{{ d.ventasHoy.cantidad }} ventas · ganancia {{ d.ventasHoy.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
     </div>
 
@@ -30,7 +30,7 @@
         </div>
         <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Ventas del mes</span>
       </div>
-      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none">{{ d.ventasMes.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
+      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.ventasMes.total" countPrefix="RD$" [countDecimals]="2"></div>
       <div class="text-xs text-tech-steel mt-2">{{ d.ventasMes.cantidad }} ventas · ganancia {{ d.ventasMes.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
     </div>
 
@@ -42,7 +42,7 @@
         </div>
         <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Inventario</span>
       </div>
-      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none">{{ d.inventario.equiposDisponibles | number }}</div>
+      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.inventario.equiposDisponibles"></div>
       <div class="text-xs text-tech-steel mt-2">equipos · costo {{ d.inventario.valorCosto | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
     </div>
 
@@ -59,7 +59,7 @@
         </span>
       </div>
       @if (d.caja.sesionAbierta) {
-        <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none">{{ d.caja.montoApertura + d.caja.ingresos - d.caja.egresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+        <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.caja.montoApertura + d.caja.ingresos - d.caja.egresos" countPrefix="RD$"></div>
         <div class="text-xs text-tech-steel mt-2">fondo {{ d.caja.montoApertura | currency: 'DOP' : 'RD$' : '1.0-0' }} · +{{ d.caja.ingresos | currency: 'DOP' : 'RD$' : '1.0-0' }} / -{{ d.caja.egresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
       } @else {
         <div class="text-[1.7rem] font-bold text-tech-steel/50 leading-none">—</div>
@@ -75,7 +75,7 @@
         </div>
         <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Taller pendiente</span>
       </div>
-      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none">{{ d.taller.recibidos + d.taller.enReparacion + d.taller.reparados | number }}</div>
+      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.taller.recibidos + d.taller.enReparacion + d.taller.reparados"></div>
       <div class="text-xs text-tech-steel mt-2">{{ d.taller.recibidos }} recibidos · {{ d.taller.enReparacion }} en reparación · {{ d.taller.reparados }} listos</div>
     </div>
 
@@ -87,7 +87,7 @@
         </div>
         <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Créditos</span>
       </div>
-      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none">{{ d.creditos.saldoPendiente | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.creditos.saldoPendiente" countPrefix="RD$"></div>
       <div class="text-xs text-tech-steel mt-2">{{ d.creditos.activos }} activos · {{ d.creditos.enMora }} en mora · {{ d.creditos.cuotasVencidas }} cuotas vencidas ({{ d.creditos.montoVencido | currency: 'DOP' : 'RD$' : '1.0-0' }})</div>
     </div>
   </section>
@@ -111,9 +111,9 @@
           </linearGradient>
         </defs>
         <!-- Área -->
-        <path [attr.d]="area()" fill="url(#gradVentas)" />
+        <path [attr.d]="area()" fill="url(#gradVentas)" class="chart-area" />
         <!-- Línea -->
-        <path [attr.d]="linea()" fill="none" stroke="#00E676" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+        <path [attr.d]="linea()" fill="none" stroke="#00E676" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" class="chart-line" />
         <!-- Puntos + etiquetas de día -->
         @for (p of puntos(); track p.fecha) {
           <circle [attr.cx]="p.x" [attr.cy]="p.y" r="3" fill="#00E676">
@@ -128,7 +128,7 @@
   </section>
 
   <!-- Rankings -->
-  <section class="grid grid-cols-[repeat(auto-fit,minmax(330px,1fr))] gap-4">
+  <section class="gc-stagger grid grid-cols-[repeat(auto-fit,minmax(330px,1fr))] gap-4">
     <div class="panel">
       <div class="flex items-center gap-2.5 mb-4">
         <lucide-icon name="trophy" [size]="18" class="text-tech-accent"></lucide-icon>

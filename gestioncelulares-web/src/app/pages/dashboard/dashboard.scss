@@ -16,3 +16,39 @@
   @apply bg-tech-card-light rounded-2xl p-5 border border-tech-pastel/30;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -16px rgba(15, 23, 42, 0.12);
 }
+
+/* La línea de la gráfica se dibuja al entrar; el área hace fade */
+.chart-line {
+  stroke-dasharray: 2600;
+  stroke-dashoffset: 2600;
+  animation: chartDraw 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards 0.1s;
+}
+
+.chart-area {
+  opacity: 0;
+  animation: chartFade 0.6s ease-out forwards 0.6s;
+}
+
+@keyframes chartDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes chartFade {
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart-line {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+  .chart-area {
+    opacity: 1;
+    animation: none;
+  }
+}

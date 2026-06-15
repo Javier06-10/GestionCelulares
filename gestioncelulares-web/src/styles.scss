@@ -27,6 +27,45 @@ body {
   background: #8d9097;
 }
 
+/* ===== Animaciones (Stealth Tech) ===== */
+@keyframes gcFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Entrada escalonada: los hijos directos aparecen en cascada.
+   Usamos fill-mode "backwards" (no "forwards") para que el estado inicial se
+   muestre durante el delay y, al terminar, el elemento vuelva a su estilo
+   natural — así no se queda fijado el transform y el hover sigue funcionando. */
+.gc-stagger > * {
+  animation: gcFadeUp 0.32s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+.gc-stagger > *:nth-child(1)  { animation-delay: 0.03s; }
+.gc-stagger > *:nth-child(2)  { animation-delay: 0.07s; }
+.gc-stagger > *:nth-child(3)  { animation-delay: 0.11s; }
+.gc-stagger > *:nth-child(4)  { animation-delay: 0.15s; }
+.gc-stagger > *:nth-child(5)  { animation-delay: 0.19s; }
+.gc-stagger > *:nth-child(6)  { animation-delay: 0.23s; }
+.gc-stagger > *:nth-child(7)  { animation-delay: 0.27s; }
+.gc-stagger > *:nth-child(8)  { animation-delay: 0.31s; }
+.gc-stagger > *:nth-child(9)  { animation-delay: 0.35s; }
+.gc-stagger > *:nth-child(10) { animation-delay: 0.39s; }
+.gc-stagger > *:nth-child(11) { animation-delay: 0.43s; }
+.gc-stagger > *:nth-child(12) { animation-delay: 0.47s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gc-stagger > * {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 /* ===== Factura imprimible ===== */
 .factura-print {
   display: none;

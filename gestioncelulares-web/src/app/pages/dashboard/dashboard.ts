@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { DashboardService } from '../../core/dashboard.service';
 import { DashboardDto } from '../../core/models';
+import { CountUpDirective } from '../../shared/count-up.directive';
 
 interface PuntoGrafica { x: number; y: number; fecha: string; total: number; }
 
@@ -13,7 +14,7 @@ const PAD = { top: 16, right: 16, bottom: 28, left: 16 };
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CurrencyPipe, DecimalPipe, NgClass, LucideAngularModule],
+  imports: [CurrencyPipe, DecimalPipe, NgClass, LucideAngularModule, CountUpDirective],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })

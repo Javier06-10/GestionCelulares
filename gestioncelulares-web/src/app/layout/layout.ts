@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { LucideAngularModule } from 'lucide-angular';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../core/auth.service';
+import { routeFade } from '../shared/animations';
 
 interface ItemMenu {
   etiqueta: string;
@@ -18,7 +19,8 @@ const CLAVE_COLAPSADO = 'gc_sidebar_colapsado';
   selector: 'app-layout',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule],
   templateUrl: './layout.html',
-  styleUrl: './layout.scss'
+  styleUrl: './layout.scss',
+  animations: [routeFade]
 })
 export class Layout {
   auth = inject(AuthService);
