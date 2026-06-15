@@ -28,6 +28,8 @@ export class Caja {
   // Apertura
   abriendo = signal(false);
   errorApertura = signal<string | null>(null);
+  modalConfirmar = signal(false);
+  montoConfirmar = signal(0);
   formApertura = this.fb.nonNullable.group({
     montoApertura: [0, [Validators.required, Validators.min(0)]]
   });
@@ -83,6 +85,18 @@ export class Caja {
     this.servicio.movimientos(id).subscribe({ next: m => this.movimientos.set(m) });
   }
 
+  // Paso 1: validar y pedir confirmación (muestra quién abre y con cuánto)
+  pedirConfirmacion(): void {
+    if (this.formApertura.invalid || !this.sucursalId) {
+      this.formApertura.markAllAsTouched();
+      return;
+    }
+    this.errorApertura.set(null);
+    this.montoConfirmar.set(this.formApertura.getRawValue().montoApertura);
+    this.modalConfirmar.set(true);
+  }
+
+  // Paso 2: confirmar la apertura. La caja queda atada al usuario logueado.
   abrir(): void {
     if (this.formApertura.invalid || !this.sucursalId) return;
     this.abriendo.set(true);
@@ -90,6 +104,7 @@ export class Caja {
     this.servicio.abrir(this.sucursalId, this.formApertura.getRawValue().montoApertura).subscribe({
       next: s => {
         this.abriendo.set(false);
+        this.modalConfirmar.set(false);
         this.sesion.set(s);
         this.movimientos.set([]);
       },
