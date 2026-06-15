@@ -91,6 +91,13 @@
           }
         </div>
 
+        @if (o.recibidoPor) {
+          <div class="flex items-center gap-1.5 text-xs text-tech-steel">
+            <lucide-icon name="user" [size]="13"></lucide-icon>
+            Recibido por <span class="font-semibold text-tech-charcoal">{{ o.recibidoPor }}</span>
+          </div>
+        }
+
         <!-- Montos -->
         <div class="grid grid-cols-3 gap-3 text-sm">
           <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">Anticipo</div><div class="font-semibold text-tech-charcoal">{{ o.anticipo | currency: 'DOP' : 'RD$' : '1.0-0' }}</div></div>

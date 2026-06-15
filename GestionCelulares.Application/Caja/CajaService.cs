@@ -184,9 +184,17 @@ public class CajaService : ICajaService
             })
             .FirstOrDefaultAsync();
 
+        // Recepciones del taller atadas a este turno (anticipos cobrados al recibir)
+        var taller = await _db.OrdenesTaller.AsNoTracking()
+            .Where(o => o.SesionCajaId == sesionCajaId)
+            .GroupBy(_ => 1)
+            .Select(g => new { Cantidad = g.Count(), Anticipos = g.Sum(o => o.Anticipo) })
+            .FirstOrDefaultAsync();
+
         var ventasEfectivo = porMetodo.Where(m => m.Metodo == "Efectivo").Sum(m => m.Monto);
         var ventasCobrado = porMetodo.Sum(m => m.Monto);
         var abonosEfectivo = abonos?.Efectivo ?? 0;
+        var tallerAnticipos = taller?.Anticipos ?? 0;
 
         return new ResumenTurnoDto
         {
@@ -201,9 +209,11 @@ public class CajaService : ICajaService
             AbonosCantidad = abonos?.Cantidad ?? 0,
             AbonosTotal = abonos?.Total ?? 0,
             AbonosEfectivo = abonosEfectivo,
+            TallerRecepciones = taller?.Cantidad ?? 0,
+            TallerAnticipos = tallerAnticipos,
             TotalIngresos = sesion.TotalIngresos,
             TotalEgresos = sesion.TotalEgresos,
-            EfectivoEsperado = sesion.MontoApertura + ventasEfectivo + abonosEfectivo + sesion.TotalIngresos - sesion.TotalEgresos,
+            EfectivoEsperado = sesion.MontoApertura + ventasEfectivo + abonosEfectivo + tallerAnticipos + sesion.TotalIngresos - sesion.TotalEgresos,
             VentasPorMetodo = porMetodo
         };
     }

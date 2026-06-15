@@ -15,6 +15,8 @@ public class OrdenTaller
     public decimal CostoEstimado { get; set; }
     public decimal? CostoFinal { get; set; }
     public decimal ComisionTecnico { get; set; }
+    public int? SesionCajaId { get; set; }
+    public int? UsuarioRecepcion { get; set; }
     public DateTime FechaRecepcion { get; set; }
     public DateTime? FechaEntrega { get; set; }
 
@@ -22,6 +24,7 @@ public class OrdenTaller
     public Cliente? Cliente { get; set; }
     public InventarioImei? Imei { get; set; }
     public Usuario? Tecnico { get; set; }
+    public Usuario? Recepcionista { get; set; }
     public ICollection<OrdenTallerFoto> Fotos { get; set; } = new List<OrdenTallerFoto>();
     public ICollection<OrdenTallerRepuesto> Repuestos { get; set; } = new List<OrdenTallerRepuesto>();
 }

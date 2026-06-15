@@ -52,6 +52,8 @@ export interface ResumenTurno {
   abonosCantidad: number;
   abonosTotal: number;
   abonosEfectivo: number;
+  tallerRecepciones: number;
+  tallerAnticipos: number;
   totalIngresos: number;
   totalEgresos: number;
   efectivoEsperado: number;

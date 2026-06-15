@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using GestionCelulares.Application.Common;
 using GestionCelulares.Application.Taller;
 using Microsoft.AspNetCore.Authorization;
@@ -13,6 +14,9 @@ public class TallerController : ControllerBase
     private readonly ITallerService _taller;
 
     public TallerController(ITallerService taller) => _taller = taller;
+
+    private int? UsuarioId =>
+        int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
 
     /// <summary>Lista órdenes para el panel Kanban; filtra por estado, sucursal, técnico o cliente.</summary>
     [HttpGet]
@@ -41,7 +45,7 @@ public class TallerController : ControllerBase
     {
         try
         {
-            var orden = await _taller.CrearAsync(dto);
+            var orden = await _taller.CrearAsync(dto, UsuarioId);
             return CreatedAtAction(nameof(PorId), new { id = orden.OrdenTallerId }, orden);
         }
         catch (TallerException ex)

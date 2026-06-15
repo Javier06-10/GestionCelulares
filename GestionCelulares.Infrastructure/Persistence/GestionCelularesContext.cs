@@ -127,6 +127,7 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<OrdenTaller>().HasOne(o => o.Cliente).WithMany().HasForeignKey(o => o.ClienteId);
         mb.Entity<OrdenTaller>().HasOne(o => o.Imei).WithMany().HasForeignKey(o => o.ImeiId);
         mb.Entity<OrdenTaller>().HasOne(o => o.Tecnico).WithMany().HasForeignKey(o => o.TecnicoId);
+        mb.Entity<OrdenTaller>().HasOne(o => o.Recepcionista).WithMany().HasForeignKey(o => o.UsuarioRecepcion);
         mb.Entity<OrdenTallerFoto>().HasOne(f => f.Orden).WithMany(o => o.Fotos).HasForeignKey(f => f.OrdenTallerId);
         mb.Entity<OrdenTallerRepuesto>().HasOne(r => r.Orden).WithMany(o => o.Repuestos).HasForeignKey(r => r.OrdenTallerId);
         mb.Entity<OrdenTallerRepuesto>().HasOne(r => r.Variante).WithMany().HasForeignKey(r => r.VarianteId);

@@ -45,6 +45,8 @@ export interface Orden {
   costoFinal: number | null;
   comisionTecnico: number;
   totalRepuestos: number;
+  sesionCajaId: number | null;
+  recibidoPor: string | null;
   fechaRecepcion: string;
   fechaEntrega: string | null;
   repuestos: Repuesto[];

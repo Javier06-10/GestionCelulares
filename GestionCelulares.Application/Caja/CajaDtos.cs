@@ -83,10 +83,13 @@ public class ResumenTurnoDto
     public decimal AbonosTotal { get; set; }
     public decimal AbonosEfectivo { get; set; }
 
+    public int TallerRecepciones { get; set; }
+    public decimal TallerAnticipos { get; set; }
+
     public decimal TotalIngresos { get; set; }   // movimientos manuales
     public decimal TotalEgresos { get; set; }
 
-    /// <summary>Efectivo que debería haber en caja (apertura + cobros en efectivo + ingresos - egresos).</summary>
+    /// <summary>Efectivo que debería haber en caja (apertura + cobros en efectivo + anticipos + ingresos - egresos).</summary>
     public decimal EfectivoEsperado { get; set; }
 
     public List<ResumenMetodoDto> VentasPorMetodo { get; set; } = new();

@@ -8,7 +8,7 @@ namespace GestionCelulares.Application.Taller;
 
 public interface ITallerService
 {
-    Task<OrdenDto> CrearAsync(OrdenCrearDto dto);
+    Task<OrdenDto> CrearAsync(OrdenCrearDto dto, int? usuarioRecepcion = null);
     Task<OrdenDto?> PorIdAsync(int id);
     Task<IReadOnlyList<OrdenResumenDto>> BuscarAsync(string? estado, int? sucursalId, int? tecnicoId, int? clienteId);
     Task<OrdenDto> ActualizarAsync(int id, OrdenActualizarDto dto);
@@ -34,7 +34,7 @@ public class TallerService : ITallerService
 
     public TallerService(IApplicationDbContext db) => _db = db;
 
-    public async Task<OrdenDto> CrearAsync(OrdenCrearDto dto)
+    public async Task<OrdenDto> CrearAsync(OrdenCrearDto dto, int? usuarioRecepcion = null)
     {
         if (!await _db.Sucursales.AnyAsync(s => s.SucursalId == dto.SucursalId))
             throw new TallerException("La sucursal indicada no existe.");
@@ -50,6 +50,13 @@ public class TallerService : ITallerService
 
         await ValidarTecnicoAsync(dto.TecnicoId);
 
+        // La recepción queda atada a la caja abierta de la sucursal (si la hay) y al
+        // usuario que recibe el equipo, igual que las ventas.
+        var sesionCajaId = await _db.SesionesCaja
+            .Where(s => s.SucursalId == dto.SucursalId && s.Estado == "Abierta")
+            .Select(s => (int?)s.SesionCajaId)
+            .FirstOrDefaultAsync();
+
         var orden = new OrdenTaller
         {
             NumeroOrden = Normalizar(dto.NumeroOrden),
@@ -63,6 +70,8 @@ public class TallerService : ITallerService
             Anticipo = dto.Anticipo,
             CostoEstimado = dto.CostoEstimado,
             ComisionTecnico = 0,
+            SesionCajaId = sesionCajaId,
+            UsuarioRecepcion = usuarioRecepcion,
             FechaRecepcion = DateTime.Now
         };
         _db.OrdenesTaller.Add(orden);
@@ -256,6 +265,8 @@ public class TallerService : ITallerService
         CostoFinal = o.CostoFinal,
         ComisionTecnico = o.ComisionTecnico,
         TotalRepuestos = o.Repuestos.Sum(r => (decimal?)(r.Costo * r.Cantidad)) ?? 0,
+        SesionCajaId = o.SesionCajaId,
+        RecibidoPor = o.Recepcionista == null ? null : o.Recepcionista.NombreCompleto,
         FechaRecepcion = o.FechaRecepcion,
         FechaEntrega = o.FechaEntrega,
         Repuestos = o.Repuestos.OrderBy(r => r.Id).Select(r => new RepuestoDto

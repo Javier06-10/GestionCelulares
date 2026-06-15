@@ -271,6 +271,9 @@
                     @if (r.abonosCantidad > 0) {
                       <div class="flex justify-between"><span class="text-tech-steel">Abonos de crédito ({{ r.abonosCantidad }})</span><span class="font-semibold text-tech-charcoal">{{ r.abonosTotal | currency: 'DOP' : 'RD$' : '1.2-2' }}</span></div>
                     }
+                    @if (r.tallerRecepciones > 0) {
+                      <div class="flex justify-between"><span class="text-tech-steel">Taller · recepciones ({{ r.tallerRecepciones }})</span><span class="font-semibold text-tech-charcoal">anticipos {{ r.tallerAnticipos | currency: 'DOP' : 'RD$' : '1.2-2' }}</span></div>
+                    }
                     <div class="flex justify-between"><span class="text-tech-steel">Ingresos / Egresos</span><span><span class="text-tech-accent">+{{ r.totalIngresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</span> <span class="text-red-500">-{{ r.totalEgresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</span></span></div>
                     <div class="h-px bg-tech-pastel/40 my-0.5"></div>
                     <div class="flex justify-between"><span class="font-semibold text-tech-charcoal">Efectivo esperado</span><span class="font-bold text-tech-accent">{{ r.efectivoEsperado | currency: 'DOP' : 'RD$' : '1.2-2' }}</span></div>

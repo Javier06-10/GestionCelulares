@@ -84,6 +84,8 @@ public class OrdenDto
     public decimal? CostoFinal { get; set; }
     public decimal ComisionTecnico { get; set; }
     public decimal TotalRepuestos { get; set; }
+    public int? SesionCajaId { get; set; }
+    public string? RecibidoPor { get; set; }
     public DateTime FechaRecepcion { get; set; }
     public DateTime? FechaEntrega { get; set; }
     public List<RepuestoDto> Repuestos { get; set; } = new();
