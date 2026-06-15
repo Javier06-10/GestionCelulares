@@ -13,6 +13,11 @@ interface ItemMenu {
   soloAdmin?: boolean;
 }
 
+interface GrupoMenu {
+  titulo: string;
+  items: ItemMenu[];
+}
+
 const CLAVE_COLAPSADO = 'gc_sidebar_colapsado';
 
 @Component({
@@ -54,24 +59,44 @@ export class Layout {
     this.colapsado.update(v => !v);
   }
 
-  menu: ItemMenu[] = [
-    { etiqueta: 'Dashboard', icono: 'layout-dashboard', ruta: '/' },
-    { etiqueta: 'POS / Ventas', icono: 'shopping-cart', ruta: '/pos' },
-    { etiqueta: 'Inventario', icono: 'package', ruta: '/inventario' },
-    { etiqueta: 'Faltantes', icono: 'package-x', ruta: '/faltantes' },
-    { etiqueta: 'Catálogo', icono: 'layers', ruta: '/catalogo' },
-    { etiqueta: 'Proveedores', icono: 'truck', ruta: '/proveedores', soloAdmin: true },
-    { etiqueta: 'Clientes', icono: 'users', ruta: '/clientes' },
-    { etiqueta: 'Créditos', icono: 'credit-card', ruta: '/creditos' },
-    { etiqueta: 'Taller', icono: 'wrench', ruta: '/taller' },
-    { etiqueta: 'Garantías', icono: 'shield-alert', ruta: '/garantias' },
-    { etiqueta: 'Caja', icono: 'wallet', ruta: '/caja' },
-    { etiqueta: 'Reportes', icono: 'bar-chart-3', ruta: '/reportes', soloAdmin: true },
-    { etiqueta: 'Usuarios', icono: 'settings', ruta: '/usuarios', soloAdmin: true }
+  // Menú dividido: lo que ve todo el personal vs. lo exclusivo del administrador
+  grupos: GrupoMenu[] = [
+    {
+      titulo: 'General',
+      items: [
+        { etiqueta: 'Dashboard', icono: 'layout-dashboard', ruta: '/' },
+        { etiqueta: 'POS / Ventas', icono: 'shopping-cart', ruta: '/pos' },
+        { etiqueta: 'Inventario', icono: 'package', ruta: '/inventario' },
+        { etiqueta: 'Faltantes', icono: 'package-x', ruta: '/faltantes' },
+        { etiqueta: 'Catálogo', icono: 'layers', ruta: '/catalogo' },
+        { etiqueta: 'Clientes', icono: 'users', ruta: '/clientes' },
+        { etiqueta: 'Créditos', icono: 'credit-card', ruta: '/creditos' },
+        { etiqueta: 'Taller', icono: 'wrench', ruta: '/taller' },
+        { etiqueta: 'Garantías', icono: 'shield-alert', ruta: '/garantias' },
+        { etiqueta: 'Caja', icono: 'wallet', ruta: '/caja' }
+      ]
+    },
+    {
+      titulo: 'Administración',
+      items: [
+        { etiqueta: 'Proveedores', icono: 'truck', ruta: '/proveedores', soloAdmin: true },
+        { etiqueta: 'Nómina', icono: 'hand-coins', ruta: '/nomina', soloAdmin: true },
+        { etiqueta: 'Reportes', icono: 'bar-chart-3', ruta: '/reportes', soloAdmin: true },
+        { etiqueta: 'Usuarios', icono: 'settings', ruta: '/usuarios', soloAdmin: true }
+      ]
+    }
   ];
 
-  get items(): ItemMenu[] {
-    return this.menu.filter(i => !i.soloAdmin || this.auth.esAdmin());
+  // Lista plana (para resolver la sección activa desde la URL)
+  private get menu(): ItemMenu[] {
+    return this.grupos.flatMap(g => g.items);
+  }
+
+  // Grupos con sus ítems ya filtrados por permiso; se omiten los grupos vacíos
+  get gruposVisibles(): GrupoMenu[] {
+    return this.grupos
+      .map(g => ({ titulo: g.titulo, items: g.items.filter(i => !i.soloAdmin || this.auth.esAdmin()) }))
+      .filter(g => g.items.length > 0);
   }
 
   iniciales(nombre: string | undefined): string {

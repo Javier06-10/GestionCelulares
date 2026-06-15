@@ -35,36 +35,43 @@
       </button>
     }
 
-    <!-- Navegación -->
+    <!-- Navegación (agrupada: General / Administración) -->
     <nav class="nav-scroll relative flex-1 min-h-0 overflow-y-auto flex flex-col gap-1 px-3">
-      @for (item of items; track item.etiqueta) {
-        @if (item.ruta) {
-          <a
-            [routerLink]="item.ruta"
-            routerLinkActive="activo"
-            [routerLinkActiveOptions]="{ exact: item.ruta === '/' }"
-            [title]="colapsado() ? item.etiqueta : ''"
-            class="item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tech-pastel transition-all duration-300 ease-out hover:bg-white/[0.06] hover:text-white active:scale-[0.97]"
-            [class.justify-center]="colapsado()"
-          >
-            <span class="indicador absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 rounded-r-full bg-tech-accent transition-all duration-300"></span>
-            <lucide-icon [name]="item.icono" [size]="19" class="shrink-0"></lucide-icon>
-            @if (!colapsado()) {
-              <span class="font-medium whitespace-nowrap">{{ item.etiqueta }}</span>
-            }
-          </a>
+      @for (grupo of gruposVisibles; track grupo.titulo) {
+        @if (!colapsado()) {
+          <div class="px-3 pt-4 pb-1 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-tech-steel/50 first:pt-1">{{ grupo.titulo }}</div>
         } @else {
-          <span
-            [title]="colapsado() ? item.etiqueta + ' (próximamente)' : ''"
-            class="item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tech-steel/35 cursor-not-allowed"
-            [class.justify-center]="colapsado()"
-          >
-            <lucide-icon [name]="item.icono" [size]="19" class="shrink-0"></lucide-icon>
-            @if (!colapsado()) {
-              <span class="font-medium whitespace-nowrap">{{ item.etiqueta }}</span>
-              <span class="ml-auto text-[0.6rem] uppercase tracking-wider bg-white/5 text-tech-steel/60 px-1.5 py-0.5 rounded">pronto</span>
-            }
-          </span>
+          <div class="my-2 mx-3 border-t border-white/5 first:border-0 first:my-0"></div>
+        }
+        @for (item of grupo.items; track item.etiqueta) {
+          @if (item.ruta) {
+            <a
+              [routerLink]="item.ruta"
+              routerLinkActive="activo"
+              [routerLinkActiveOptions]="{ exact: item.ruta === '/' }"
+              [title]="colapsado() ? item.etiqueta : ''"
+              class="item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tech-pastel transition-all duration-300 ease-out hover:bg-white/[0.06] hover:text-white active:scale-[0.97]"
+              [class.justify-center]="colapsado()"
+            >
+              <span class="indicador absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 rounded-r-full bg-tech-accent transition-all duration-300"></span>
+              <lucide-icon [name]="item.icono" [size]="19" class="shrink-0"></lucide-icon>
+              @if (!colapsado()) {
+                <span class="font-medium whitespace-nowrap">{{ item.etiqueta }}</span>
+              }
+            </a>
+          } @else {
+            <span
+              [title]="colapsado() ? item.etiqueta + ' (próximamente)' : ''"
+              class="item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tech-steel/35 cursor-not-allowed"
+              [class.justify-center]="colapsado()"
+            >
+              <lucide-icon [name]="item.icono" [size]="19" class="shrink-0"></lucide-icon>
+              @if (!colapsado()) {
+                <span class="font-medium whitespace-nowrap">{{ item.etiqueta }}</span>
+                <span class="ml-auto text-[0.6rem] uppercase tracking-wider bg-white/5 text-tech-steel/60 px-1.5 py-0.5 rounded">pronto</span>
+              }
+            </span>
+          }
         }
       }
     </nav>

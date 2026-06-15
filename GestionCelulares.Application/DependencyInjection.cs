@@ -7,6 +7,7 @@ using GestionCelulares.Application.Dashboard;
 using GestionCelulares.Application.Faltantes;
 using GestionCelulares.Application.Garantias;
 using GestionCelulares.Application.Inventario;
+using GestionCelulares.Application.Nomina;
 using GestionCelulares.Application.Proveedores;
 using GestionCelulares.Application.Reportes;
 using GestionCelulares.Application.Taller;
@@ -34,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<IReporteService, ReporteService>();
         services.AddScoped<IGarantiaService, GarantiaService>();
         services.AddScoped<IFaltanteService, FaltanteService>();
+        services.AddScoped<INominaService, NominaService>();
         return services;
     }
 }

@@ -25,6 +25,7 @@ public interface IApplicationDbContext
     DbSet<Producto> Productos { get; }
     DbSet<ProductoVariante> ProductoVariantes { get; }
     DbSet<Faltante> Faltantes { get; }
+    DbSet<PagoEmpleado> PagosEmpleado { get; }
     DbSet<InventarioImei> InventarioImeis { get; }
     DbSet<MovimientoInventario> MovimientosInventario { get; }
     DbSet<SesionCaja> SesionesCaja { get; }

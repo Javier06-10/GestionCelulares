@@ -10,6 +10,7 @@ import { Faltantes } from './pages/faltantes/faltantes';
 import { Garantias } from './pages/garantias/garantias';
 import { Inventario } from './pages/inventario/inventario';
 import { Login } from './pages/login/login';
+import { Nomina } from './pages/nomina/nomina';
 import { Pos } from './pages/pos/pos';
 import { Proveedores } from './pages/proveedores/proveedores';
 import { Reportes } from './pages/reportes/reportes';
@@ -35,6 +36,7 @@ export const routes: Routes = [
       { path: 'taller', component: Taller },
       { path: 'garantias', component: Garantias },
       { path: 'usuarios', component: Usuarios },
+      { path: 'nomina', component: Nomina },
       { path: 'reportes', component: Reportes }
     ]
   },
