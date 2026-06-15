@@ -42,8 +42,8 @@
         </div>
         <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Inventario</span>
       </div>
-      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.inventario.equiposDisponibles"></div>
-      <div class="text-xs text-tech-steel mt-2">equipos · costo {{ d.inventario.valorCosto | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.inventario.equiposDisponibles + d.inventario.accesoriosDisponibles"></div>
+      <div class="text-xs text-tech-steel mt-2">{{ d.inventario.equiposDisponibles | number }} equipos · {{ d.inventario.accesoriosDisponibles | number }} accesorios · costo {{ d.inventario.valorCosto | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
     </div>
 
     <!-- Caja -->

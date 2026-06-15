@@ -88,19 +88,32 @@ public class DashboardService : IDashboardService
 
     private async Task<InventarioIndicadorDto> InventarioAsync(int? sucursalId)
     {
-        var q = _db.InventarioImeis.AsNoTracking().Where(i => i.Estado == "Disponible");
+        // Equipos serializados disponibles (por IMEI, con sucursal)
+        var qEquipos = _db.InventarioImeis.AsNoTracking().Where(i => i.Estado == "Disponible");
         if (sucursalId.HasValue)
-            q = q.Where(i => i.SucursalId == sucursalId.Value);
+            qEquipos = qEquipos.Where(i => i.SucursalId == sucursalId.Value);
 
-        var datos = await q
+        var equipos = await qEquipos
             .GroupBy(_ => 1)
             .Select(g => new { Cantidad = g.Count(), Valor = g.Sum(i => i.PrecioCosto) })
             .FirstOrDefaultAsync();
 
+        // Accesorios / productos no serializados (stock por variante)
+        var accesorios = await _db.ProductoVariantes.AsNoTracking()
+            .Where(v => v.Activo && !v.Producto.Serializado && v.StockNoSerial > 0)
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Cantidad = g.Sum(v => v.StockNoSerial),
+                Valor = g.Sum(v => v.StockNoSerial * v.PrecioCosto)
+            })
+            .FirstOrDefaultAsync();
+
         return new InventarioIndicadorDto
         {
-            EquiposDisponibles = datos?.Cantidad ?? 0,
-            ValorCosto = datos?.Valor ?? 0
+            EquiposDisponibles = equipos?.Cantidad ?? 0,
+            AccesoriosDisponibles = accesorios?.Cantidad ?? 0,
+            ValorCosto = (equipos?.Valor ?? 0) + (accesorios?.Valor ?? 0)
         };
     }
 

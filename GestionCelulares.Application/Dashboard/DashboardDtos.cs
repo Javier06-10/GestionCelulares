@@ -32,6 +32,7 @@ public class VentasIndicadorDto
 public class InventarioIndicadorDto
 {
     public int EquiposDisponibles { get; set; }
+    public int AccesoriosDisponibles { get; set; }
     public decimal ValorCosto { get; set; }
 }
 

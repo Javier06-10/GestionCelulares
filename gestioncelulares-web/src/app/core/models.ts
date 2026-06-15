@@ -24,7 +24,7 @@ export interface VentasIndicador {
 export interface DashboardDto {
   ventasHoy: VentasIndicador;
   ventasMes: VentasIndicador;
-  inventario: { equiposDisponibles: number; valorCosto: number };
+  inventario: { equiposDisponibles: number; accesoriosDisponibles: number; valorCosto: number };
   taller: { recibidos: number; enReparacion: number; reparados: number };
   creditos: {
     activos: number;
