@@ -13,6 +13,7 @@ public class SesionCajaDto
     public int SesionCajaId { get; set; }
     public int SucursalId { get; set; }
     public int UsuarioApertura { get; set; }
+    public string? UsuarioAperturaNombre { get; set; }
     public int? UsuarioCierre { get; set; }
     public decimal MontoApertura { get; set; }
     public decimal? MontoCierre { get; set; }

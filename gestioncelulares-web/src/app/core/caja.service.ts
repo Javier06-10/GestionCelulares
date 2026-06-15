@@ -6,6 +6,7 @@ export interface SesionCaja {
   sesionCajaId: number;
   sucursalId: number;
   usuarioApertura: number;
+  usuarioAperturaNombre: string | null;
   usuarioCierre: number | null;
   montoApertura: number;
   montoCierre: number | null;

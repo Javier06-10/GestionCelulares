@@ -68,6 +68,10 @@ public class CajaService : ICajaService
                 SesionCajaId = s.SesionCajaId,
                 SucursalId = s.SucursalId,
                 UsuarioApertura = s.UsuarioApertura,
+                UsuarioAperturaNombre = _db.Usuarios
+                    .Where(u => u.UsuarioId == s.UsuarioApertura)
+                    .Select(u => u.NombreCompleto)
+                    .FirstOrDefault(),
                 UsuarioCierre = s.UsuarioCierre,
                 MontoApertura = s.MontoApertura,
                 MontoCierre = s.MontoCierre,
