@@ -3,7 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
-import { CajaService, CierreResultado, MovimientoCaja, SesionCaja } from '../../core/caja.service';
+import { CajaService, CierreResultado, MovimientoCaja, ResumenTurno, SesionCaja } from '../../core/caja.service';
 
 @Component({
   selector: 'app-caja',
@@ -49,6 +49,7 @@ export class Caja {
   cerrando = signal(false);
   errorCierre = signal<string | null>(null);
   resultado = signal<CierreResultado | null>(null);
+  resumen = signal<ResumenTurno | null>(null);
   formCierre = this.fb.nonNullable.group({
     montoContado: [0, [Validators.required, Validators.min(0)]]
   });
@@ -145,10 +146,13 @@ export class Caja {
   }
 
   abrirCierre(): void {
+    const s = this.sesion();
     this.resultado.set(null);
+    this.resumen.set(null);
     this.errorCierre.set(null);
     this.formCierre.reset({ montoContado: 0 });
     this.modalCierre.set(true);
+    if (s) this.servicio.resumenTurno(s.sesionCajaId).subscribe({ next: r => this.resumen.set(r) });
   }
 
   confirmarCierre(): void {

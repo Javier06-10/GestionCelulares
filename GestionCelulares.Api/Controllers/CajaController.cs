@@ -68,6 +68,20 @@ public class CajaController : ControllerBase
         }
     }
 
+    /// <summary>Resumen del turno: ventas, abonos y movimientos del empleado de la sesión.</summary>
+    [HttpGet("{id:int}/resumen")]
+    public async Task<IActionResult> Resumen(int id)
+    {
+        try
+        {
+            return Ok(await _caja.ResumenTurnoAsync(id));
+        }
+        catch (CajaException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
+
     /// <summary>Registra un ingreso o egreso manual en la sesión abierta.</summary>
     [HttpPost("{id:int}/movimientos")]
     public async Task<IActionResult> RegistrarMovimiento(int id, [FromBody] MovimientoCajaRegistroDto dto)

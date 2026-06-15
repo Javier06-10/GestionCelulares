@@ -57,3 +57,37 @@ public class CierreCajaResultadoDto
     public decimal MontoContado { get; set; }
     public decimal Diferencia { get; set; }
 }
+
+/// <summary>Desglose de un método de pago dentro del turno.</summary>
+public class ResumenMetodoDto
+{
+    public string Metodo { get; set; } = null!;
+    public int Cantidad { get; set; }
+    public decimal Monto { get; set; }
+}
+
+/// <summary>Resumen de todo lo que hizo el empleado durante el turno (sesión de caja).</summary>
+public class ResumenTurnoDto
+{
+    public int SesionCajaId { get; set; }
+    public string? Empleado { get; set; }
+    public DateTime FechaApertura { get; set; }
+    public decimal MontoApertura { get; set; }
+
+    public int VentasCantidad { get; set; }
+    public decimal VentasTotal { get; set; }
+    public decimal VentasEfectivo { get; set; }
+    public decimal VentasOtros { get; set; }
+
+    public int AbonosCantidad { get; set; }
+    public decimal AbonosTotal { get; set; }
+    public decimal AbonosEfectivo { get; set; }
+
+    public decimal TotalIngresos { get; set; }   // movimientos manuales
+    public decimal TotalEgresos { get; set; }
+
+    /// <summary>Efectivo que debería haber en caja (apertura + cobros en efectivo + ingresos - egresos).</summary>
+    public decimal EfectivoEsperado { get; set; }
+
+    public List<ResumenMetodoDto> VentasPorMetodo { get; set; } = new();
+}

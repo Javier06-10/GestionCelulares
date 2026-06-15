@@ -34,6 +34,30 @@ export interface CierreResultado {
   diferencia: number;
 }
 
+export interface ResumenMetodo {
+  metodo: string;
+  cantidad: number;
+  monto: number;
+}
+
+export interface ResumenTurno {
+  sesionCajaId: number;
+  empleado: string | null;
+  fechaApertura: string;
+  montoApertura: number;
+  ventasCantidad: number;
+  ventasTotal: number;
+  ventasEfectivo: number;
+  ventasOtros: number;
+  abonosCantidad: number;
+  abonosTotal: number;
+  abonosEfectivo: number;
+  totalIngresos: number;
+  totalEgresos: number;
+  efectivoEsperado: number;
+  ventasPorMetodo: ResumenMetodo[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class CajaService {
   private http = inject(HttpClient);
@@ -58,5 +82,9 @@ export class CajaService {
 
   cerrar(sesionCajaId: number, montoContado: number) {
     return this.http.post<CierreResultado>(`${this.base}/${sesionCajaId}/cerrar`, { montoContado });
+  }
+
+  resumenTurno(sesionCajaId: number) {
+    return this.http.get<ResumenTurno>(`${this.base}/${sesionCajaId}/resumen`);
   }
 }

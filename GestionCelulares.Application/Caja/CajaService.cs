@@ -13,6 +13,7 @@ public interface ICajaService
     Task<IReadOnlyList<MovimientoCajaDto>> MovimientosAsync(int sesionCajaId);
     Task<MovimientoCajaDto> RegistrarMovimientoAsync(int sesionCajaId, MovimientoCajaRegistroDto dto);
     Task<CierreCajaResultadoDto> CerrarAsync(int sesionCajaId, CierreCajaDto dto, int usuarioId);
+    Task<ResumenTurnoDto> ResumenTurnoAsync(int sesionCajaId);
 }
 
 public class CajaService : ICajaService
@@ -149,6 +150,62 @@ public class CajaService : ICajaService
 
         // El arqueo (esperado vs. contado) lo calcula usp_Caja_Cerrar en una transacción
         return await _procedures.CerrarAsync(sesionCajaId, usuarioId, dto.MontoContado);
+    }
+
+    public async Task<ResumenTurnoDto> ResumenTurnoAsync(int sesionCajaId)
+    {
+        var sesion = await PorIdAsync(sesionCajaId)
+            ?? throw new CajaException("La sesión de caja no existe.");
+
+        // Ventas del turno (cantidad y total facturado)
+        var ventas = await _db.Ventas.AsNoTracking()
+            .Where(v => v.SesionCajaId == sesionCajaId)
+            .GroupBy(_ => 1)
+            .Select(g => new { Cantidad = g.Count(), Total = g.Sum(v => v.Total) })
+            .FirstOrDefaultAsync();
+
+        // Cobros de ventas desglosados por método de pago
+        var porMetodo = await _db.VentaPagos.AsNoTracking()
+            .Where(p => p.Venta.SesionCajaId == sesionCajaId)
+            .GroupBy(p => p.MetodoPago.Nombre)
+            .Select(g => new ResumenMetodoDto { Metodo = g.Key, Cantidad = g.Count(), Monto = g.Sum(x => x.Monto) })
+            .OrderByDescending(m => m.Monto)
+            .ToListAsync();
+
+        // Abonos de crédito cobrados en el turno
+        var abonos = await _db.PagosCredito.AsNoTracking()
+            .Where(p => p.SesionCajaId == sesionCajaId)
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Cantidad = g.Count(),
+                Total = g.Sum(p => p.Monto),
+                Efectivo = g.Sum(p => p.MetodoPago != null && p.MetodoPago.Nombre == "Efectivo" ? p.Monto : 0m)
+            })
+            .FirstOrDefaultAsync();
+
+        var ventasEfectivo = porMetodo.Where(m => m.Metodo == "Efectivo").Sum(m => m.Monto);
+        var ventasCobrado = porMetodo.Sum(m => m.Monto);
+        var abonosEfectivo = abonos?.Efectivo ?? 0;
+
+        return new ResumenTurnoDto
+        {
+            SesionCajaId = sesionCajaId,
+            Empleado = sesion.UsuarioAperturaNombre,
+            FechaApertura = sesion.FechaApertura,
+            MontoApertura = sesion.MontoApertura,
+            VentasCantidad = ventas?.Cantidad ?? 0,
+            VentasTotal = ventas?.Total ?? 0,
+            VentasEfectivo = ventasEfectivo,
+            VentasOtros = ventasCobrado - ventasEfectivo,
+            AbonosCantidad = abonos?.Cantidad ?? 0,
+            AbonosTotal = abonos?.Total ?? 0,
+            AbonosEfectivo = abonosEfectivo,
+            TotalIngresos = sesion.TotalIngresos,
+            TotalEgresos = sesion.TotalEgresos,
+            EfectivoEsperado = sesion.MontoApertura + ventasEfectivo + abonosEfectivo + sesion.TotalIngresos - sesion.TotalEgresos,
+            VentasPorMetodo = porMetodo
+        };
     }
 
     private async Task ExigirSesionAsync(int sesionCajaId)

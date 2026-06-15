@@ -256,6 +256,29 @@
           <!-- Formulario de conteo -->
           <form [formGroup]="formCierre" (ngSubmit)="confirmarCierre()">
             <div class="px-6 py-5">
+              <!-- Resumen del turno -->
+              @if (resumen(); as r) {
+                <div class="mb-5 rounded-xl border border-tech-pastel/40 bg-tech-bg-light/50 overflow-hidden">
+                  <div class="px-4 py-2.5 border-b border-tech-pastel/30 flex items-center gap-2">
+                    <lucide-icon name="user" [size]="14" class="text-tech-steel"></lucide-icon>
+                    <span class="text-xs font-semibold text-tech-charcoal">Turno de {{ r.empleado || '—' }}</span>
+                  </div>
+                  <div class="px-4 py-3 flex flex-col gap-2 text-sm">
+                    <div class="flex justify-between"><span class="text-tech-steel">Ventas ({{ r.ventasCantidad }})</span><span class="font-semibold text-tech-charcoal">{{ r.ventasTotal | currency: 'DOP' : 'RD$' : '1.2-2' }}</span></div>
+                    @for (m of r.ventasPorMetodo; track m.metodo) {
+                      <div class="flex justify-between text-xs pl-3"><span class="text-tech-steel">· {{ m.metodo }} ({{ m.cantidad }})</span><span class="text-tech-charcoal">{{ m.monto | currency: 'DOP' : 'RD$' : '1.2-2' }}</span></div>
+                    }
+                    @if (r.abonosCantidad > 0) {
+                      <div class="flex justify-between"><span class="text-tech-steel">Abonos de crédito ({{ r.abonosCantidad }})</span><span class="font-semibold text-tech-charcoal">{{ r.abonosTotal | currency: 'DOP' : 'RD$' : '1.2-2' }}</span></div>
+                    }
+                    <div class="flex justify-between"><span class="text-tech-steel">Ingresos / Egresos</span><span><span class="text-tech-accent">+{{ r.totalIngresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</span> <span class="text-red-500">-{{ r.totalEgresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</span></span></div>
+                    <div class="h-px bg-tech-pastel/40 my-0.5"></div>
+                    <div class="flex justify-between"><span class="font-semibold text-tech-charcoal">Efectivo esperado</span><span class="font-bold text-tech-accent">{{ r.efectivoEsperado | currency: 'DOP' : 'RD$' : '1.2-2' }}</span></div>
+                    <p class="text-[0.7rem] text-tech-steel">Fondo {{ r.montoApertura | currency: 'DOP' : 'RD$' : '1.0-0' }} + cobros en efectivo + ingresos − egresos.</p>
+                  </div>
+                </div>
+              }
+
               <p class="text-sm text-tech-steel mb-4">Cuenta el efectivo físico en la caja e ingrésalo. El sistema calculará la diferencia.</p>
               <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Efectivo contado</label>
               <div class="relative">
