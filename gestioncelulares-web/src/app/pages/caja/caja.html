@@ -202,11 +202,18 @@
         </button>
       </form>
 
-      <button (click)="abrirCierre()"
-        class="flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-tech-charcoal/15 text-tech-charcoal font-semibold transition-all hover:bg-tech-charcoal hover:text-white active:scale-95">
-        <lucide-icon name="lock-keyhole" [size]="18"></lucide-icon>
-        Cerrar caja (arqueo)
-      </button>
+      @if (puedeCerrar()) {
+        <button (click)="abrirCierre()"
+          class="flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-tech-charcoal/15 text-tech-charcoal font-semibold transition-all hover:bg-tech-charcoal hover:text-white active:scale-95">
+          <lucide-icon name="lock-keyhole" [size]="18"></lucide-icon>
+          Cerrar caja (arqueo)
+        </button>
+      } @else {
+        <div class="flex items-center gap-2 py-3 px-4 rounded-2xl border border-tech-pastel/50 bg-tech-bg-light/60 text-tech-steel text-sm">
+          <lucide-icon name="lock-keyhole" [size]="16"></lucide-icon>
+          Solo {{ s.usuarioAperturaNombre || 'quien la abrió' }} puede cerrar esta caja.
+        </div>
+      }
     </div>
   </div>
 

@@ -25,6 +25,13 @@ export class Caja {
     return s ? s.montoApertura + s.totalIngresos - s.totalEgresos : 0;
   });
 
+  // Solo quien abrió la caja (o un Admin) puede cerrarla
+  puedeCerrar = computed(() => {
+    const s = this.sesion();
+    const u = this.auth.usuario();
+    return !!s && !!u && (s.usuarioApertura === u.usuarioId || this.auth.esAdmin());
+  });
+
   // Apertura
   abriendo = signal(false);
   errorApertura = signal<string | null>(null);

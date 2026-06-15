@@ -12,7 +12,7 @@ public interface ICajaService
     Task<SesionCajaDto?> PorIdAsync(int id);
     Task<IReadOnlyList<MovimientoCajaDto>> MovimientosAsync(int sesionCajaId);
     Task<MovimientoCajaDto> RegistrarMovimientoAsync(int sesionCajaId, MovimientoCajaRegistroDto dto);
-    Task<CierreCajaResultadoDto> CerrarAsync(int sesionCajaId, CierreCajaDto dto, int usuarioId);
+    Task<CierreCajaResultadoDto> CerrarAsync(int sesionCajaId, CierreCajaDto dto, int usuarioId, bool esAdmin = false);
     Task<ResumenTurnoDto> ResumenTurnoAsync(int sesionCajaId);
 }
 
@@ -36,6 +36,10 @@ public class CajaService : ICajaService
 
         if (await _db.SesionesCaja.AnyAsync(s => s.SucursalId == dto.SucursalId && s.Estado == "Abierta"))
             throw new CajaException("Ya hay una sesión de caja abierta en esta sucursal. Ciérrala antes de abrir otra.");
+
+        // Regla: un empleado solo puede tener una caja abierta a la vez
+        if (await _db.SesionesCaja.AnyAsync(s => s.UsuarioApertura == usuarioId && s.Estado == "Abierta"))
+            throw new CajaException("Ya tienes una caja abierta. Ciérrala antes de abrir otra.");
 
         var sesion = new SesionCaja
         {
@@ -140,13 +144,17 @@ public class CajaService : ICajaService
         };
     }
 
-    public async Task<CierreCajaResultadoDto> CerrarAsync(int sesionCajaId, CierreCajaDto dto, int usuarioId)
+    public async Task<CierreCajaResultadoDto> CerrarAsync(int sesionCajaId, CierreCajaDto dto, int usuarioId, bool esAdmin = false)
     {
         var sesion = await _db.SesionesCaja.AsNoTracking().FirstOrDefaultAsync(s => s.SesionCajaId == sesionCajaId)
             ?? throw new CajaException("La sesión de caja no existe.");
 
         if (sesion.Estado != "Abierta")
             throw new CajaException("La sesión de caja ya está cerrada.");
+
+        // Regla: solo el empleado que abrió la caja puede cerrarla (el admin puede forzar)
+        if (sesion.UsuarioApertura != usuarioId && !esAdmin)
+            throw new CajaException("Solo el empleado que abrió la caja puede cerrarla.");
 
         // El arqueo (esperado vs. contado) lo calcula usp_Caja_Cerrar en una transacción
         return await _procedures.CerrarAsync(sesionCajaId, usuarioId, dto.MontoContado);

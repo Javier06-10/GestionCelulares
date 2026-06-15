@@ -105,7 +105,7 @@ public class CajaController : ControllerBase
 
         try
         {
-            return Ok(await _caja.CerrarAsync(id, dto, UsuarioId.Value));
+            return Ok(await _caja.CerrarAsync(id, dto, UsuarioId.Value, User.IsInRole(Roles.Admin)));
         }
         catch (CajaException ex)
         {
