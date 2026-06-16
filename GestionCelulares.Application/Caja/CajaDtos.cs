@@ -84,12 +84,20 @@ public class ResumenTurnoDto
     public decimal AbonosEfectivo { get; set; }
 
     public int TallerRecepciones { get; set; }
-    public decimal TallerAnticipos { get; set; }
+    public decimal TallerAnticipos { get; set; }       // cobrado al recibir, en este turno
+    public int TallerEntregas { get; set; }
+    public decimal TallerEntregasCobrado { get; set; } // balance cobrado al entregar, en este turno
 
     public decimal TotalIngresos { get; set; }   // movimientos manuales
     public decimal TotalEgresos { get; set; }
 
-    /// <summary>Efectivo que debería haber en caja (apertura + cobros en efectivo + anticipos + ingresos - egresos).</summary>
+    /// <summary>Efectivo de la "caja de ventas": efectivo de ventas + abonos en efectivo.</summary>
+    public decimal EfectivoVentas { get; set; }
+
+    /// <summary>Efectivo de la "caja de reparaciones": anticipos + cobros al entregar.</summary>
+    public decimal EfectivoReparaciones { get; set; }
+
+    /// <summary>Cuadro general: apertura + efectivo de ventas + efectivo de reparaciones + ingresos - egresos.</summary>
     public decimal EfectivoEsperado { get; set; }
 
     public List<ResumenMetodoDto> VentasPorMetodo { get; set; } = new();

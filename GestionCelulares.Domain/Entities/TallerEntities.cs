@@ -17,6 +17,7 @@ public class OrdenTaller
     public decimal ComisionTecnico { get; set; }
     public int? SesionCajaId { get; set; }
     public int? UsuarioRecepcion { get; set; }
+    public int? SesionCajaEntrega { get; set; }
     public DateTime FechaRecepcion { get; set; }
     public DateTime? FechaEntrega { get; set; }
 

@@ -149,6 +149,12 @@ public class TallerService : ITallerService
             orden.CostoFinal = dto.CostoFinal ?? orden.CostoEstimado;
             orden.ComisionTecnico = dto.ComisionTecnico ?? orden.ComisionTecnico;
             orden.FechaEntrega = DateTime.Now;
+
+            // El cobro de la reparación al entregar queda atado a la caja del turno actual
+            orden.SesionCajaEntrega = await _db.SesionesCaja
+                .Where(s => s.SucursalId == orden.SucursalId && s.Estado == "Abierta")
+                .Select(s => (int?)s.SesionCajaId)
+                .FirstOrDefaultAsync();
         }
 
         orden.Estado = destino;

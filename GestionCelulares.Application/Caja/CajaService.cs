@@ -199,10 +199,22 @@ public class CajaService : ICajaService
             .Select(g => new { Cantidad = g.Count(), Anticipos = g.Sum(o => o.Anticipo) })
             .FirstOrDefaultAsync();
 
+        // Entregas del taller cobradas en este turno (balance = costo final - anticipo)
+        var entregas = await _db.OrdenesTaller.AsNoTracking()
+            .Where(o => o.SesionCajaEntrega == sesionCajaId && o.Estado == "Entregado")
+            .GroupBy(_ => 1)
+            .Select(g => new { Cantidad = g.Count(), Balance = g.Sum(o => (o.CostoFinal ?? 0) - o.Anticipo) })
+            .FirstOrDefaultAsync();
+
         var ventasEfectivo = porMetodo.Where(m => m.Metodo == "Efectivo").Sum(m => m.Monto);
         var ventasCobrado = porMetodo.Sum(m => m.Monto);
         var abonosEfectivo = abonos?.Efectivo ?? 0;
         var tallerAnticipos = taller?.Anticipos ?? 0;
+        var tallerEntregasCobrado = entregas?.Balance ?? 0;
+
+        // Dos "sobres" de la misma caja chica
+        var efectivoVentas = ventasEfectivo + abonosEfectivo;
+        var efectivoReparaciones = tallerAnticipos + tallerEntregasCobrado;
 
         return new ResumenTurnoDto
         {
@@ -219,9 +231,13 @@ public class CajaService : ICajaService
             AbonosEfectivo = abonosEfectivo,
             TallerRecepciones = taller?.Cantidad ?? 0,
             TallerAnticipos = tallerAnticipos,
+            TallerEntregas = entregas?.Cantidad ?? 0,
+            TallerEntregasCobrado = tallerEntregasCobrado,
             TotalIngresos = sesion.TotalIngresos,
             TotalEgresos = sesion.TotalEgresos,
-            EfectivoEsperado = sesion.MontoApertura + ventasEfectivo + abonosEfectivo + tallerAnticipos + sesion.TotalIngresos - sesion.TotalEgresos,
+            EfectivoVentas = efectivoVentas,
+            EfectivoReparaciones = efectivoReparaciones,
+            EfectivoEsperado = sesion.MontoApertura + efectivoVentas + efectivoReparaciones + sesion.TotalIngresos - sesion.TotalEgresos,
             VentasPorMetodo = porMetodo
         };
     }
