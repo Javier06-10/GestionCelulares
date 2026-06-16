@@ -196,14 +196,24 @@ public class CajaService : ICajaService
         var taller = await _db.OrdenesTaller.AsNoTracking()
             .Where(o => o.SesionCajaId == sesionCajaId)
             .GroupBy(_ => 1)
-            .Select(g => new { Cantidad = g.Count(), Anticipos = g.Sum(o => o.Anticipo) })
+            .Select(g => new
+            {
+                Cantidad = g.Count(),
+                Anticipos = g.Sum(o => o.Anticipo),
+                AnticiposEfectivo = g.Sum(o => o.MetodoPagoAnticipo != null && o.MetodoPagoAnticipo.Nombre == "Efectivo" ? o.Anticipo : 0m)
+            })
             .FirstOrDefaultAsync();
 
         // Entregas del taller cobradas en este turno (balance = costo final - anticipo)
         var entregas = await _db.OrdenesTaller.AsNoTracking()
             .Where(o => o.SesionCajaEntrega == sesionCajaId && o.Estado == "Entregado")
             .GroupBy(_ => 1)
-            .Select(g => new { Cantidad = g.Count(), Balance = g.Sum(o => (o.CostoFinal ?? 0) - o.Anticipo) })
+            .Select(g => new
+            {
+                Cantidad = g.Count(),
+                Balance = g.Sum(o => (o.CostoFinal ?? 0) - o.Anticipo),
+                BalanceEfectivo = g.Sum(o => o.MetodoPagoEntrega != null && o.MetodoPagoEntrega.Nombre == "Efectivo" ? (o.CostoFinal ?? 0) - o.Anticipo : 0m)
+            })
             .FirstOrDefaultAsync();
 
         var ventasEfectivo = porMetodo.Where(m => m.Metodo == "Efectivo").Sum(m => m.Monto);
@@ -212,9 +222,9 @@ public class CajaService : ICajaService
         var tallerAnticipos = taller?.Anticipos ?? 0;
         var tallerEntregasCobrado = entregas?.Balance ?? 0;
 
-        // Dos "sobres" de la misma caja chica
+        // Dos "sobres" de la misma caja chica (solo el efectivo entra al arqueo)
         var efectivoVentas = ventasEfectivo + abonosEfectivo;
-        var efectivoReparaciones = tallerAnticipos + tallerEntregasCobrado;
+        var efectivoReparaciones = (taller?.AnticiposEfectivo ?? 0) + (entregas?.BalanceEfectivo ?? 0);
 
         return new ResumenTurnoDto
         {

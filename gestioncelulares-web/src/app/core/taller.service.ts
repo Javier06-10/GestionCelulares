@@ -47,6 +47,8 @@ export interface Orden {
   totalRepuestos: number;
   sesionCajaId: number | null;
   recibidoPor: string | null;
+  metodoPagoAnticipo: string | null;
+  metodoPagoEntrega: string | null;
   fechaRecepcion: string;
   fechaEntrega: string | null;
   repuestos: Repuesto[];
@@ -62,6 +64,7 @@ export interface OrdenCrear {
   tecnicoId?: number | null;
   numeroOrden?: string | null;
   anticipo: number;
+  metodoPagoAnticipoId?: number | null;
   costoEstimado: number;
 }
 
@@ -69,6 +72,7 @@ export interface CambioEstado {
   estado: string;
   costoFinal?: number | null;
   comisionTecnico?: number | null;
+  metodoPagoEntregaId?: number | null;
 }
 
 export interface RepuestoAgregar {

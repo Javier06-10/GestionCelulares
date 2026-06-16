@@ -13,6 +13,8 @@ public class OrdenCrearDto
     public int? TecnicoId { get; set; }
     [StringLength(30)] public string? NumeroOrden { get; set; }
     [Range(0, double.MaxValue)] public decimal Anticipo { get; set; }
+    /// <summary>Método de pago del anticipo (requerido si el anticipo es mayor que 0).</summary>
+    public int? MetodoPagoAnticipoId { get; set; }
     [Range(0, double.MaxValue)] public decimal CostoEstimado { get; set; }
 }
 
@@ -33,6 +35,8 @@ public class CambioEstadoDto
     /// <summary>Requerido al pasar a Entregado (si no se envía, se usa el costo estimado).</summary>
     [Range(0, double.MaxValue)] public decimal? CostoFinal { get; set; }
     [Range(0, double.MaxValue)] public decimal? ComisionTecnico { get; set; }
+    /// <summary>Método de pago del saldo cobrado al entregar (requerido si queda saldo por cobrar).</summary>
+    public int? MetodoPagoEntregaId { get; set; }
 }
 
 public class RepuestoAgregarDto
@@ -86,6 +90,8 @@ public class OrdenDto
     public decimal TotalRepuestos { get; set; }
     public int? SesionCajaId { get; set; }
     public string? RecibidoPor { get; set; }
+    public string? MetodoPagoAnticipo { get; set; }
+    public string? MetodoPagoEntrega { get; set; }
     public DateTime FechaRecepcion { get; set; }
     public DateTime? FechaEntrega { get; set; }
     public List<RepuestoDto> Repuestos { get; set; } = new();

@@ -50,12 +50,22 @@ public class TallerService : ITallerService
 
         await ValidarTecnicoAsync(dto.TecnicoId);
 
-        // La recepción queda atada a la caja abierta de la sucursal (si la hay) y al
-        // usuario que recibe el equipo, igual que las ventas.
+        // La recepción exige una caja abierta en la sucursal (igual que las ventas);
+        // la orden queda atada a esa sesión y al usuario que recibe el equipo.
         var sesionCajaId = await _db.SesionesCaja
             .Where(s => s.SucursalId == dto.SucursalId && s.Estado == "Abierta")
             .Select(s => (int?)s.SesionCajaId)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync()
+            ?? throw new TallerException("No hay una sesión de caja abierta en esta sucursal. Abre la caja antes de recibir equipos.");
+
+        // Si hay anticipo, exige el método de pago (efectivo, tarjeta, transferencia…)
+        if (dto.Anticipo > 0)
+        {
+            if (dto.MetodoPagoAnticipoId is null)
+                throw new TallerException("Indica el método de pago del anticipo.");
+            if (!await _db.MetodosPago.AnyAsync(m => m.MetodoPagoId == dto.MetodoPagoAnticipoId.Value))
+                throw new TallerException("El método de pago del anticipo no existe.");
+        }
 
         var orden = new OrdenTaller
         {
@@ -72,6 +82,7 @@ public class TallerService : ITallerService
             ComisionTecnico = 0,
             SesionCajaId = sesionCajaId,
             UsuarioRecepcion = usuarioRecepcion,
+            MetodoPagoAnticipoId = dto.Anticipo > 0 ? dto.MetodoPagoAnticipoId : null,
             FechaRecepcion = DateTime.Now
         };
         _db.OrdenesTaller.Add(orden);
@@ -150,11 +161,31 @@ public class TallerService : ITallerService
             orden.ComisionTecnico = dto.ComisionTecnico ?? orden.ComisionTecnico;
             orden.FechaEntrega = DateTime.Now;
 
-            // El cobro de la reparación al entregar queda atado a la caja del turno actual
-            orden.SesionCajaEntrega = await _db.SesionesCaja
-                .Where(s => s.SucursalId == orden.SucursalId && s.Estado == "Abierta")
-                .Select(s => (int?)s.SesionCajaId)
-                .FirstOrDefaultAsync();
+            // Saldo que se cobra al entregar (costo final - anticipo ya pagado)
+            var saldo = (orden.CostoFinal ?? 0) - orden.Anticipo;
+            if (saldo > 0)
+            {
+                if (dto.MetodoPagoEntregaId is null)
+                    throw new TallerException("Indica el método de pago del saldo cobrado al entregar.");
+                if (!await _db.MetodosPago.AnyAsync(m => m.MetodoPagoId == dto.MetodoPagoEntregaId.Value))
+                    throw new TallerException("El método de pago de la entrega no existe.");
+
+                orden.SesionCajaEntrega = await _db.SesionesCaja
+                    .Where(s => s.SucursalId == orden.SucursalId && s.Estado == "Abierta")
+                    .Select(s => (int?)s.SesionCajaId)
+                    .FirstOrDefaultAsync()
+                    ?? throw new TallerException("No hay una caja abierta para registrar el cobro de la entrega.");
+
+                orden.MetodoPagoEntregaId = dto.MetodoPagoEntregaId;
+            }
+            else
+            {
+                // Sin saldo por cobrar: igual se ata a la caja del turno si la hay
+                orden.SesionCajaEntrega = await _db.SesionesCaja
+                    .Where(s => s.SucursalId == orden.SucursalId && s.Estado == "Abierta")
+                    .Select(s => (int?)s.SesionCajaId)
+                    .FirstOrDefaultAsync();
+            }
         }
 
         orden.Estado = destino;
@@ -273,6 +304,8 @@ public class TallerService : ITallerService
         TotalRepuestos = o.Repuestos.Sum(r => (decimal?)(r.Costo * r.Cantidad)) ?? 0,
         SesionCajaId = o.SesionCajaId,
         RecibidoPor = o.Recepcionista == null ? null : o.Recepcionista.NombreCompleto,
+        MetodoPagoAnticipo = o.MetodoPagoAnticipo == null ? null : o.MetodoPagoAnticipo.Nombre,
+        MetodoPagoEntrega = o.MetodoPagoEntrega == null ? null : o.MetodoPagoEntrega.Nombre,
         FechaRecepcion = o.FechaRecepcion,
         FechaEntrega = o.FechaEntrega,
         Repuestos = o.Repuestos.OrderBy(r => r.Id).Select(r => new RepuestoDto

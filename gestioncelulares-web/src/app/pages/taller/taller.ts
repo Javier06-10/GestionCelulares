@@ -6,6 +6,7 @@ import { AuthService } from '../../core/auth.service';
 import { Cliente } from '../../core/cliente.service';
 import { ComisionTecnico, Orden, OrdenResumen, TallerService } from '../../core/taller.service';
 import { Usuario, UsuarioService } from '../../core/usuario.service';
+import { MetodoPago, VentaService } from '../../core/venta.service';
 import { ClienteSelector } from '../../shared/cliente-selector/cliente-selector';
 
 interface Columna { estado: string; titulo: string; color: string; }
@@ -19,11 +20,13 @@ export class Taller {
   private fb = inject(FormBuilder);
   private servicio = inject(TallerService);
   private usuarios = inject(UsuarioService);
+  private ventas = inject(VentaService);
   auth = inject(AuthService);
 
   ordenes = signal<OrdenResumen[]>([]);
   cargando = signal(false);
   tecnicos = signal<Usuario[]>([]);
+  metodos = signal<MetodoPago[]>([]);
 
   columnas: Columna[] = [
     { estado: 'Recibido', titulo: 'Recibido', color: 'border-t-slate-400' },
@@ -63,6 +66,7 @@ export class Taller {
     diagnostico: [''],
     tecnicoId: [null as number | null],
     anticipo: [0, [Validators.min(0)]],
+    metodoPagoAnticipoId: [null as number | null],
     costoEstimado: [0, [Validators.min(0)]]
   });
 
@@ -89,8 +93,15 @@ export class Taller {
   modalEntrega = signal(false);
   formEntrega = this.fb.nonNullable.group({
     costoFinal: [0, [Validators.min(0)]],
-    comisionTecnico: [0, [Validators.min(0)]]
+    comisionTecnico: [0, [Validators.min(0)]],
+    metodoPagoEntregaId: [null as number | null]
   });
+
+  // Saldo a cobrar al entregar (costo final - anticipo de la orden en detalle)
+  saldoEntrega(): number {
+    const o = this.detalle();
+    return o ? Math.max(0, (this.formEntrega.controls.costoFinal.value || 0) - o.anticipo) : 0;
+  }
 
   constructor() {
     this.cargar();
@@ -98,6 +109,7 @@ export class Taller {
       next: u => this.tecnicos.set(u),
       error: () => this.tecnicos.set([]) // no Admin: sin lista de técnicos
     });
+    this.ventas.metodosPago().subscribe({ next: m => this.metodos.set(m) });
   }
 
   cargar(): void {
@@ -140,14 +152,21 @@ export class Taller {
   // ----- Entrega -----
   abrirEntrega(): void {
     const o = this.detalle();
-    this.formEntrega.reset({ costoFinal: o?.costoEstimado ?? 0, comisionTecnico: 0 });
+    this.formEntrega.reset({ costoFinal: o?.costoEstimado ?? 0, comisionTecnico: 0, metodoPagoEntregaId: null });
     this.modalEntrega.set(true);
   }
   confirmarEntrega(): void {
     const o = this.detalle();
     if (!o) return;
     const v = this.formEntrega.getRawValue();
-    this.servicio.cambiarEstado(o.ordenTallerId, { estado: 'Entregado', costoFinal: v.costoFinal, comisionTecnico: v.comisionTecnico }).subscribe({
+    if (this.saldoEntrega() > 0 && !v.metodoPagoEntregaId) {
+      this.errorDetalle.set('Indica el método de pago del saldo cobrado al entregar.');
+      return;
+    }
+    this.servicio.cambiarEstado(o.ordenTallerId, {
+      estado: 'Entregado', costoFinal: v.costoFinal, comisionTecnico: v.comisionTecnico,
+      metodoPagoEntregaId: this.saldoEntrega() > 0 ? v.metodoPagoEntregaId : null
+    }).subscribe({
       next: x => { this.detalle.set(x); this.modalEntrega.set(false); this.cargar(); },
       error: e => this.errorDetalle.set(e.error?.error ?? 'No se pudo entregar.')
     });
@@ -183,16 +202,20 @@ export class Taller {
   abrirNueva(): void {
     this.errorNueva.set(null);
     this.clienteSel.set(null);
-    this.formNueva.reset({ equipoDescripcion: '', diagnostico: '', tecnicoId: null, anticipo: 0, costoEstimado: 0 });
+    this.formNueva.reset({ equipoDescripcion: '', diagnostico: '', tecnicoId: null, anticipo: 0, metodoPagoAnticipoId: null, costoEstimado: 0 });
     this.modalNueva.set(true);
   }
   crearOrden(): void {
     if (this.formNueva.invalid) { this.formNueva.markAllAsTouched(); return; }
     const suc = this.auth.usuario()?.sucursalId;
     if (!suc) { this.errorNueva.set('Tu usuario no tiene sucursal asignada.'); return; }
+    const v = this.formNueva.getRawValue();
+    if (v.anticipo > 0 && !v.metodoPagoAnticipoId) {
+      this.errorNueva.set('Indica el método de pago del anticipo.');
+      return;
+    }
     this.guardandoNueva.set(true);
     this.errorNueva.set(null);
-    const v = this.formNueva.getRawValue();
     this.servicio.crear({
       sucursalId: suc,
       clienteId: this.clienteSel()?.clienteId ?? null,
@@ -200,6 +223,7 @@ export class Taller {
       diagnostico: v.diagnostico?.trim() || null,
       tecnicoId: v.tecnicoId ? Number(v.tecnicoId) : null,
       anticipo: v.anticipo,
+      metodoPagoAnticipoId: v.anticipo > 0 ? (v.metodoPagoAnticipoId ? Number(v.metodoPagoAnticipoId) : null) : null,
       costoEstimado: v.costoEstimado
     }).subscribe({
       next: o => { this.guardandoNueva.set(false); this.modalNueva.set(false); this.cargar(); this.detalle.set(o); },

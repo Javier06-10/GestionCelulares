@@ -18,6 +18,8 @@ public class OrdenTaller
     public int? SesionCajaId { get; set; }
     public int? UsuarioRecepcion { get; set; }
     public int? SesionCajaEntrega { get; set; }
+    public int? MetodoPagoAnticipoId { get; set; }
+    public int? MetodoPagoEntregaId { get; set; }
     public DateTime FechaRecepcion { get; set; }
     public DateTime? FechaEntrega { get; set; }
 
@@ -26,6 +28,8 @@ public class OrdenTaller
     public InventarioImei? Imei { get; set; }
     public Usuario? Tecnico { get; set; }
     public Usuario? Recepcionista { get; set; }
+    public MetodoPago? MetodoPagoAnticipo { get; set; }
+    public MetodoPago? MetodoPagoEntrega { get; set; }
     public ICollection<OrdenTallerFoto> Fotos { get; set; } = new List<OrdenTallerFoto>();
     public ICollection<OrdenTallerRepuesto> Repuestos { get; set; } = new List<OrdenTallerRepuesto>();
 }
