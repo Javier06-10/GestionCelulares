@@ -44,9 +44,10 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponse> RefreshAsync(string refreshToken)
     {
+        var hash = _tokens.HashRefreshToken(refreshToken);
         var token = await _db.RefreshTokens
             .Include(t => t.Usuario).ThenInclude(u => u.Rol)
-            .FirstOrDefaultAsync(t => t.Token == refreshToken);
+            .FirstOrDefaultAsync(t => t.Token == hash);
 
         if (token is null || token.Revocado || token.Expira < DateTime.Now)
             throw new AuthException("Refresh token inválido o expirado.");
@@ -65,7 +66,7 @@ public class AuthService : IAuthService
         _db.RefreshTokens.Add(new RefreshToken
         {
             UsuarioId = usuario.UsuarioId,
-            Token = refresh,
+            Token = _tokens.HashRefreshToken(refresh), // solo se persiste el hash, nunca el token en claro
             Expira = refreshExpira,
             Revocado = false,
             FechaCreacion = DateTime.Now

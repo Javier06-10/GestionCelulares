@@ -50,4 +50,12 @@ public class TokenService : ITokenService
         // Hora local: el refresh token se persiste en la BD, que usa SYSDATETIME()
         return (token, DateTime.Now.AddDays(_jwt.RefreshTokenDays));
     }
+
+    public string HashRefreshToken(string token)
+    {
+        // El token es un valor aleatorio de alta entropía (CSPRNG), por lo que
+        // SHA-256 sin sal es suficiente y rápido para buscarlo en la BD.
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+        return Convert.ToHexString(bytes);
+    }
 }
