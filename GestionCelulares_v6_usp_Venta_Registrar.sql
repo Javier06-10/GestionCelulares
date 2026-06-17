@@ -38,6 +38,18 @@ BEGIN
 
     BEGIN TRAN;
 
+    -- Validación: IMEIs inexistentes (mensaje claro antes del error de FK)
+    IF EXISTS (
+        SELECT 1 FROM @Detalles d
+        WHERE d.ImeiId IS NOT NULL
+          AND NOT EXISTS (SELECT 1 FROM dbo.InventarioImei i WHERE i.ImeiId = d.ImeiId)
+    )
+    BEGIN
+        ROLLBACK TRAN;
+        RAISERROR(N'Uno o más IMEI no existen.', 16, 1);
+        RETURN;
+    END
+
     -- Bloqueo y validación de IMEIs concurrentes
     IF EXISTS (
         SELECT 1 FROM @Detalles d
@@ -99,6 +111,12 @@ BEGIN
 
     IF @EsCredito = 0
     BEGIN
+        IF @MetodoPagoId IS NULL
+        BEGIN
+            ROLLBACK TRAN;
+            RAISERROR(N'Debe indicar el método de pago para una venta de contado.', 16, 1);
+            RETURN;
+        END
         INSERT INTO dbo.VentaPago (VentaId, MetodoPagoId, Monto)
         SELECT @VentaId, @MetodoPagoId, Total FROM dbo.Venta WHERE VentaId = @VentaId;
     END
