@@ -88,6 +88,10 @@ public class ResumenTurnoDto
     public int TallerEntregas { get; set; }
     public decimal TallerEntregasCobrado { get; set; } // balance cobrado al entregar, en este turno
 
+    public int ApartadosAbonos { get; set; }
+    public decimal ApartadosTotal { get; set; }        // abonos de apartados recibidos en este turno
+    public decimal EfectivoApartados { get; set; }     // de esos abonos, lo cobrado en efectivo
+
     public decimal TotalIngresos { get; set; }   // movimientos manuales
     public decimal TotalEgresos { get; set; }
 

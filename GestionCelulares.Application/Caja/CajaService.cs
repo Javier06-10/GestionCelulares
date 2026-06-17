@@ -216,11 +216,24 @@ public class CajaService : ICajaService
             })
             .FirstOrDefaultAsync();
 
+        // Abonos de apartados recibidos en este turno
+        var apartados = await _db.AbonosApartado.AsNoTracking()
+            .Where(a => a.SesionCajaId == sesionCajaId && a.Tipo == "Abono")
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Cantidad = g.Count(),
+                Total = g.Sum(a => a.Monto),
+                Efectivo = g.Sum(a => a.MetodoPago != null && a.MetodoPago.Nombre == "Efectivo" ? a.Monto : 0m)
+            })
+            .FirstOrDefaultAsync();
+
         var ventasEfectivo = porMetodo.Where(m => m.Metodo == "Efectivo").Sum(m => m.Monto);
         var ventasCobrado = porMetodo.Sum(m => m.Monto);
         var abonosEfectivo = abonos?.Efectivo ?? 0;
         var tallerAnticipos = taller?.Anticipos ?? 0;
         var tallerEntregasCobrado = entregas?.Balance ?? 0;
+        var apartadosEfectivo = apartados?.Efectivo ?? 0;
 
         // Dos "sobres" de la misma caja chica (solo el efectivo entra al arqueo)
         var efectivoVentas = ventasEfectivo + abonosEfectivo;
@@ -243,11 +256,14 @@ public class CajaService : ICajaService
             TallerAnticipos = tallerAnticipos,
             TallerEntregas = entregas?.Cantidad ?? 0,
             TallerEntregasCobrado = tallerEntregasCobrado,
+            ApartadosAbonos = apartados?.Cantidad ?? 0,
+            ApartadosTotal = apartados?.Total ?? 0,
+            EfectivoApartados = apartadosEfectivo,
             TotalIngresos = sesion.TotalIngresos,
             TotalEgresos = sesion.TotalEgresos,
             EfectivoVentas = efectivoVentas,
             EfectivoReparaciones = efectivoReparaciones,
-            EfectivoEsperado = sesion.MontoApertura + efectivoVentas + efectivoReparaciones + sesion.TotalIngresos - sesion.TotalEgresos,
+            EfectivoEsperado = sesion.MontoApertura + efectivoVentas + efectivoReparaciones + apartadosEfectivo + sesion.TotalIngresos - sesion.TotalEgresos,
             VentasPorMetodo = porMetodo
         };
     }

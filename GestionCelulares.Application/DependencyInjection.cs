@@ -1,3 +1,4 @@
+using GestionCelulares.Application.Apartados;
 using GestionCelulares.Application.Auth;
 using GestionCelulares.Application.Caja;
 using GestionCelulares.Application.Catalogo;
@@ -36,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IGarantiaService, GarantiaService>();
         services.AddScoped<IFaltanteService, FaltanteService>();
         services.AddScoped<INominaService, NominaService>();
+        services.AddScoped<IApartadoService, ApartadoService>();
         return services;
     }
 }

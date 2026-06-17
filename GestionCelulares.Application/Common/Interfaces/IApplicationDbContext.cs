@@ -12,6 +12,7 @@ namespace GestionCelulares.Application.Common.Interfaces;
 /// </summary>
 public interface IApplicationDbContext
 {
+    DbSet<Empresa> Empresas { get; }
     DbSet<Usuario> Usuarios { get; }
     DbSet<Rol> Roles { get; }
     DbSet<RefreshToken> RefreshTokens { get; }
@@ -26,6 +27,8 @@ public interface IApplicationDbContext
     DbSet<ProductoVariante> ProductoVariantes { get; }
     DbSet<Faltante> Faltantes { get; }
     DbSet<PagoEmpleado> PagosEmpleado { get; }
+    DbSet<Apartado> Apartados { get; }
+    DbSet<AbonoApartado> AbonosApartado { get; }
     DbSet<InventarioImei> InventarioImeis { get; }
     DbSet<MovimientoInventario> MovimientosInventario { get; }
     DbSet<SesionCaja> SesionesCaja { get; }

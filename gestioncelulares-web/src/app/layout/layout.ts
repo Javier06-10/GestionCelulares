@@ -71,6 +71,7 @@ export class Layout {
         { etiqueta: 'Catálogo', icono: 'layers', ruta: '/catalogo' },
         { etiqueta: 'Clientes', icono: 'users', ruta: '/clientes' },
         { etiqueta: 'Créditos', icono: 'credit-card', ruta: '/creditos' },
+        { etiqueta: 'Apartados', icono: 'bookmark', ruta: '/apartados' },
         { etiqueta: 'Taller', icono: 'wrench', ruta: '/taller' },
         { etiqueta: 'Garantías', icono: 'shield-alert', ruta: '/garantias' },
         { etiqueta: 'Caja', icono: 'wallet', ruta: '/caja' }

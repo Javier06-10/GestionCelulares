@@ -77,3 +77,9 @@ public class NominaException : Exception
 {
     public NominaException(string message) : base(message) { }
 }
+
+/// <summary>Regla de negocio de apartados violada -> HTTP 400/404 en el controlador.</summary>
+public class ApartadoException : Exception
+{
+    public ApartadoException(string message) : base(message) { }
+}

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth-guard';
 import { Layout } from './layout/layout';
+import { Apartados } from './pages/apartados/apartados';
 import { Caja } from './pages/caja/caja';
 import { Catalogo } from './pages/catalogo/catalogo';
 import { Clientes } from './pages/clientes/clientes';
@@ -34,6 +35,7 @@ export const routes: Routes = [
       { path: 'caja', component: Caja },
       { path: 'creditos', component: Creditos },
       { path: 'taller', component: Taller },
+      { path: 'apartados', component: Apartados },
       { path: 'garantias', component: Garantias },
       { path: 'usuarios', component: Usuarios },
       { path: 'nomina', component: Nomina },

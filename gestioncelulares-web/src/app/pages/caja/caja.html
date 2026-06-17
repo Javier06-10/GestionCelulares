@@ -305,6 +305,9 @@
                 <!-- Cuadro general -->
                 <div class="mb-5 rounded-xl border border-tech-pastel/40 bg-tech-bg-light/50 px-4 py-3 flex flex-col gap-1.5 text-sm">
                   <div class="flex justify-between text-xs"><span class="text-tech-steel">Fondo de apertura</span><span class="text-tech-charcoal">{{ r.montoApertura | currency: 'DOP' : 'RD$' : '1.0-0' }}</span></div>
+                  @if (r.apartadosAbonos > 0) {
+                    <div class="flex justify-between text-xs"><span class="text-tech-steel">Apartados · abonos ({{ r.apartadosAbonos }})</span><span class="text-tech-charcoal">efectivo {{ r.efectivoApartados | currency: 'DOP' : 'RD$' : '1.0-0' }}</span></div>
+                  }
                   <div class="flex justify-between text-xs"><span class="text-tech-steel">Ingresos / Egresos</span><span><span class="text-tech-accent">+{{ r.totalIngresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</span> <span class="text-red-500">−{{ r.totalEgresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</span></span></div>
                   <div class="h-px bg-tech-pastel/40 my-0.5"></div>
                   <div class="flex justify-between items-center"><span class="font-semibold text-tech-charcoal">Efectivo esperado (general)</span><span class="text-base font-bold text-tech-charcoal">{{ r.efectivoEsperado | currency: 'DOP' : 'RD$' : '1.2-2' }}</span></div>

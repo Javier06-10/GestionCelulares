@@ -56,6 +56,9 @@ export interface ResumenTurno {
   tallerAnticipos: number;
   tallerEntregas: number;
   tallerEntregasCobrado: number;
+  apartadosAbonos: number;
+  apartadosTotal: number;
+  efectivoApartados: number;
   totalIngresos: number;
   totalEgresos: number;
   efectivoVentas: number;

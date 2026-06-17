@@ -1,0 +1,279 @@
+<!-- Encabezado -->
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+  <div>
+    <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Equipos apartados</h2>
+    <p class="text-sm text-tech-steel mt-0.5">El cliente abona poco a poco y se lleva el equipo al pagarlo completo</p>
+  </div>
+  <button (click)="abrirNuevo()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
+    <lucide-icon name="plus" [size]="18"></lucide-icon> Nuevo apartado
+  </button>
+</div>
+
+<!-- Filtros -->
+<div class="flex items-center gap-1 mb-4">
+  @for (e of ['Activo','Completado','Cancelado','']; track e) {
+    <button (click)="filtrar(e)" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all"
+      [class]="filtroEstado() === e ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">
+      {{ e || 'Todos' }}
+    </button>
+  }
+</div>
+
+<!-- Tabla -->
+<div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm border-collapse min-w-[720px]">
+      <thead>
+        <tr class="bg-tech-bg-light/80 text-tech-steel text-left">
+          <th class="font-semibold py-3 px-4">Cliente</th>
+          <th class="font-semibold py-3 px-4">Equipo</th>
+          <th class="font-semibold py-3 px-4">Progreso</th>
+          <th class="font-semibold py-3 px-4 text-right">Saldo</th>
+          <th class="font-semibold py-3 px-4 text-center">Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          @for (i of [1,2,3]; track i) { <tr class="border-t border-tech-pastel/20"><td colspan="5" class="py-3 px-4"><div class="h-5 bg-tech-bg-light rounded animate-pulse"></div></td></tr> }
+        } @else if (apartados().length === 0) {
+          <tr><td colspan="5" class="py-12 text-center text-tech-steel"><lucide-icon name="bookmark" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon><p>No hay apartados.</p></td></tr>
+        } @else {
+          @for (a of apartados(); track a.apartadoId) {
+            <tr (click)="abrir(a.apartadoId)" class="border-t border-tech-pastel/20 cursor-pointer transition-colors hover:bg-tech-bg-light/60">
+              <td class="py-3 px-4 font-semibold text-tech-charcoal">{{ a.cliente }}</td>
+              <td class="py-3 px-4 text-tech-charcoal">{{ a.equipo }}</td>
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 h-2 rounded-full bg-tech-bg-light overflow-hidden min-w-[80px]">
+                    <div class="h-full bg-gradient-to-r from-tech-accent to-emerald-400 rounded-full transition-all" [style.width.%]="progreso(a)"></div>
+                  </div>
+                  <span class="text-xs text-tech-steel whitespace-nowrap">{{ a.totalAbonado | currency: 'DOP':'RD$':'1.0-0' }} / {{ a.precioTotal | currency: 'DOP':'RD$':'1.0-0' }}</span>
+                </div>
+              </td>
+              <td class="py-3 px-4 text-right font-semibold" [class]="a.saldo > 0 ? 'text-tech-charcoal' : 'text-tech-accent'">{{ a.saldo | currency: 'DOP':'RD$':'1.2-2' }}</td>
+              <td class="py-3 px-4 text-center"><span class="inline-block px-2 py-0.5 rounded-lg text-xs font-semibold" [class]="estadoClase(a.estado)">{{ a.estado }}</span></td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Modal detalle ===== -->
+@if (detalle(); as a) {
+  <div class="fixed inset-0 z-40 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="cerrar()">
+    <div (click)="$event.stopPropagation()" class="w-[min(560px,95vw)] max-h-[92vh] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <div>
+          <h3 class="font-bold text-tech-charcoal">{{ a.equipo }}</h3>
+          <span class="text-xs text-tech-steel">{{ a.cliente }}@if (a.imei) { · IMEI {{ a.imei }} }</span>
+        </div>
+        <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold" [class]="estadoClase(a.estado)">{{ a.estado }}</span>
+      </div>
+
+      <!-- Montos -->
+      <div class="px-6 py-4 grid grid-cols-3 gap-3 border-b border-tech-pastel/30">
+        <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">Precio</div><div class="font-bold text-tech-charcoal">{{ a.precioTotal | currency: 'DOP':'RD$':'1.2-2' }}</div></div>
+        <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">Abonado</div><div class="font-bold text-tech-accent">{{ a.totalAbonado | currency: 'DOP':'RD$':'1.2-2' }}</div></div>
+        <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">Saldo</div><div class="font-bold text-tech-charcoal">{{ a.saldo | currency: 'DOP':'RD$':'1.2-2' }}</div></div>
+      </div>
+
+      <!-- Acciones -->
+      @if (a.estado === 'Activo') {
+        <div class="flex flex-wrap gap-2 px-6 py-3 border-b border-tech-pastel/30">
+          <button (click)="abrirAbono()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 transition-all"><lucide-icon name="coins" [size]="16"></lucide-icon> Abonar</button>
+          <button (click)="abrirCambio()" class="flex items-center gap-2 px-4 py-2 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-semibold text-sm hover:bg-tech-bg-light active:scale-95 transition-all"><lucide-icon name="refresh-cw" [size]="16"></lucide-icon> Cambiar equipo</button>
+          <button (click)="completar()" [disabled]="a.saldo > 0" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-tech-charcoal text-white font-semibold text-sm hover:bg-tech-charcoal/90 active:scale-95 transition-all disabled:opacity-40" [title]="a.saldo > 0 ? 'Aún queda saldo por pagar' : 'Entregar equipo'"><lucide-icon name="circle-check" [size]="16"></lucide-icon> Entregar</button>
+          @if (auth.esAdmin()) {
+            <button (click)="abrirCancelar()" class="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-300 text-red-500 font-semibold text-sm hover:bg-red-50 active:scale-95 transition-all ml-auto"><lucide-icon name="ban" [size]="16"></lucide-icon> Cancelar</button>
+          }
+        </div>
+      }
+      @if (errorDetalle()) { <div class="mx-6 mt-3 px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorDetalle() }}</div> }
+
+      <!-- Abonos -->
+      <div class="flex-1 overflow-y-auto px-6 py-4">
+        <div class="text-[0.7rem] uppercase font-semibold text-tech-steel mb-2">Movimientos</div>
+        <table class="w-full text-sm border-collapse">
+          <tbody>
+            @for (b of a.abonos; track b.abonoApartadoId) {
+              <tr class="border-b border-tech-pastel/15">
+                <td class="py-2"><span class="font-medium" [class]="b.tipo === 'Devolucion' ? 'text-red-500' : 'text-tech-charcoal'">{{ b.tipo === 'Devolucion' ? 'Devolución' : 'Abono' }}</span> <span class="text-xs text-tech-steel">· {{ b.metodoPago || '—' }}</span></td>
+                <td class="py-2 text-right text-tech-steel text-xs">{{ b.fecha | date:'dd/MM/yy' }}</td>
+                <td class="py-2 text-right font-semibold" [class]="b.tipo === 'Devolucion' ? 'text-red-500' : 'text-tech-accent'">{{ b.tipo === 'Devolucion' ? '-' : '' }}{{ b.monto | currency: 'DOP':'RD$':'1.2-2' }}</td>
+              </tr>
+            } @empty { <tr><td class="py-6 text-center text-tech-steel">Sin abonos aún.</td></tr> }
+          </tbody>
+        </table>
+        @if (a.notas) { <p class="mt-3 text-xs text-tech-steel">📝 {{ a.notas }}</p> }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== Modal nuevo apartado ===== -->
+@if (modalNuevo()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modalNuevo.set(false)">
+    <div (click)="$event.stopPropagation()" class="w-[min(560px,95vw)] max-h-[92vh] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Nuevo apartado</h3>
+        <button type="button" (click)="modalNuevo.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4 overflow-y-auto">
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Cliente *</label>
+          <app-cliente-selector [cliente]="clienteSel()" (clienteChange)="clienteSel.set($event)" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Equipo a apartar *</label>
+          @if (equipoSel(); as eq) {
+            <div class="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-tech-accent/[0.06] border border-tech-accent/30">
+              <div><div class="font-semibold text-tech-charcoal text-sm">{{ eq.producto }} <span class="text-tech-steel font-normal">{{ eq.variante }}</span></div><div class="text-xs text-tech-steel">IMEI {{ eq.imei }}</div></div>
+              <button type="button" (click)="equipoSel.set(null)" class="text-xs text-tech-steel hover:text-red-500">cambiar</button>
+            </div>
+          } @else {
+            <input type="text" placeholder="Buscar por producto o IMEI…" (input)="buscarEquipos($any($event.target).value)" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+            @if (equipos().length > 0) {
+              <div class="mt-1 max-h-44 overflow-y-auto rounded-xl border border-tech-pastel/40 divide-y divide-tech-pastel/20">
+                @for (e of equipos(); track e.imeiId) {
+                  <button type="button" (click)="seleccionarEquipo(e)" class="w-full text-left px-3.5 py-2 hover:bg-tech-bg-light transition-colors">
+                    <div class="flex justify-between items-center"><span class="text-sm text-tech-charcoal font-medium">{{ e.producto }} <span class="text-tech-steel font-normal">{{ e.variante }}</span></span><span class="text-sm font-semibold text-tech-charcoal">{{ e.precioVenta | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+                    <div class="text-xs text-tech-steel">IMEI {{ e.imei }}</div>
+                  </button>
+                }
+              </div>
+            }
+          }
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Precio total acordado *</label>
+            <input [formControl]="formNuevo.controls.precioTotal" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal font-semibold outline-none focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Abono inicial</label>
+            <input [formControl]="formNuevo.controls.abonoInicial" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal font-semibold outline-none focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+        </div>
+        @if (formNuevo.controls.abonoInicial.value > 0) {
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Método de pago del abono *</label>
+            <select [formControl]="formNuevo.controls.metodoPagoId" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white">
+              <option [ngValue]="null" disabled>Selecciona…</option>
+              @for (m of metodos(); track m.metodoPagoId) { <option [ngValue]="m.metodoPagoId">{{ m.nombre }}</option> }
+            </select>
+          </div>
+        }
+        @if (errorNuevo()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorNuevo() }}</div> }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalNuevo.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="button" (click)="crear()" [disabled]="guardando()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 disabled:opacity-60">
+          @if (guardando()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Guardando… } @else { <lucide-icon name="bookmark" [size]="16"></lucide-icon> Apartar }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== Modal abonar ===== -->
+@if (modalAbono()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/60 backdrop-blur-sm" (click)="modalAbono.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="formAbono" (ngSubmit)="abonar()" class="w-[min(400px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Registrar abono</h3>
+        <button type="button" (click)="modalAbono.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Monto *</label>
+          <input formControlName="monto" type="number" step="0.01" min="0" class="w-full px-3.5 py-3 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-lg font-semibold outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Método de pago *</label>
+          <select formControlName="metodoPagoId" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white">
+            <option [ngValue]="null" disabled>Selecciona…</option>
+            @for (m of metodos(); track m.metodoPagoId) { <option [ngValue]="m.metodoPagoId">{{ m.nombre }}</option> }
+          </select>
+        </div>
+        @if (errorAbono()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorAbono() }}</div> }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalAbono.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 transition-all"><lucide-icon name="check" [size]="16"></lucide-icon> Abonar</button>
+      </div>
+    </form>
+  </div>
+}
+
+<!-- ===== Modal cambiar equipo ===== -->
+@if (modalCambio()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/60 backdrop-blur-sm" (click)="modalCambio.set(false)">
+    <div (click)="$event.stopPropagation()" class="w-[min(520px,95vw)] max-h-[92vh] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Cambiar equipo</h3>
+        <button type="button" (click)="modalCambio.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4 overflow-y-auto">
+        <p class="text-xs text-tech-steel">El dinero abonado se mantiene; solo cambia el equipo reservado. El equipo anterior vuelve a estar disponible.</p>
+        @if (cambioEquipoSel(); as eq) {
+          <div class="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-tech-accent/[0.06] border border-tech-accent/30">
+            <div><div class="font-semibold text-tech-charcoal text-sm">{{ eq.producto }} <span class="text-tech-steel font-normal">{{ eq.variante }}</span></div><div class="text-xs text-tech-steel">IMEI {{ eq.imei }}</div></div>
+            <button type="button" (click)="cambioEquipoSel.set(null)" class="text-xs text-tech-steel hover:text-red-500">cambiar</button>
+          </div>
+        } @else {
+          <input type="text" placeholder="Buscar por producto o IMEI…" (input)="buscarEquipos($any($event.target).value)" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+          @if (equipos().length > 0) {
+            <div class="max-h-44 overflow-y-auto rounded-xl border border-tech-pastel/40 divide-y divide-tech-pastel/20">
+              @for (e of equipos(); track e.imeiId) {
+                <button type="button" (click)="seleccionarCambio(e)" class="w-full text-left px-3.5 py-2 hover:bg-tech-bg-light transition-colors">
+                  <div class="flex justify-between items-center"><span class="text-sm text-tech-charcoal font-medium">{{ e.producto }} <span class="text-tech-steel font-normal">{{ e.variante }}</span></span><span class="text-sm font-semibold text-tech-charcoal">{{ e.precioVenta | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+                  <div class="text-xs text-tech-steel">IMEI {{ e.imei }}</div>
+                </button>
+              }
+            </div>
+          }
+        }
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Nuevo precio acordado *</label>
+          <input [formControl]="formCambio.controls.precioTotal" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal font-semibold outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        @if (errorCambio()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorCambio() }}</div> }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalCambio.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="button" (click)="cambiar()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-tech-charcoal text-white font-semibold text-sm hover:bg-tech-charcoal/90 active:scale-95 transition-all"><lucide-icon name="refresh-cw" [size]="16"></lucide-icon> Cambiar</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== Modal cancelar (solo Admin) ===== -->
+@if (modalCancelar()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/60 backdrop-blur-sm" (click)="modalCancelar.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="formCancelar" (ngSubmit)="cancelar()" class="w-[min(420px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Cancelar apartado</h3>
+        <button type="button" (click)="modalCancelar.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <p class="text-xs text-tech-steel">El equipo se libera y vuelve al inventario. Por política <strong>no se devuelve dinero</strong>; usa la devolución solo si lo autorizas como propietario.</p>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Devolver en efectivo (egreso de caja)</label>
+          <input formControlName="devolverMonto" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal font-semibold outline-none focus:border-red-400/60 focus:bg-white" />
+          <span class="text-[0.7rem] text-tech-steel">Déjalo en 0 si no se devuelve dinero.</span>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Motivo</label>
+          <input formControlName="motivo" type="text" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        @if (errorCancelar()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorCancelar() }}</div> }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modalCancelar.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Volver</button>
+        <button type="submit" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-500 text-white font-semibold text-sm hover:bg-red-600 active:scale-95 transition-all"><lucide-icon name="ban" [size]="16"></lucide-icon> Cancelar apartado</button>
+      </div>
+    </form>
+  </div>
+}

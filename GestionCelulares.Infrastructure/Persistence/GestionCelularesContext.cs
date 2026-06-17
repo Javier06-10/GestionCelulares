@@ -28,6 +28,8 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
     public DbSet<ProductoVariante> ProductoVariantes => Set<ProductoVariante>();
     public DbSet<Faltante> Faltantes => Set<Faltante>();
     public DbSet<PagoEmpleado> PagosEmpleado => Set<PagoEmpleado>();
+    public DbSet<Apartado> Apartados => Set<Apartado>();
+    public DbSet<AbonoApartado> AbonosApartado => Set<AbonoApartado>();
     public DbSet<InventarioImei> InventarioImeis => Set<InventarioImei>();
     public DbSet<MovimientoInventario> MovimientosInventario => Set<MovimientoInventario>();
     public DbSet<SesionCaja> SesionesCaja => Set<SesionCaja>();
@@ -68,6 +70,8 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<ProductoVariante>().ToTable("ProductoVariante").HasKey(e => e.VarianteId);
         mb.Entity<Faltante>().ToTable("Faltante").HasKey(e => e.FaltanteId);
         mb.Entity<PagoEmpleado>().ToTable("PagoEmpleado").HasKey(e => e.PagoEmpleadoId);
+        mb.Entity<Apartado>().ToTable("Apartado").HasKey(e => e.ApartadoId);
+        mb.Entity<AbonoApartado>().ToTable("AbonoApartado").HasKey(e => e.AbonoApartadoId);
         mb.Entity<InventarioImei>().ToTable("InventarioImei").HasKey(e => e.ImeiId);
         mb.Entity<MovimientoInventario>().ToTable("MovimientoInventario").HasKey(e => e.MovimientoId);
         mb.Entity<SesionCaja>().ToTable("SesionCaja").HasKey(e => e.SesionCajaId);
@@ -100,6 +104,12 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<ProductoVariante>().HasOne(v => v.Producto).WithMany(p => p.Variantes).HasForeignKey(v => v.ProductoId);
         mb.Entity<Faltante>().HasOne(f => f.Variante).WithMany().HasForeignKey(f => f.VarianteId);
         mb.Entity<PagoEmpleado>().HasOne(p => p.Empleado).WithMany().HasForeignKey(p => p.EmpleadoId);
+
+        mb.Entity<Apartado>().HasOne(a => a.Cliente).WithMany().HasForeignKey(a => a.ClienteId);
+        mb.Entity<Apartado>().HasOne(a => a.Variante).WithMany().HasForeignKey(a => a.VarianteId);
+        mb.Entity<Apartado>().HasOne(a => a.Imei).WithMany().HasForeignKey(a => a.ImeiId);
+        mb.Entity<AbonoApartado>().HasOne(a => a.Apartado).WithMany(p => p.Abonos).HasForeignKey(a => a.ApartadoId);
+        mb.Entity<AbonoApartado>().HasOne(a => a.MetodoPago).WithMany().HasForeignKey(a => a.MetodoPagoId);
 
         mb.Entity<InventarioImei>().HasOne(i => i.Variante).WithMany(v => v.Imeis).HasForeignKey(i => i.VarianteId);
         mb.Entity<InventarioImei>().HasOne(i => i.Sucursal).WithMany(s => s.Inventario).HasForeignKey(i => i.SucursalId);

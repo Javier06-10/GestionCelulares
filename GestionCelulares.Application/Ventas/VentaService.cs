@@ -116,6 +116,7 @@ public class VentaService : IVentaService
 
     public async Task<IReadOnlyList<MetodoPagoDto>> MetodosPagoAsync()
         => await _db.MetodosPago.AsNoTracking()
+            .Where(m => m.Nombre != "Apartado")   // método interno; no se ofrece al cajero
             .OrderBy(m => m.MetodoPagoId)
             .Select(m => new MetodoPagoDto { MetodoPagoId = m.MetodoPagoId, Nombre = m.Nombre })
             .ToListAsync();
