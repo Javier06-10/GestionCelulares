@@ -48,8 +48,22 @@ export class Proveedores {
     tipo: ['contado' as 'contado' | 'credito'],
     numeroFactura: [''],
     total: [0, [Validators.required, Validators.min(0.01)]],
+    itbis: [0, [Validators.min(0)]],
+    tipoBienServicio: ['09'],
     notas: ['']
   });
+
+  // Tipos de bien/servicio DGII (formato 606)
+  tiposBienServicio = [
+    { v: '09', n: '09 - Compras del costo de venta' },
+    { v: '02', n: '02 - Trabajos/suministros/servicios' },
+    { v: '03', n: '03 - Arrendamientos' },
+    { v: '04', n: '04 - Gastos de activos fijos' },
+    { v: '06', n: '06 - Otras deducciones admitidas' },
+    { v: '07', n: '07 - Gastos financieros' },
+    { v: '10', n: '10 - Adquisiciones de activos' },
+    { v: '11', n: '11 - Gastos de seguros' }
+  ];
 
   // Modal pago
   modalPago = signal(false);
@@ -107,14 +121,14 @@ export class Proveedores {
   cerrarDetalle(): void { this.detalle.set(null); }
 
   // ----- Compra -----
-  abrirCompra(): void { this.errorCompra.set(null); this.formCompra.reset({ tipo: 'contado', numeroFactura: '', total: 0, notas: '' }); this.modalCompra.set(true); }
+  abrirCompra(): void { this.errorCompra.set(null); this.formCompra.reset({ tipo: 'contado', numeroFactura: '', total: 0, itbis: 0, tipoBienServicio: '09', notas: '' }); this.modalCompra.set(true); }
   registrarCompra(): void {
     const p = this.detalle();
     if (this.formCompra.invalid || !p) { this.formCompra.markAllAsTouched(); return; }
     const suc = this.auth.usuario()?.sucursalId;
     if (!suc) { this.errorCompra.set('Tu usuario no tiene sucursal asignada.'); return; }
     const v = this.formCompra.getRawValue();
-    this.servicio.registrarCompra(p.proveedorId, { sucursalId: suc, numeroFactura: v.numeroFactura?.trim() || null, total: v.total, notas: v.notas?.trim() || null, contado: v.tipo === 'contado' }).subscribe({
+    this.servicio.registrarCompra(p.proveedorId, { sucursalId: suc, numeroFactura: v.numeroFactura?.trim() || null, total: v.total, itbis: v.itbis, tipoBienServicio: v.tipoBienServicio, notas: v.notas?.trim() || null, contado: v.tipo === 'contado' }).subscribe({
       next: () => { this.modalCompra.set(false); this.refrescarDetalle(p.proveedorId); },
       error: err => this.errorCompra.set(err.error?.error ?? 'No se pudo registrar la compra.')
     });

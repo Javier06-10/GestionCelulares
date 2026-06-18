@@ -39,6 +39,12 @@ export interface Reporte607 {
   nombreArchivo: string; contenidoTxt: string; sinComprobante: number;
 }
 
+export interface Reporte606 {
+  periodo: string; rnc: string; cantidad: number;
+  totalMontoFacturado: number; totalItbis: number;
+  nombreArchivo: string; contenidoTxt: string; sinRnc: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ReporteService {
   private http = inject(HttpClient);
@@ -73,6 +79,10 @@ export class ReporteService {
   reporte607(anio: number, mes: number) {
     const p = new HttpParams().set('anio', anio).set('mes', mes);
     return this.http.get<Reporte607>(`${this.base}/607`, { params: p });
+  }
+  reporte606(anio: number, mes: number) {
+    const p = new HttpParams().set('anio', anio).set('mes', mes);
+    return this.http.get<Reporte606>(`${this.base}/606`, { params: p });
   }
 }
 

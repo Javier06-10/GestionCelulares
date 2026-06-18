@@ -59,4 +59,12 @@ public class ReportesController : ControllerBase
         if (mes < 1 || mes > 12) return BadRequest(new { error = "Mes inválido." });
         return Ok(await _fiscal.Generar607Async(anio, mes));
     }
+
+    /// <summary>Formato 606 (compras) de la DGII para un mes; devuelve resumen + contenido TXT.</summary>
+    [HttpGet("606")]
+    public async Task<IActionResult> Reporte606([FromQuery] int anio, [FromQuery] int mes)
+    {
+        if (mes < 1 || mes > 12) return BadRequest(new { error = "Mes inválido." });
+        return Ok(await _fiscal.Generar606Async(anio, mes));
+    }
 }

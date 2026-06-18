@@ -39,6 +39,10 @@ public class CompraRegistroDto
     [Required] public int SucursalId { get; set; }
     [StringLength(50)] public string? NumeroFactura { get; set; }
     [Range(0.01, double.MaxValue)] public decimal Total { get; set; }
+    /// <summary>ITBIS incluido en el total (para el reporte 606). 0 si la compra no lo desglosa.</summary>
+    [Range(0, double.MaxValue)] public decimal Itbis { get; set; }
+    /// <summary>Tipo de bien/servicio DGII (01-11). Default 09 = compras del costo de venta.</summary>
+    [StringLength(2)] public string? TipoBienServicio { get; set; }
     [StringLength(300)] public string? Notas { get; set; }
     /// <summary>true = pago inmediato completo (no afecta el balance); false = a crédito (aumenta lo adeudado).</summary>
     public bool Contado { get; set; }
@@ -52,6 +56,7 @@ public class CompraDto
     public string? NumeroFactura { get; set; }
     public DateTime Fecha { get; set; }
     public decimal Total { get; set; }
+    public decimal? Itbis { get; set; }
     public string? Notas { get; set; }
     public bool Contado { get; set; }
 }

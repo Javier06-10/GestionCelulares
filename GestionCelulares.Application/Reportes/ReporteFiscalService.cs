@@ -9,6 +9,9 @@ public interface IReporteFiscalService
 {
     /// <summary>Genera el formato 607 (ventas) de la DGII para un período mensual.</summary>
     Task<Reporte607Dto> Generar607Async(int anio, int mes);
+
+    /// <summary>Genera el formato 606 (compras) de la DGII para un período mensual.</summary>
+    Task<Reporte606Dto> Generar606Async(int anio, int mes);
 }
 
 public class ReporteFiscalService : IReporteFiscalService
@@ -119,6 +122,90 @@ public class ReporteFiscalService : IReporteFiscalService
         };
     }
 
+    public async Task<Reporte606Dto> Generar606Async(int anio, int mes)
+    {
+        var desde = new DateTime(anio, mes, 1);
+        var hasta = desde.AddMonths(1);
+        var periodo = $"{anio:0000}{mes:00}";
+
+        var rnc = SoloDigitos(await _db.Empresas.Select(e => e.RNC).FirstOrDefaultAsync());
+
+        var compras = await _db.Compras.AsNoTracking()
+            .Where(c => c.Fecha >= desde && c.Fecha < hasta)
+            .OrderBy(c => c.Fecha)
+            .Select(c => new CompraLinea
+            {
+                NumeroFactura = c.NumeroFactura,
+                Fecha = c.Fecha,
+                Total = c.Total,
+                Subtotal = c.Subtotal,
+                Itbis = c.Itbis,
+                TipoBienServicio = c.TipoBienServicio,
+                RncProveedor = c.Proveedor.RNC,
+                Contado = _db.PagosProveedor.Any(p => p.CompraId == c.CompraId)
+            })
+            .ToListAsync();
+
+        var sb = new StringBuilder();
+        sb.Append("606|").Append(rnc).Append('|').Append(periodo).Append('|').Append(compras.Count).Append('\n');
+
+        decimal totalBase = 0, totalItbis = 0;
+        int sinRnc = 0;
+
+        foreach (var c in compras)
+        {
+            var rncProv = SoloDigitos(c.RncProveedor);
+            var tipoId = rncProv.Length == 9 ? "1" : rncProv.Length == 11 ? "2" : "";
+            if (string.IsNullOrEmpty(rncProv)) sinRnc++;
+
+            var itbis = c.Itbis ?? 0;
+            var baseImponible = c.Subtotal ?? (c.Total - itbis);
+            totalBase += baseImponible;
+            totalItbis += itbis;
+
+            var tipoBS = string.IsNullOrWhiteSpace(c.TipoBienServicio) ? "09" : c.TipoBienServicio;
+            var formaPago = c.Contado ? "01" : "04";   // 01 efectivo (contado) / 04 a crédito
+
+            // 14 columnas usadas del formato 606 (las demás van vacías)
+            sb.Append(rncProv).Append('|')                       // 1 RNC/Cédula proveedor
+              .Append(tipoId).Append('|')                        // 2 Tipo identificación
+              .Append(tipoBS).Append('|')                        // 3 Tipo de bienes y servicios comprados
+              .Append((c.NumeroFactura ?? "").Trim()).Append('|')// 4 NCF
+              .Append('|')                                       // 5 NCF o documento modificado
+              .Append(c.Fecha.ToString("yyyyMMdd")).Append('|')  // 6 Fecha comprobante
+              .Append(c.Contado ? c.Fecha.ToString("yyyyMMdd") : "").Append('|') // 7 Fecha de pago
+              .Append("0.00").Append('|')                        // 8 Monto facturado en servicios
+              .Append(M(baseImponible)).Append('|')              // 9 Monto facturado en bienes
+              .Append(M(baseImponible)).Append('|')              // 10 Total monto facturado
+              .Append(M(itbis)).Append('|')                      // 11 ITBIS facturado
+              .Append('|')                                       // 12 ITBIS retenido
+              .Append('|')                                       // 13 ITBIS sujeto a proporcionalidad
+              .Append('|')                                       // 14 ITBIS llevado al costo
+              .Append(M(itbis)).Append('|')                      // 15 ITBIS por adelantar
+              .Append('|')                                       // 16 ITBIS percibido en compras
+              .Append('|')                                       // 17 Tipo de retención en ISR
+              .Append('|')                                       // 18 Monto retención renta
+              .Append('|')                                       // 19 ISR percibido en compras
+              .Append('|')                                       // 20 Impuesto selectivo al consumo
+              .Append('|')                                       // 21 Otros impuestos/tasas
+              .Append('|')                                       // 22 Monto propina legal
+              .Append(formaPago)                                 // 23 Forma de pago
+              .Append('\n');
+        }
+
+        return new Reporte606Dto
+        {
+            Periodo = periodo,
+            Rnc = rnc,
+            Cantidad = compras.Count,
+            TotalMontoFacturado = totalBase,
+            TotalItbis = totalItbis,
+            SinRnc = sinRnc,
+            NombreArchivo = $"606{rnc}{periodo}.txt",
+            ContenidoTxt = sb.ToString()
+        };
+    }
+
     private static string M(decimal v) => v.ToString("0.00", CultureInfo.InvariantCulture);
 
     private static string SoloDigitos(string? s)
@@ -141,5 +228,17 @@ public class ReporteFiscalService : IReporteFiscalService
     {
         public string Metodo { get; set; } = null!;
         public decimal Monto { get; set; }
+    }
+
+    private sealed class CompraLinea
+    {
+        public string? NumeroFactura { get; set; }
+        public DateTime Fecha { get; set; }
+        public decimal Total { get; set; }
+        public decimal? Subtotal { get; set; }
+        public decimal? Itbis { get; set; }
+        public string? TipoBienServicio { get; set; }
+        public string? RncProveedor { get; set; }
+        public bool Contado { get; set; }
     }
 }

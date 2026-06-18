@@ -98,6 +98,7 @@ public class ProveedorService : IProveedorService
                 NumeroFactura = c.NumeroFactura,
                 Fecha = c.Fecha,
                 Total = c.Total,
+                Itbis = c.Itbis,
                 Notas = c.Notas,
                 Contado = _db.PagosProveedor.Any(p => p.CompraId == c.CompraId)
             })
@@ -112,6 +113,7 @@ public class ProveedorService : IProveedorService
         if (!await _db.Sucursales.AnyAsync(s => s.SucursalId == dto.SucursalId))
             throw new ProveedorException("La sucursal indicada no existe.");
 
+        var itbis = Math.Min(dto.Itbis, dto.Total);
         var compra = new Compra
         {
             ProveedorId = proveedorId,
@@ -119,6 +121,9 @@ public class ProveedorService : IProveedorService
             NumeroFactura = Normalizar(dto.NumeroFactura),
             Fecha = DateTime.Now,
             Total = dto.Total,
+            Subtotal = dto.Total - itbis,
+            Itbis = itbis,
+            TipoBienServicio = string.IsNullOrWhiteSpace(dto.TipoBienServicio) ? "09" : dto.TipoBienServicio.Trim(),
             Notas = Normalizar(dto.Notas)
         };
         _db.Compras.Add(compra);

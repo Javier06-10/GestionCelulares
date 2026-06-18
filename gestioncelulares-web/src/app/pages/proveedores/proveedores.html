@@ -177,9 +177,21 @@
           <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">N.º factura</label>
           <input formControlName="numeroFactura" type="text" placeholder="FC-001" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
         </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Total *</label>
+            <input formControlName="total" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal font-semibold outline-none focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">ITBIS incluido</label>
+            <input formControlName="itbis" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+        </div>
         <div>
-          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Total *</label>
-          <input formControlName="total" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal font-semibold outline-none focus:border-tech-accent/60 focus:bg-white" />
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Tipo de bien/servicio (606)</label>
+          <select formControlName="tipoBienServicio" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white">
+            @for (t of tiposBienServicio; track t.v) { <option [value]="t.v">{{ t.n }}</option> }
+          </select>
         </div>
         <div>
           <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Notas</label>

@@ -35,8 +35,8 @@
   </div>
 }
 
-<!-- Filtro de período (DGII 607) -->
-@if (tab() === 'dgii') {
+<!-- Filtro de período (DGII 606/607) -->
+@if (tab() === 'dgii' || tab() === 'dgii606') {
   <div class="flex flex-wrap items-end gap-3 mb-4">
     <div>
       <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Mes</label>
@@ -206,6 +206,42 @@
     }
     @if (r.cantidad === 0) {
       <p class="py-8 text-center text-tech-steel text-sm">No hay ventas en el período seleccionado.</p>
+    } @else {
+      <p class="text-xs text-tech-steel mb-2">Vista previa del archivo (cabecera + primeras líneas):</p>
+      <pre class="text-xs bg-tech-bg-light/70 border border-tech-pastel/40 rounded-xl p-3 overflow-x-auto max-h-64 whitespace-pre">{{ r.contenidoTxt }}</pre>
+    }
+  </div>
+}
+
+<!-- ===== DGII 606 ===== -->
+@else if (tab() === 'dgii606' && dgii606(); as r) {
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+    <div class="kpi"><span class="t">Comprobantes</span><span class="v">{{ r.cantidad | number }}</span></div>
+    <div class="kpi"><span class="t">Monto facturado</span><span class="v">{{ r.totalMontoFacturado | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+    <div class="kpi accent"><span class="t">ITBIS facturado</span><span class="v">{{ r.totalItbis | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
+    <div class="kpi"><span class="t">Período</span><span class="v">{{ r.periodo }}</span></div>
+  </div>
+
+  <div class="panel">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+      <div>
+        <h3 class="font-semibold text-tech-charcoal">Formato 606 · Compras</h3>
+        <p class="text-xs text-tech-steel">RNC {{ r.rnc || '— (configura el RNC de la empresa)' }} · archivo <span class="font-mono">{{ r.nombreArchivo }}</span></p>
+      </div>
+      <button (click)="descargar606()" [disabled]="r.cantidad === 0"
+        class="flex items-center gap-2 px-4 py-2 rounded-xl bg-tech-charcoal text-white font-semibold text-sm transition-all hover:bg-tech-charcoal/90 active:scale-95 disabled:opacity-50">
+        <lucide-icon name="download" [size]="16"></lucide-icon> Descargar TXT
+      </button>
+    </div>
+
+    @if (r.sinRnc > 0) {
+      <div class="px-3.5 py-2.5 mb-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 text-sm">
+        <strong>{{ r.sinRnc }}</strong> compra(s) sin RNC del proveedor. El 606 exige el RNC/Cédula del proveedor por línea;
+        complétalo en la ficha del proveedor para que la declaración sea válida.
+      </div>
+    }
+    @if (r.cantidad === 0) {
+      <p class="py-8 text-center text-tech-steel text-sm">No hay compras en el período seleccionado.</p>
     } @else {
       <p class="text-xs text-tech-steel mb-2">Vista previa del archivo (cabecera + primeras líneas):</p>
       <pre class="text-xs bg-tech-bg-light/70 border border-tech-pastel/40 rounded-xl p-3 overflow-x-auto max-h-64 whitespace-pre">{{ r.contenidoTxt }}</pre>

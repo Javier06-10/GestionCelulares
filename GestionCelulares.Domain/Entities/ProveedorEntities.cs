@@ -24,6 +24,9 @@ public class Compra
     public string? NumeroFactura { get; set; }
     public DateTime Fecha { get; set; }
     public decimal Total { get; set; }
+    public decimal? Subtotal { get; set; }            // base sin ITBIS (para el 606)
+    public decimal? Itbis { get; set; }               // ITBIS de la compra (para el 606)
+    public string? TipoBienServicio { get; set; }     // código DGII 01-11 (default 09)
     public string? Notas { get; set; }
 
     public Proveedor Proveedor { get; set; } = null!;
