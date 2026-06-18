@@ -237,6 +237,7 @@
           </div>
           <div class="border-t border-dashed border-tech-pastel/60 my-2"></div>
           <div class="text-xs flex justify-between"><span>{{ f.factura }}</span><span>{{ f.fecha | date: 'dd/MM/yy HH:mm' }}</span></div>
+          @if (f.ncf) { <div class="text-xs font-semibold">NCF: {{ f.ncf }}</div> }
           @if (cfg.mostrarCliente && f.cliente) { <div class="text-xs">Cliente: {{ f.cliente }}</div> }
           @if (cfg.mostrarVendedor) { <div class="text-xs">Atendió: {{ f.vendedor }}</div> }
           <div class="border-t border-dashed border-tech-pastel/60 my-2"></div>
@@ -277,6 +278,7 @@
     </div>
     <div class="sep"></div>
     <div class="fila"><span>{{ f.factura }}</span><span>{{ f.fecha | date: 'dd/MM/yy HH:mm' }}</span></div>
+    @if (f.ncf) { <div><strong>NCF: {{ f.ncf }}</strong></div> }
     @if (cfg.mostrarCliente && f.cliente) { <div>Cliente: {{ f.cliente }}</div> }
     @if (cfg.mostrarVendedor) { <div>Atendió: {{ f.vendedor }}</div> }
     <div class="sep"></div>

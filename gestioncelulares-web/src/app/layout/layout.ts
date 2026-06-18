@@ -82,6 +82,7 @@ export class Layout {
       items: [
         { etiqueta: 'Proveedores', icono: 'truck', ruta: '/proveedores', soloAdmin: true },
         { etiqueta: 'Nómina', icono: 'hand-coins', ruta: '/nomina', soloAdmin: true },
+        { etiqueta: 'NCF', icono: 'receipt', ruta: '/ncf', soloAdmin: true },
         { etiqueta: 'Reportes', icono: 'bar-chart-3', ruta: '/reportes', soloAdmin: true },
         { etiqueta: 'Usuarios', icono: 'settings', ruta: '/usuarios', soloAdmin: true }
       ]

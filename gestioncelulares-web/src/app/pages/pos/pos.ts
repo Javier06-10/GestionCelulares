@@ -14,6 +14,7 @@ import { ClienteSelector } from '../../shared/cliente-selector/cliente-selector'
 
 interface FacturaData {
   factura: string;
+  ncf: string | null;
   fecha: Date;
   cliente: string | null;
   vendedor: string;
@@ -289,6 +290,7 @@ export class Pos {
         const metodo = this.metodos().find(m => m.metodoPagoId === this.metodoPagoId());
         this.factura.set({
           factura: v.numeroFactura ?? ('Venta #' + v.ventaId),
+          ncf: v.ncf ?? null,
           fecha: new Date(),
           cliente: this.clienteSel()?.nombre ?? null,
           vendedor: this.auth.usuario()?.nombreCompleto ?? '',

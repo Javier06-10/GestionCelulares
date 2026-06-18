@@ -26,6 +26,7 @@ export interface VentaRegistro {
 export interface Venta {
   ventaId: number;
   numeroFactura: string | null;
+  ncf: string | null;
   total: number;
   subtotal: number;
   impuesto: number;

@@ -18,11 +18,13 @@ public class VentaService : IVentaService
 {
     private readonly IApplicationDbContext _db;
     private readonly IVentaProcedures _procedures;
+    private readonly INcfProcedures _ncf;
 
-    public VentaService(IApplicationDbContext db, IVentaProcedures procedures)
+    public VentaService(IApplicationDbContext db, IVentaProcedures procedures, INcfProcedures ncf)
     {
         _db = db;
         _procedures = procedures;
+        _ncf = ncf;
     }
 
     public async Task<VentaDto> RegistrarAsync(VentaRegistroDto dto, int usuarioId)
@@ -81,8 +83,25 @@ public class VentaService : IVentaService
         // valida IMEIs, inserta cabecera/detalle/pago, marca vendidos, kardex y totales
         var ventaId = await _procedures.RegistrarAsync(dto, usuarioId, sesionCajaId);
 
+        // Asigna el NCF: 01 (Crédito Fiscal) si el cliente tiene RNC, 02 (Consumo) si no.
+        // Si no hay rango de NCF configurado/activo, la venta queda sin NCF (se reporta en el 607).
+        var cedula = dto.ClienteId.HasValue
+            ? await _db.Clientes.Where(c => c.ClienteId == dto.ClienteId.Value).Select(c => c.Cedula).FirstOrDefaultAsync()
+            : null;
+        var tipoNcf = SoloDigitos(cedula).Length == 9 ? "01" : "02";
+        var ncf = await _ncf.SiguienteNcfAsync(tipoNcf);
+        if (!string.IsNullOrEmpty(ncf))
+        {
+            var venta = await _db.Ventas.FirstAsync(v => v.VentaId == ventaId);
+            venta.Ncf = ncf;
+            await _db.SaveChangesAsync();
+        }
+
         return (await PorIdAsync(ventaId))!;
     }
+
+    private static string SoloDigitos(string? s)
+        => string.IsNullOrWhiteSpace(s) ? "" : new string(s.Where(char.IsDigit).ToArray());
 
     public async Task<VentaDto?> PorIdAsync(int id)
         => await _db.Ventas.AsNoTracking()
@@ -125,6 +144,7 @@ public class VentaService : IVentaService
     {
         VentaId = v.VentaId,
         NumeroFactura = v.NumeroFactura,
+        Ncf = v.Ncf,
         SucursalId = v.SucursalId,
         ClienteId = v.ClienteId,
         Cliente = v.Cliente == null ? null : v.Cliente.Nombre,

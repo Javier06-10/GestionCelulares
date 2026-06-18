@@ -1,0 +1,96 @@
+<!-- Encabezado -->
+<div class="mb-6">
+  <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Comprobantes Fiscales (NCF)</h2>
+  <p class="text-sm text-tech-steel mt-0.5">Rangos de NCF autorizados por la DGII. Las ventas toman el NCF según el cliente: Crédito Fiscal si tiene RNC, Consumo si no.</p>
+</div>
+
+<!-- Tabla -->
+<div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm border-collapse min-w-[760px]">
+      <thead>
+        <tr class="bg-tech-bg-light/80 text-tech-steel text-left">
+          <th class="font-semibold py-3 px-4">Tipo</th>
+          <th class="font-semibold py-3 px-4">Próximo NCF</th>
+          <th class="font-semibold py-3 px-4 text-right">Secuencia</th>
+          <th class="font-semibold py-3 px-4 text-right">Hasta</th>
+          <th class="font-semibold py-3 px-4 text-right">Disponibles</th>
+          <th class="font-semibold py-3 px-4">Vence</th>
+          <th class="font-semibold py-3 px-4 text-center">Estado</th>
+          <th class="font-semibold py-3 px-4 text-right"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          @for (i of [1,2,3]; track i) { <tr class="border-t border-tech-pastel/20"><td colspan="8" class="py-3 px-4"><div class="h-5 bg-tech-bg-light rounded animate-pulse"></div></td></tr> }
+        } @else {
+          @for (s of secuencias(); track s.secuenciaNcfId) {
+            <tr class="border-t border-tech-pastel/20 transition-colors hover:bg-tech-bg-light/60">
+              <td class="py-3 px-4">
+                <div class="font-semibold text-tech-charcoal">{{ s.descripcion }}</div>
+                <div class="text-xs text-tech-steel">Tipo {{ s.tipoComprobante }}</div>
+              </td>
+              <td class="py-3 px-4 font-mono text-tech-charcoal">{{ s.ejemplo }}</td>
+              <td class="py-3 px-4 text-right text-tech-charcoal">{{ s.secuencia | number }}</td>
+              <td class="py-3 px-4 text-right text-tech-charcoal">{{ s.hasta | number }}</td>
+              <td class="py-3 px-4 text-right font-semibold" [class]="s.disponibles <= 0 ? 'text-red-500' : (s.disponibles < 20 ? 'text-amber-600' : 'text-tech-accent')">{{ s.disponibles | number }}</td>
+              <td class="py-3 px-4 text-tech-steel">{{ s.vencimiento ? (s.vencimiento | date:'dd/MM/yyyy') : '—' }}</td>
+              <td class="py-3 px-4 text-center">
+                @if (s.activo) {
+                  <span class="inline-block px-2 py-0.5 rounded-lg bg-tech-accent/10 text-tech-accent font-semibold text-xs">Activo</span>
+                } @else {
+                  <span class="inline-block px-2 py-0.5 rounded-lg bg-slate-400/15 text-slate-500 font-semibold text-xs">Inactivo</span>
+                }
+              </td>
+              <td class="py-3 px-4 text-right">
+                <button (click)="abrir(s)" title="Configurar" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light hover:text-tech-charcoal active:scale-90 transition-all ml-auto"><lucide-icon name="pencil" [size]="16"></lucide-icon></button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<p class="text-xs text-tech-steel mt-3">Si un tipo no tiene rango activo, las ventas de ese tipo se registran sin NCF (se advierte en el reporte 607).</p>
+
+<!-- ===== Modal configurar ===== -->
+@if (modal()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modal.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="form" (ngSubmit)="guardar()" class="w-[min(440px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">{{ editando()?.descripcion }}</h3>
+        <button type="button" (click)="modal.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Serie</label>
+            <input formControlName="serie" type="text" maxlength="2" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal uppercase outline-none focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+          <div class="col-span-2">
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Secuencia inicial *</label>
+            <input formControlName="secuencia" type="number" min="1" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal font-semibold outline-none focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Hasta (último autorizado) *</label>
+          <input formControlName="hasta" type="number" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal font-semibold outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Vencimiento de la autorización</label>
+          <input formControlName="vencimiento" type="date" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" formControlName="activo" class="w-4 h-4 accent-[#00E676]" /><span class="text-sm text-tech-charcoal">Activo (las ventas usarán este rango)</span></label>
+        @if (errorForm()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorForm() }}</div> }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button type="button" (click)="modal.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" [disabled]="guardando()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 disabled:opacity-60">
+          @if (guardando()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Guardando… } @else { <lucide-icon name="check" [size]="16"></lucide-icon> Guardar }
+        </button>
+      </div>
+    </form>
+  </div>
+}

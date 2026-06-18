@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<IFaltanteService, FaltanteService>();
         services.AddScoped<INominaService, NominaService>();
         services.AddScoped<IApartadoService, ApartadoService>();
+        services.AddScoped<Ncf.INcfService, Ncf.NcfService>();
         return services;
     }
 }

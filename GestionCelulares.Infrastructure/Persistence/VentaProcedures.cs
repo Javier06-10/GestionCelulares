@@ -7,11 +7,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GestionCelulares.Infrastructure.Persistence;
 
-public class VentaProcedures : IVentaProcedures, ISecuenciaFactura
+public class VentaProcedures : IVentaProcedures, ISecuenciaFactura, INcfProcedures
 {
     private readonly GestionCelularesContext _db;
 
     public VentaProcedures(GestionCelularesContext db) => _db = db;
+
+    public async Task<string?> SiguienteNcfAsync(string tipo)
+    {
+        var conn = await AbrirAsync();
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = "dbo.usp_Ncf_Siguiente";
+        cmd.CommandType = CommandType.StoredProcedure;
+        cmd.Parameters.Add(new SqlParameter("@Tipo", SqlDbType.NVarChar, 2) { Value = tipo });
+        var salida = new SqlParameter("@Ncf", SqlDbType.NVarChar, 19) { Direction = ParameterDirection.Output };
+        cmd.Parameters.Add(salida);
+        await cmd.ExecuteNonQueryAsync();
+        return salida.Value as string;   // null si no hay NCF disponible
+    }
 
     private async Task<System.Data.Common.DbConnection> AbrirAsync()
     {

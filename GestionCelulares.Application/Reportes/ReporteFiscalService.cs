@@ -33,7 +33,7 @@ public class ReporteFiscalService : IReporteFiscalService
             .OrderBy(v => v.Fecha)
             .Select(v => new VentaLinea
             {
-                NumeroFactura = v.NumeroFactura,
+                NumeroFactura = v.Ncf ?? v.NumeroFactura,
                 Fecha = v.Fecha,
                 Subtotal = v.Subtotal,
                 Descuento = v.Descuento,

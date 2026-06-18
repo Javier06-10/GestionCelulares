@@ -83,3 +83,9 @@ public class ApartadoException : Exception
 {
     public ApartadoException(string message) : base(message) { }
 }
+
+/// <summary>Regla de negocio de NCF violada -> HTTP 400/404 en el controlador.</summary>
+public class NcfException : Exception
+{
+    public NcfException(string message) : base(message) { }
+}

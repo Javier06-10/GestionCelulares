@@ -10,6 +10,7 @@ public class Venta
 {
     public int VentaId { get; set; }
     public string? NumeroFactura { get; set; }
+    public string? Ncf { get; set; }
     public int SucursalId { get; set; }
     public int? ClienteId { get; set; }
     public int UsuarioId { get; set; }
