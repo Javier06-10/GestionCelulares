@@ -11,8 +11,13 @@ namespace GestionCelulares.Api.Controllers;
 public class ReportesController : ControllerBase
 {
     private readonly IReporteService _reportes;
+    private readonly IReporteFiscalService _fiscal;
 
-    public ReportesController(IReporteService reportes) => _reportes = reportes;
+    public ReportesController(IReporteService reportes, IReporteFiscalService fiscal)
+    {
+        _reportes = reportes;
+        _fiscal = fiscal;
+    }
 
     /// <summary>Ventas del período con totales, ITBIS, ganancia y desglose por día.</summary>
     [HttpGet("ventas")]
@@ -46,4 +51,12 @@ public class ReportesController : ControllerBase
     [HttpGet("cobros")]
     public async Task<IActionResult> Cobros([FromQuery] DateTime desde, [FromQuery] DateTime hasta)
         => Ok(await _reportes.CobrosAsync(desde, hasta));
+
+    /// <summary>Formato 607 (ventas) de la DGII para un mes; devuelve resumen + contenido TXT.</summary>
+    [HttpGet("607")]
+    public async Task<IActionResult> Reporte607([FromQuery] int anio, [FromQuery] int mes)
+    {
+        if (mes < 1 || mes > 12) return BadRequest(new { error = "Mes inválido." });
+        return Ok(await _fiscal.Generar607Async(anio, mes));
+    }
 }

@@ -2,11 +2,11 @@ import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 import {
-  exportarCsv, ReporteCaja, ReporteCobros, ReporteInventario,
+  descargarTxt, exportarCsv, Reporte607, ReporteCaja, ReporteCobros, ReporteInventario,
   ReporteMorosidad, ReporteService, ReporteTaller, ReporteVentas
 } from '../../core/reporte.service';
 
-type Tab = 'ventas' | 'inventario' | 'morosidad' | 'caja' | 'taller' | 'cobros';
+type Tab = 'ventas' | 'inventario' | 'morosidad' | 'caja' | 'taller' | 'cobros' | 'dgii';
 
 @Component({
   selector: 'app-reportes',
@@ -30,6 +30,17 @@ export class Reportes {
   caja = signal<ReporteCaja | null>(null);
   taller = signal<ReporteTaller | null>(null);
   cobros = signal<ReporteCobros | null>(null);
+  dgii607 = signal<Reporte607 | null>(null);
+
+  // Periodo del 607 (por defecto: mes anterior, que es el que se declara)
+  anio607 = signal(this.mesAnterior().anio);
+  mes607 = signal(this.mesAnterior().mes);
+  meses = [
+    { v: 1, n: 'Enero' }, { v: 2, n: 'Febrero' }, { v: 3, n: 'Marzo' }, { v: 4, n: 'Abril' },
+    { v: 5, n: 'Mayo' }, { v: 6, n: 'Junio' }, { v: 7, n: 'Julio' }, { v: 8, n: 'Agosto' },
+    { v: 9, n: 'Septiembre' }, { v: 10, n: 'Octubre' }, { v: 11, n: 'Noviembre' }, { v: 12, n: 'Diciembre' }
+  ];
+  anios = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i);
 
   tabs: { id: Tab; label: string; icono: string; conFecha: boolean }[] = [
     { id: 'ventas', label: 'Ventas', icono: 'trending-up', conFecha: true },
@@ -37,11 +48,16 @@ export class Reportes {
     { id: 'morosidad', label: 'Morosidad', icono: 'circle-alert', conFecha: false },
     { id: 'caja', label: 'Caja', icono: 'wallet', conFecha: true },
     { id: 'taller', label: 'Taller', icono: 'wrench', conFecha: true },
-    { id: 'cobros', label: 'Cobros', icono: 'coins', conFecha: true }
+    { id: 'cobros', label: 'Cobros', icono: 'coins', conFecha: true },
+    { id: 'dgii', label: 'DGII 607', icono: 'file-text', conFecha: false }
   ];
 
   private hoy(): string { return new Date().toISOString().slice(0, 10); }
   private inicioMes(): string { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10); }
+  private mesAnterior(): { anio: number; mes: number } {
+    const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1);
+    return { anio: d.getFullYear(), mes: d.getMonth() + 1 };
+  }
 
   get tabActual() { return this.tabs.find(t => t.id === this.tab())!; }
 
@@ -63,7 +79,13 @@ export class Reportes {
       case 'caja': this.servicio.caja(d, h).subscribe({ next: r => { this.caja.set(r); fin(); }, error: fin }); break;
       case 'taller': this.servicio.taller(d, h).subscribe({ next: r => { this.taller.set(r); fin(); }, error: fin }); break;
       case 'cobros': this.servicio.cobros(d, h).subscribe({ next: r => { this.cobros.set(r); fin(); }, error: fin }); break;
+      case 'dgii': this.servicio.reporte607(this.anio607(), this.mes607()).subscribe({ next: r => { this.dgii607.set(r); fin(); }, error: fin }); break;
     }
+  }
+
+  descargar607(): void {
+    const r = this.dgii607(); if (!r) return;
+    descargarTxt(r.nombreArchivo, r.contenidoTxt);
   }
 
   // ----- Exportaciones CSV -----

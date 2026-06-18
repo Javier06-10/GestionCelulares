@@ -33,6 +33,12 @@ export interface ReporteCobros {
   porDia: { fecha: string; pagos: number; total: number }[];
 }
 
+export interface Reporte607 {
+  periodo: string; rnc: string; cantidad: number;
+  totalMontoFacturado: number; totalItbis: number;
+  nombreArchivo: string; contenidoTxt: string; sinComprobante: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ReporteService {
   private http = inject(HttpClient);
@@ -64,6 +70,21 @@ export class ReporteService {
   cobros(desde: string, hasta: string) {
     return this.http.get<ReporteCobros>(`${this.base}/cobros`, { params: this.rango(desde, hasta) });
   }
+  reporte607(anio: number, mes: number) {
+    const p = new HttpParams().set('anio', anio).set('mes', mes);
+    return this.http.get<Reporte607>(`${this.base}/607`, { params: p });
+  }
+}
+
+/** Descarga un archivo de texto plano (ej. el TXT del 607 para la DGII). */
+export function descargarTxt(nombre: string, contenido: string): void {
+  const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nombre;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /** Exporta filas a CSV y dispara la descarga. */

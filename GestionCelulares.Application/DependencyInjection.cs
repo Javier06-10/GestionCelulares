@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<ITallerService, TallerService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IReporteService, ReporteService>();
+        services.AddScoped<IReporteFiscalService, ReporteFiscalService>();
         services.AddScoped<IGarantiaService, GarantiaService>();
         services.AddScoped<IFaltanteService, FaltanteService>();
         services.AddScoped<INominaService, NominaService>();
