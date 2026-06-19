@@ -167,14 +167,14 @@ public class CajaService : ICajaService
 
         // Ventas del turno (cantidad y total facturado)
         var ventas = await _db.Ventas.AsNoTracking()
-            .Where(v => v.SesionCajaId == sesionCajaId)
+            .Where(v => v.SesionCajaId == sesionCajaId && v.Estado != "Anulada")
             .GroupBy(_ => 1)
             .Select(g => new { Cantidad = g.Count(), Total = g.Sum(v => v.Total) })
             .FirstOrDefaultAsync();
 
         // Cobros de ventas desglosados por método de pago
         var porMetodo = await _db.VentaPagos.AsNoTracking()
-            .Where(p => p.Venta.SesionCajaId == sesionCajaId)
+            .Where(p => p.Venta.SesionCajaId == sesionCajaId && p.Venta.Estado != "Anulada")
             .GroupBy(p => p.MetodoPago.Nombre)
             .Select(g => new ResumenMetodoDto { Metodo = g.Key, Cantidad = g.Count(), Monto = g.Sum(x => x.Monto) })
             .OrderByDescending(m => m.Monto)

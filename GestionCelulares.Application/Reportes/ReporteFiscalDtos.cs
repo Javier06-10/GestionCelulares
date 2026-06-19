@@ -27,3 +27,13 @@ public class Reporte606Dto
     /// <summary>Compras sin RNC del proveedor (no válidas para el 606).</summary>
     public int SinRnc { get; set; }
 }
+
+/// <summary>Reporte 608 (Comprobantes Anulados) en formato TXT de la DGII.</summary>
+public class Reporte608Dto
+{
+    public string Periodo { get; set; } = null!;          // YYYYMM
+    public string Rnc { get; set; } = null!;
+    public int Cantidad { get; set; }
+    public string NombreArchivo { get; set; } = null!;
+    public string ContenidoTxt { get; set; } = null!;
+}

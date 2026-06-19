@@ -12,6 +12,9 @@ public interface IReporteFiscalService
 
     /// <summary>Genera el formato 606 (compras) de la DGII para un período mensual.</summary>
     Task<Reporte606Dto> Generar606Async(int anio, int mes);
+
+    /// <summary>Genera el formato 608 (comprobantes anulados) de la DGII para un período mensual.</summary>
+    Task<Reporte608Dto> Generar608Async(int anio, int mes);
 }
 
 public class ReporteFiscalService : IReporteFiscalService
@@ -202,6 +205,41 @@ public class ReporteFiscalService : IReporteFiscalService
             TotalItbis = totalItbis,
             SinRnc = sinRnc,
             NombreArchivo = $"606{rnc}{periodo}.txt",
+            ContenidoTxt = sb.ToString()
+        };
+    }
+
+    public async Task<Reporte608Dto> Generar608Async(int anio, int mes)
+    {
+        var desde = new DateTime(anio, mes, 1);
+        var hasta = desde.AddMonths(1);
+        var periodo = $"{anio:0000}{mes:00}";
+        var rnc = SoloDigitos(await _db.Empresas.Select(e => e.RNC).FirstOrDefaultAsync());
+
+        var anulados = await _db.ComprobantesAnulados.AsNoTracking()
+            .Where(a => a.FechaRegistro >= desde && a.FechaRegistro < hasta)
+            .OrderBy(a => a.FechaComprobante)
+            .Select(a => new { a.Ncf, a.FechaComprobante, a.TipoAnulacion })
+            .ToListAsync();
+
+        var sb = new StringBuilder();
+        sb.Append("608|").Append(rnc).Append('|').Append(periodo).Append('|').Append(anulados.Count).Append('\n');
+
+        foreach (var a in anulados)
+        {
+            // 3 columnas del formato 608
+            sb.Append((a.Ncf ?? "").Trim()).Append('|')         // 1 NCF
+              .Append(a.FechaComprobante.ToString("yyyyMMdd")).Append('|') // 2 Fecha comprobante
+              .Append(a.TipoAnulacion)                          // 3 Tipo de anulación
+              .Append('\n');
+        }
+
+        return new Reporte608Dto
+        {
+            Periodo = periodo,
+            Rnc = rnc,
+            Cantidad = anulados.Count,
+            NombreArchivo = $"608{rnc}{periodo}.txt",
             ContenidoTxt = sb.ToString()
         };
     }

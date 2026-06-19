@@ -67,4 +67,12 @@ public class ReportesController : ControllerBase
         if (mes < 1 || mes > 12) return BadRequest(new { error = "Mes inválido." });
         return Ok(await _fiscal.Generar606Async(anio, mes));
     }
+
+    /// <summary>Formato 608 (comprobantes anulados) de la DGII para un mes.</summary>
+    [HttpGet("608")]
+    public async Task<IActionResult> Reporte608([FromQuery] int anio, [FromQuery] int mes)
+    {
+        if (mes < 1 || mes > 12) return BadRequest(new { error = "Mes inválido." });
+        return Ok(await _fiscal.Generar608Async(anio, mes));
+    }
 }

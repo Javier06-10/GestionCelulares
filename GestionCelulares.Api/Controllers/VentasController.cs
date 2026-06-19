@@ -89,4 +89,19 @@ public class VentasController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    /// <summary>Anula una venta: revierte el inventario y registra el NCF anulado (608). Solo administrador.</summary>
+    [Authorize(Roles = Roles.Admin)]
+    [HttpPost("{id:int}/anular")]
+    public async Task<IActionResult> Anular(int id, [FromBody] AnularVentaDto dto)
+    {
+        try
+        {
+            return Ok(await _ventas.AnularAsync(id, dto, UsuarioId));
+        }
+        catch (VentaException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }

@@ -39,6 +39,11 @@ export interface Reporte607 {
   nombreArchivo: string; contenidoTxt: string; sinComprobante: number;
 }
 
+export interface Reporte608 {
+  periodo: string; rnc: string; cantidad: number;
+  nombreArchivo: string; contenidoTxt: string;
+}
+
 export interface Reporte606 {
   periodo: string; rnc: string; cantidad: number;
   totalMontoFacturado: number; totalItbis: number;
@@ -83,6 +88,10 @@ export class ReporteService {
   reporte606(anio: number, mes: number) {
     const p = new HttpParams().set('anio', anio).set('mes', mes);
     return this.http.get<Reporte606>(`${this.base}/606`, { params: p });
+  }
+  reporte608(anio: number, mes: number) {
+    const p = new HttpParams().set('anio', anio).set('mes', mes);
+    return this.http.get<Reporte608>(`${this.base}/608`, { params: p });
   }
 }
 

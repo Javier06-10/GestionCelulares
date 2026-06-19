@@ -18,6 +18,7 @@ import { Proveedores } from './pages/proveedores/proveedores';
 import { Reportes } from './pages/reportes/reportes';
 import { Taller } from './pages/taller/taller';
 import { Usuarios } from './pages/usuarios/usuarios';
+import { Ventas } from './pages/ventas/ventas';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -28,6 +29,7 @@ export const routes: Routes = [
     children: [
       { path: '', component: Dashboard },
       { path: 'pos', component: Pos },
+      { path: 'ventas', component: Ventas },
       { path: 'clientes', component: Clientes },
       { path: 'inventario', component: Inventario },
       { path: 'faltantes', component: Faltantes },

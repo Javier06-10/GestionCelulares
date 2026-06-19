@@ -73,6 +73,7 @@ public class VentaResumenDto
 {
     public int VentaId { get; set; }
     public string? NumeroFactura { get; set; }
+    public string? Ncf { get; set; }
     public int SucursalId { get; set; }
     public string? Cliente { get; set; }
     public DateTime Fecha { get; set; }
@@ -85,4 +86,11 @@ public class MetodoPagoDto
 {
     public int MetodoPagoId { get; set; }
     public string Nombre { get; set; } = null!;
+}
+
+public class AnularVentaDto
+{
+    /// <summary>Código de tipo de anulación DGII (01-09).</summary>
+    [Required, StringLength(2)] public string TipoAnulacion { get; set; } = null!;
+    [StringLength(200)] public string? Motivo { get; set; }
 }

@@ -12,6 +12,7 @@ public interface IVentaService
     Task<VentaDto?> PorIdAsync(int id);
     Task<IReadOnlyList<VentaResumenDto>> BuscarAsync(DateTime? desde, DateTime? hasta, int? sucursalId, int? clienteId);
     Task<IReadOnlyList<MetodoPagoDto>> MetodosPagoAsync();
+    Task<VentaDto> AnularAsync(int ventaId, AnularVentaDto dto, int? usuarioId);
 }
 
 public class VentaService : IVentaService
@@ -103,6 +104,70 @@ public class VentaService : IVentaService
     private static string SoloDigitos(string? s)
         => string.IsNullOrWhiteSpace(s) ? "" : new string(s.Where(char.IsDigit).ToArray());
 
+    private static readonly string[] TiposAnulacion =
+        { "01", "02", "03", "04", "05", "06", "07", "08", "09" };
+
+    public async Task<VentaDto> AnularAsync(int ventaId, AnularVentaDto dto, int? usuarioId)
+    {
+        var venta = await _db.Ventas.Include(v => v.Detalles)
+            .FirstOrDefaultAsync(v => v.VentaId == ventaId)
+            ?? throw new VentaException("La venta no existe.");
+
+        if (venta.Estado == "Anulada")
+            throw new VentaException("La venta ya está anulada.");
+        if (venta.Estado != "Completada")
+            throw new VentaException("Solo se pueden anular ventas completadas.");
+        if (!TiposAnulacion.Contains(dto.TipoAnulacion))
+            throw new VentaException("El tipo de anulación no es válido.");
+
+        // Revertir el inventario (los bienes vuelven al stock)
+        foreach (var d in venta.Detalles)
+        {
+            if (d.ImeiId.HasValue)
+            {
+                var imei = await _db.InventarioImeis.FirstOrDefaultAsync(i => i.ImeiId == d.ImeiId.Value);
+                if (imei is not null && imei.Estado == "Vendido")
+                {
+                    imei.Estado = "Disponible";
+                    _db.MovimientosInventario.Add(new MovimientoInventario
+                    {
+                        ImeiId = imei.ImeiId,
+                        Tipo = "Anulacion",
+                        SucursalDestino = venta.SucursalId,
+                        Referencia = $"Anulación venta #{venta.VentaId}",
+                        UsuarioId = usuarioId,
+                        Fecha = DateTime.Now
+                    });
+                }
+            }
+            else
+            {
+                var variante = await _db.ProductoVariantes.FirstOrDefaultAsync(v => v.VarianteId == d.VarianteId);
+                if (variante is not null) variante.StockNoSerial += d.Cantidad;
+            }
+        }
+
+        venta.Estado = "Anulada";
+
+        // Si tenía NCF, queda registrado como comprobante anulado (alimenta el 608)
+        if (!string.IsNullOrWhiteSpace(venta.Ncf))
+        {
+            _db.ComprobantesAnulados.Add(new ComprobanteAnulado
+            {
+                Ncf = venta.Ncf,
+                FechaComprobante = venta.Fecha,
+                TipoAnulacion = dto.TipoAnulacion,
+                Motivo = string.IsNullOrWhiteSpace(dto.Motivo) ? null : dto.Motivo.Trim(),
+                VentaId = venta.VentaId,
+                UsuarioId = usuarioId,
+                FechaRegistro = DateTime.Now
+            });
+        }
+
+        await _db.SaveChangesAsync();
+        return (await PorIdAsync(ventaId))!;
+    }
+
     public async Task<VentaDto?> PorIdAsync(int id)
         => await _db.Ventas.AsNoTracking()
             .Where(v => v.VentaId == id)
@@ -123,6 +188,7 @@ public class VentaService : IVentaService
             {
                 VentaId = v.VentaId,
                 NumeroFactura = v.NumeroFactura,
+                Ncf = v.Ncf,
                 SucursalId = v.SucursalId,
                 Cliente = v.Cliente == null ? null : v.Cliente.Nombre,
                 Fecha = v.Fecha,

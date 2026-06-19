@@ -2,11 +2,11 @@ import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 import {
-  descargarTxt, exportarCsv, Reporte606, Reporte607, ReporteCaja, ReporteCobros, ReporteInventario,
+  descargarTxt, exportarCsv, Reporte606, Reporte607, Reporte608, ReporteCaja, ReporteCobros, ReporteInventario,
   ReporteMorosidad, ReporteService, ReporteTaller, ReporteVentas
 } from '../../core/reporte.service';
 
-type Tab = 'ventas' | 'inventario' | 'morosidad' | 'caja' | 'taller' | 'cobros' | 'dgii' | 'dgii606';
+type Tab = 'ventas' | 'inventario' | 'morosidad' | 'caja' | 'taller' | 'cobros' | 'dgii' | 'dgii606' | 'dgii608';
 
 @Component({
   selector: 'app-reportes',
@@ -32,6 +32,7 @@ export class Reportes {
   cobros = signal<ReporteCobros | null>(null);
   dgii607 = signal<Reporte607 | null>(null);
   dgii606 = signal<Reporte606 | null>(null);
+  dgii608 = signal<Reporte608 | null>(null);
 
   // Periodo del 607 (por defecto: mes anterior, que es el que se declara)
   anio607 = signal(this.mesAnterior().anio);
@@ -51,7 +52,8 @@ export class Reportes {
     { id: 'taller', label: 'Taller', icono: 'wrench', conFecha: true },
     { id: 'cobros', label: 'Cobros', icono: 'coins', conFecha: true },
     { id: 'dgii', label: 'DGII 607', icono: 'file-text', conFecha: false },
-    { id: 'dgii606', label: 'DGII 606', icono: 'file-text', conFecha: false }
+    { id: 'dgii606', label: 'DGII 606', icono: 'file-text', conFecha: false },
+    { id: 'dgii608', label: 'DGII 608', icono: 'file-text', conFecha: false }
   ];
 
   private hoy(): string { return new Date().toISOString().slice(0, 10); }
@@ -83,6 +85,7 @@ export class Reportes {
       case 'cobros': this.servicio.cobros(d, h).subscribe({ next: r => { this.cobros.set(r); fin(); }, error: fin }); break;
       case 'dgii': this.servicio.reporte607(this.anio607(), this.mes607()).subscribe({ next: r => { this.dgii607.set(r); fin(); }, error: fin }); break;
       case 'dgii606': this.servicio.reporte606(this.anio607(), this.mes607()).subscribe({ next: r => { this.dgii606.set(r); fin(); }, error: fin }); break;
+      case 'dgii608': this.servicio.reporte608(this.anio607(), this.mes607()).subscribe({ next: r => { this.dgii608.set(r); fin(); }, error: fin }); break;
     }
   }
 
@@ -92,6 +95,10 @@ export class Reportes {
   }
   descargar606(): void {
     const r = this.dgii606(); if (!r) return;
+    descargarTxt(r.nombreArchivo, r.contenidoTxt);
+  }
+  descargar608(): void {
+    const r = this.dgii608(); if (!r) return;
     descargarTxt(r.nombreArchivo, r.contenidoTxt);
   }
 

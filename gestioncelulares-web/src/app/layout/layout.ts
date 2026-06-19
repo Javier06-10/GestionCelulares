@@ -66,6 +66,7 @@ export class Layout {
       items: [
         { etiqueta: 'Dashboard', icono: 'layout-dashboard', ruta: '/' },
         { etiqueta: 'POS / Ventas', icono: 'shopping-cart', ruta: '/pos' },
+        { etiqueta: 'Ventas', icono: 'clipboard-list', ruta: '/ventas' },
         { etiqueta: 'Inventario', icono: 'package', ruta: '/inventario' },
         { etiqueta: 'Faltantes', icono: 'package-x', ruta: '/faltantes' },
         { etiqueta: 'Catálogo', icono: 'layers', ruta: '/catalogo' },

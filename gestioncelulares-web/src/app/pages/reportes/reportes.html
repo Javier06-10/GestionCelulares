@@ -36,7 +36,7 @@
 }
 
 <!-- Filtro de período (DGII 606/607) -->
-@if (tab() === 'dgii' || tab() === 'dgii606') {
+@if (tab() === 'dgii' || tab() === 'dgii606' || tab() === 'dgii608') {
   <div class="flex flex-wrap items-end gap-3 mb-4">
     <div>
       <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Mes</label>
@@ -244,6 +244,34 @@
       <p class="py-8 text-center text-tech-steel text-sm">No hay compras en el período seleccionado.</p>
     } @else {
       <p class="text-xs text-tech-steel mb-2">Vista previa del archivo (cabecera + primeras líneas):</p>
+      <pre class="text-xs bg-tech-bg-light/70 border border-tech-pastel/40 rounded-xl p-3 overflow-x-auto max-h-64 whitespace-pre">{{ r.contenidoTxt }}</pre>
+    }
+  </div>
+}
+
+<!-- ===== DGII 608 ===== -->
+@else if (tab() === 'dgii608' && dgii608(); as r) {
+  <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+    <div class="kpi"><span class="t">NCF anulados</span><span class="v">{{ r.cantidad | number }}</span></div>
+    <div class="kpi"><span class="t">Período</span><span class="v">{{ r.periodo }}</span></div>
+    <div class="kpi"><span class="t">RNC</span><span class="v text-base">{{ r.rnc || '—' }}</span></div>
+  </div>
+
+  <div class="panel">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+      <div>
+        <h3 class="font-semibold text-tech-charcoal">Formato 608 · Comprobantes anulados</h3>
+        <p class="text-xs text-tech-steel">Archivo <span class="font-mono">{{ r.nombreArchivo }}</span></p>
+      </div>
+      <button (click)="descargar608()" [disabled]="r.cantidad === 0"
+        class="flex items-center gap-2 px-4 py-2 rounded-xl bg-tech-charcoal text-white font-semibold text-sm transition-all hover:bg-tech-charcoal/90 active:scale-95 disabled:opacity-50">
+        <lucide-icon name="download" [size]="16"></lucide-icon> Descargar TXT
+      </button>
+    </div>
+    @if (r.cantidad === 0) {
+      <p class="py-8 text-center text-tech-steel text-sm">No hay comprobantes anulados en el período. Anula ventas desde la sección <strong>Ventas</strong>.</p>
+    } @else {
+      <p class="text-xs text-tech-steel mb-2">Vista previa del archivo (cabecera + líneas NCF | fecha | tipo):</p>
       <pre class="text-xs bg-tech-bg-light/70 border border-tech-pastel/40 rounded-xl p-3 overflow-x-auto max-h-64 whitespace-pre">{{ r.contenidoTxt }}</pre>
     }
   </div>
