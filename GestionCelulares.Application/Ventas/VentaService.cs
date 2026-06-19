@@ -86,16 +86,24 @@ public class VentaService : IVentaService
 
         // Asigna el NCF: 01 (Crédito Fiscal) si el cliente tiene RNC, 02 (Consumo) si no.
         // Si no hay rango de NCF configurado/activo, la venta queda sin NCF (se reporta en el 607).
-        var cedula = dto.ClienteId.HasValue
-            ? await _db.Clientes.Where(c => c.ClienteId == dto.ClienteId.Value).Select(c => c.Cedula).FirstOrDefaultAsync()
-            : null;
-        var tipoNcf = SoloDigitos(cedula).Length == 9 ? "01" : "02";
-        var ncf = await _ncf.SiguienteNcfAsync(tipoNcf);
-        if (!string.IsNullOrEmpty(ncf))
+        // La venta ya quedó registrada por el SP: un fallo aquí NO debe tumbarla.
+        try
         {
-            var venta = await _db.Ventas.FirstAsync(v => v.VentaId == ventaId);
-            venta.Ncf = ncf;
-            await _db.SaveChangesAsync();
+            var cedula = dto.ClienteId.HasValue
+                ? await _db.Clientes.Where(c => c.ClienteId == dto.ClienteId.Value).Select(c => c.Cedula).FirstOrDefaultAsync()
+                : null;
+            var tipoNcf = SoloDigitos(cedula).Length == 9 ? "01" : "02";
+            var ncf = await _ncf.SiguienteNcfAsync(tipoNcf);
+            if (!string.IsNullOrEmpty(ncf))
+            {
+                var venta = await _db.Ventas.FirstAsync(v => v.VentaId == ventaId);
+                venta.Ncf = ncf;
+                await _db.SaveChangesAsync();
+            }
+        }
+        catch
+        {
+            // El NCF se podrá asignar/corregir luego; la venta ya está registrada.
         }
 
         return (await PorIdAsync(ventaId))!;
