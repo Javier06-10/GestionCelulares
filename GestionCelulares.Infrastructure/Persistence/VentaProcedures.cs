@@ -42,7 +42,7 @@ public class VentaProcedures : IVentaProcedures, ISecuenciaFactura, INcfProcedur
         cmd.CommandText = @"
             UPDATE dbo.Secuencia
                SET Valor = Valor + 1
-             OUTPUT Prefijo = inserted.Prefijo, inserted.Valor, inserted.Longitud
+             OUTPUT inserted.Prefijo, inserted.Valor, inserted.Longitud
              WHERE Nombre = N'Factura';";
         await using var reader = await cmd.ExecuteReaderAsync();
         if (!await reader.ReadAsync())
