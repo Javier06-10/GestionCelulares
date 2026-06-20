@@ -53,7 +53,12 @@
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Cédula</label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-semibold text-tech-charcoal">Cédula / RNC</label>
+              <a href="https://www.dgii.gov.do/app/web/consultasWeb.aspx" target="_blank" class="text-[0.65rem] text-tech-purple hover:underline flex items-center gap-0.5" title="Validar en la DGII">
+                <span>DGII</span> <lucide-icon name="arrow-up-right" [size]="10"></lucide-icon>
+              </a>
+            </div>
             <input formControlName="cedula" type="text" placeholder="000-0000000-0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
           </div>
           <div>

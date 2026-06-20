@@ -1,9 +1,10 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
+import { SoundService } from '../../core/sound.service';
 import { CajaService } from '../../core/caja.service';
 import { CatalogoService, Producto } from '../../core/catalogo.service';
 import { Cliente } from '../../core/cliente.service';
@@ -51,6 +52,7 @@ export class Pos {
   private catalogo = inject(CatalogoService);
   private caja = inject(CajaService);
   private ventas = inject(VentaService);
+  private sound = inject(SoundService);
   auth = inject(AuthService);
 
   // Estado de caja
@@ -143,8 +145,10 @@ export class Pos {
         const libre = imeis.find(i => !this.carrito().some(l => l.imeiId === i.imeiId));
         if (!libre) {
           this.errorDispositivo.set('No quedan equipos disponibles de ese modelo.');
+          this.sound.playError();
           return;
         }
+        this.sound.playScan();
         this.carrito.update(c => [...c, {
           key: 'imei-' + libre.imeiId,
           imeiId: libre.imeiId,
@@ -157,7 +161,10 @@ export class Pos {
           serializado: true
         }]);
       },
-      error: () => this.errorDispositivo.set('No se pudieron cargar los equipos disponibles.')
+      error: () => {
+        this.errorDispositivo.set('No se pudieron cargar los equipos disponibles.');
+        this.sound.playError();
+      }
     });
   }
 
@@ -173,12 +180,15 @@ export class Pos {
         this.buscandoImei.set(false);
         if (e.estado !== 'Disponible') {
           this.errorImei.set(`El equipo está '${e.estado}', no se puede vender.`);
+          this.sound.playError();
           return;
         }
         if (this.carrito().some(l => l.imeiId === e.imeiId)) {
           this.errorImei.set('Ese equipo ya está en el carrito.');
+          this.sound.playError();
           return;
         }
+        this.sound.playScan();
         // Precio de venta desde el catálogo (la consulta por IMEI no lo trae)
         const precio = this.precioDeVariante(e.varianteId);
         this.carrito.update(c => [...c, {
@@ -187,6 +197,7 @@ export class Pos {
           varianteId: e.varianteId,
           descripcion: `${e.producto}${e.color ? ' · ' + e.color : ''}${e.almacenamiento ? ' · ' + e.almacenamiento : ''}`,
           imei: e.imei,
+          shadowClass: 'imei-' + e.imeiId,
           cantidad: 1,
           precioUnitario: precio,
           descuento: 0,
@@ -197,6 +208,7 @@ export class Pos {
       error: () => {
         this.buscandoImei.set(false);
         this.errorImei.set('No se encontró ningún equipo con ese IMEI.');
+        this.sound.playError();
       }
     });
   }
@@ -211,6 +223,7 @@ export class Pos {
 
   // ----- Agregar accesorio -----
   agregarAccesorio(a: { varianteId: number; nombre: string; detalle: string; precioVenta: number }): void {
+    this.sound.playScan();
     const existente = this.carrito().find(l => l.varianteId === a.varianteId && l.imeiId === null);
     if (existente) {
       this.carrito.update(c => c.map(l => l.key === existente.key ? { ...l, cantidad: l.cantidad + 1 } : l));
@@ -286,6 +299,8 @@ export class Pos {
     }).subscribe({
       next: v => {
         this.procesando.set(false);
+        this.sound.playSuccess();
+        this.lanzarConfeti();
         // Armar la factura con el detalle del carrito antes de vaciarlo
         const metodo = this.metodos().find(m => m.metodoPagoId === this.metodoPagoId());
         this.factura.set({
@@ -314,6 +329,7 @@ export class Pos {
       },
       error: err => {
         this.procesando.set(false);
+        this.sound.playError();
         this.errorVenta.set(err.error?.error ?? 'No se pudo registrar la venta.');
       }
     });
@@ -354,5 +370,151 @@ export class Pos {
     } else {
       this.modalConfig.set(false);
     }
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  manejarAtajos(event: KeyboardEvent): void {
+    if (this.modalConfig()) return;
+
+    if (event.key === 'F2') {
+      event.preventDefault();
+      const inputEl = document.querySelector('input[name="imei"]') as HTMLInputElement;
+      if (inputEl) {
+        inputEl.focus();
+        inputEl.select();
+      }
+    } else if (event.key === 'F8') {
+      event.preventDefault();
+      this.alternarCredito(!this.esCredito());
+    } else if (event.key === 'F9') {
+      event.preventDefault();
+      const clienteInput = document.querySelector('input[placeholder*="cliente"]') as HTMLInputElement;
+      if (clienteInput) {
+        clienteInput.focus();
+        clienteInput.select();
+      }
+    } else if (event.key === 'F10' || (event.ctrlKey && event.key === 'Enter')) {
+      if (this.puedeCobrar() && !this.procesando()) {
+        event.preventDefault();
+        this.cobrar();
+      }
+    } else if (event.key === 'Escape') {
+      if (this.factura()) {
+        this.nuevaVenta();
+      } else if (this.modalConfig()) {
+        this.modalConfig.set(false);
+      }
+    }
+  }
+
+  lanzarConfeti(): void {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100vw';
+      canvas.style.height = '100vh';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = '9999';
+      document.body.appendChild(canvas);
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      const handleResize = () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      };
+      window.addEventListener('resize', handleResize);
+
+      const particles: any[] = [];
+      const colors = ['#00E676', '#6C5CE7', '#00c853', '#80ee9f', '#a29bfe', '#ffffff'];
+
+      for (let i = 0; i < 100; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height - height,
+          r: Math.random() * 5 + 3,
+          d: Math.random() * height,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          tilt: Math.random() * 10 - 5,
+          tiltAngleIncremental: Math.random() * 0.08 + 0.02,
+          tiltAngle: 0
+        });
+      }
+
+      let animationFrameId: number;
+      const draw = () => {
+        ctx.clearRect(0, 0, width, height);
+
+        particles.forEach((p, idx) => {
+          p.tiltAngle += p.tiltAngleIncremental;
+          p.y += (Math.cos(p.d) + 3 + p.r / 2) / 1.5;
+          p.x += Math.sin(p.tiltAngle);
+          p.tilt = Math.sin(p.tiltAngle - idx / 3) * 12;
+
+          ctx.beginPath();
+          ctx.lineWidth = p.r;
+          ctx.strokeStyle = p.color;
+          ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+          ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+          ctx.stroke();
+        });
+
+        if (particles.some(p => p.y < height)) {
+          animationFrameId = requestAnimationFrame(draw);
+        } else {
+          cancelAnimationFrame(animationFrameId);
+          window.removeEventListener('resize', handleResize);
+          canvas.remove();
+        }
+      };
+
+      draw();
+      setTimeout(() => {
+        cancelAnimationFrame(animationFrameId);
+        window.removeEventListener('resize', handleResize);
+        canvas.remove();
+      }, 3500);
+    } catch (e) {
+      console.warn('Confetti error:', e);
+    }
+  }
+
+  compartirWhatsApp(): void {
+    const f = this.factura();
+    if (!f) return;
+
+    let texto = `*FACTURA DIGITAL - ${this.facturaCfg.config().nombreComercial}*\n`;
+    texto += `=========================\n`;
+    texto += `*Factura:* ${f.factura}\n`;
+    if (f.ncf) texto += `*NCF:* ${f.ncf}\n`;
+    texto += `*Fecha:* ${new Date(f.fecha).toLocaleString('es-DO')}\n`;
+    if (f.cliente) texto += `*Cliente:* ${f.cliente}\n`;
+    texto += `*Atendió:* ${f.vendedor}\n`;
+    texto += `-------------------------\n`;
+
+    f.lineas.forEach(l => {
+      texto += `• ${l.cantidad}x ${l.descripcion}`;
+      if (l.imei) texto += ` (IMEI: ${l.imei})`;
+      texto += ` - RD$${l.total.toLocaleString('es-DO', { minimumFractionDigits: 2 })}\n`;
+    });
+
+    texto += `-------------------------\n`;
+    texto += `*Subtotal:* RD$${f.subtotal.toLocaleString('es-DO', { minimumFractionDigits: 2 })}\n`;
+    if (f.descuento > 0) texto += `*Descuento:* -RD$${f.descuento.toLocaleString('es-DO', { minimumFractionDigits: 2 })}\n`;
+    texto += `*ITBIS (18%):* RD$${f.impuesto.toLocaleString('es-DO', { minimumFractionDigits: 2 })}\n`;
+    texto += `*TOTAL:* *RD$${f.total.toLocaleString('es-DO', { minimumFractionDigits: 2 })}*\n`;
+    texto += `*Pago:* ${f.esCredito ? 'A CRÉDITO' : (f.metodoPago || 'Efectivo')}\n`;
+    if (this.facturaCfg.config().mensajePie) {
+      texto += `\n_${this.facturaCfg.config().mensajePie}_`;
+    }
+
+    const enlace = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+    window.open(enlace, '_blank');
   }
 }

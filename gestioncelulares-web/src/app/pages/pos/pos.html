@@ -42,6 +42,12 @@
               class="w-full pl-12 pr-3.5 py-3.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-lg font-mono outline-none transition-all duration-300 focus:border-tech-accent focus:bg-white focus:shadow-[0_0_20px_rgba(0,230,118,0.25)]" />
           </div>
         </form>
+        <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[0.7rem] text-tech-steel">
+          <span class="flex items-center gap-1"><kbd class="px-1 py-0.2 rounded bg-tech-bg-light border border-tech-pastel/40 font-mono text-[0.65rem] font-bold">F2</kbd> enfocar IMEI</span>
+          <span class="flex items-center gap-1"><kbd class="px-1 py-0.2 rounded bg-tech-bg-light border border-tech-pastel/40 font-mono text-[0.65rem] font-bold">F8</kbd> crédito/contado</span>
+          <span class="flex items-center gap-1"><kbd class="px-1 py-0.2 rounded bg-tech-bg-light border border-tech-pastel/40 font-mono text-[0.65rem] font-bold">F9</kbd> buscar cliente</span>
+          <span class="flex items-center gap-1"><kbd class="px-1 py-0.2 rounded bg-tech-bg-light border border-tech-pastel/40 font-mono text-[0.65rem] font-bold">F10</kbd> cobrar</span>
+        </div>
         @if (errorImei()) {
           <div class="mt-2 flex items-center gap-2 text-sm text-red-500">
             <lucide-icon name="circle-x" [size]="15"></lucide-icon> {{ errorImei() }}
@@ -257,11 +263,16 @@
         </div>
       </div>
 
-      <div class="flex gap-2 p-4 border-t border-tech-pastel/30">
-        <button (click)="imprimirFactura()" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-tech-charcoal/20 text-tech-charcoal font-semibold text-sm transition-all hover:bg-tech-bg-light active:scale-95">
-          <lucide-icon name="printer" [size]="18"></lucide-icon> Imprimir
-        </button>
-        <button (click)="nuevaVenta()" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-bold transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
+      <div class="flex flex-col gap-2 p-4 border-t border-tech-pastel/30">
+        <div class="flex gap-2">
+          <button (click)="imprimirFactura()" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-tech-charcoal/20 text-tech-charcoal font-semibold text-sm transition-all hover:bg-tech-bg-light active:scale-95">
+            <lucide-icon name="printer" [size]="18"></lucide-icon> Imprimir
+          </button>
+          <button (click)="compartirWhatsApp()" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 font-semibold text-sm transition-all hover:bg-emerald-500/20 active:scale-95">
+            <lucide-icon name="phone" [size]="18" class="text-emerald-500"></lucide-icon> WhatsApp
+          </button>
+        </div>
+        <button (click)="nuevaVenta()" class="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-bold transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
           <lucide-icon name="plus" [size]="18"></lucide-icon> Nueva venta
         </button>
       </div>

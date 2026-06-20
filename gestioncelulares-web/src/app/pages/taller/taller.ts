@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { Cliente } from '../../core/cliente.service';
+import { SoundService } from '../../core/sound.service';
 import { ComisionTecnico, Orden, OrdenResumen, TallerService } from '../../core/taller.service';
 import { Usuario, UsuarioService } from '../../core/usuario.service';
 import { MetodoPago, VentaService } from '../../core/venta.service';
@@ -21,6 +22,7 @@ export class Taller {
   private servicio = inject(TallerService);
   private usuarios = inject(UsuarioService);
   private ventas = inject(VentaService);
+  private sound = inject(SoundService);
   auth = inject(AuthService);
 
   ordenes = signal<OrdenResumen[]>([]);
@@ -143,9 +145,13 @@ export class Taller {
     const o = this.detalle();
     if (!o) return;
     if (estado === 'Entregado') { this.abrirEntrega(); return; }
+    this.sound.playSlide();
     this.servicio.cambiarEstado(o.ordenTallerId, { estado }).subscribe({
       next: x => { this.detalle.set(x); this.cargar(); },
-      error: e => this.errorDetalle.set(e.error?.error ?? 'No se pudo cambiar el estado.')
+      error: e => {
+        this.sound.playError();
+        this.errorDetalle.set(e.error?.error ?? 'No se pudo cambiar el estado.');
+      }
     });
   }
 
@@ -160,6 +166,7 @@ export class Taller {
     if (!o) return;
     const v = this.formEntrega.getRawValue();
     if (this.saldoEntrega() > 0 && !v.metodoPagoEntregaId) {
+      this.sound.playError();
       this.errorDetalle.set('Indica el método de pago del saldo cobrado al entregar.');
       return;
     }
@@ -167,8 +174,16 @@ export class Taller {
       estado: 'Entregado', costoFinal: v.costoFinal, comisionTecnico: v.comisionTecnico,
       metodoPagoEntregaId: this.saldoEntrega() > 0 ? v.metodoPagoEntregaId : null
     }).subscribe({
-      next: x => { this.detalle.set(x); this.modalEntrega.set(false); this.cargar(); },
-      error: e => this.errorDetalle.set(e.error?.error ?? 'No se pudo entregar.')
+      next: x => {
+        this.sound.playSuccess();
+        this.detalle.set(x);
+        this.modalEntrega.set(false);
+        this.cargar();
+      },
+      error: e => {
+        this.sound.playError();
+        this.errorDetalle.set(e.error?.error ?? 'No se pudo entregar.');
+      }
     });
   }
 
@@ -252,6 +267,52 @@ export class Taller {
       case 'Entregado': return 'bg-slate-400/15 text-slate-500';
       case 'Cancelado': return 'bg-red-500/10 text-red-500';
       default: return 'bg-slate-400/15 text-slate-500';
+    }
+  }
+
+  onDragStart(event: DragEvent, id: number): void {
+    if (event.dataTransfer) {
+      event.dataTransfer.setData('text/plain', id.toString());
+      event.dataTransfer.effectAllowed = 'move';
+    }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  onDrop(event: DragEvent, nuevoEstado: string): void {
+    event.preventDefault();
+    const idStr = event.dataTransfer?.getData('text/plain');
+    if (!idStr) return;
+
+    const id = Number(idStr);
+    const orden = this.ordenes().find(o => o.ordenTallerId === id);
+    if (!orden) return;
+
+    const estadoActual = orden.estado;
+    if (estadoActual === nuevoEstado) return;
+
+    const permitidos = this.transiciones[estadoActual] ?? [];
+    if (!permitidos.includes(nuevoEstado)) {
+      this.sound.playError();
+      return;
+    }
+
+    if (nuevoEstado === 'Entregado') {
+      this.servicio.porId(id).subscribe({
+        next: o => {
+          this.detalle.set(o);
+          this.abrirEntrega();
+        },
+        error: () => this.sound.playError()
+      });
+    } else {
+      this.sound.playSlide();
+      this.servicio.cambiarEstado(id, { estado: nuevoEstado }).subscribe({
+        next: () => this.cargar(),
+        error: () => this.sound.playError()
+      });
     }
   }
 }

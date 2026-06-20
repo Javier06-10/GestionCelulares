@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { LucideAngularModule } from 'lucide-angular';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../core/auth.service';
+import { SoundService } from '../core/sound.service';
 import { routeFade } from '../shared/animations';
 
 interface ItemMenu {
@@ -29,6 +30,7 @@ const CLAVE_COLAPSADO = 'gc_sidebar_colapsado';
 })
 export class Layout {
   auth = inject(AuthService);
+  sound = inject(SoundService);
   private router = inject(Router);
 
   colapsado = signal(localStorage.getItem(CLAVE_COLAPSADO) === '1');

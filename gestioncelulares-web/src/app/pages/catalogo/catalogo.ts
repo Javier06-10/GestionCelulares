@@ -203,4 +203,53 @@ export class Catalogo {
       next: () => { this.nuevaCategoria.set(''); this.cargarCatalogos(); }
     });
   }
+
+  obtenerColorHex(colorName: string | undefined): string | null {
+    if (!colorName) return null;
+    const name = colorName.trim().toLowerCase();
+    
+    const dict: Record<string, string> = {
+      negro: '#121214',
+      black: '#121214',
+      midnight: '#0b0c10',
+      blanco: '#f5f6fa',
+      white: '#ffffff',
+      gris: '#7f8c8d',
+      grey: '#7f8c8d',
+      silver: '#bdc3c7',
+      plata: '#bdc3c7',
+      azul: '#2980b9',
+      blue: '#2980b9',
+      rojo: '#c0392b',
+      red: '#c0392b',
+      verde: '#27ae60',
+      green: '#27ae60',
+      dorado: '#f1c40f',
+      gold: '#f1c40f',
+      rosa: '#fda7df',
+      pink: '#fda7df',
+      purpura: '#8e44ad',
+      purple: '#8e44ad',
+      violeta: '#9b59b6',
+      morado: '#8e44ad',
+      titanio: '#8a8d91',
+      titanium: '#8a8d91',
+      amarillo: '#f5cd79',
+      yellow: '#f5cd79'
+    };
+
+    for (const key in dict) {
+      if (name.includes(key)) return dict[key];
+    }
+    return null;
+  }
+
+  condicionClase(cond: string): string {
+    switch (cond) {
+      case 'Nuevo': return 'bg-tech-accent/15 text-emerald-600';
+      case 'Usado': return 'bg-tech-charcoal/10 text-tech-charcoal';
+      case 'Reacondicionado': return 'bg-tech-purple/15 text-tech-purple';
+      default: return 'bg-slate-100 text-slate-600';
+    }
+  }
 }

@@ -11,27 +11,45 @@
   <!-- KPIs -->
   <section class="gc-stagger grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-5">
     <!-- Ventas hoy -->
-    <div class="kpi group">
-      <div class="flex items-start justify-between mb-3">
-        <div class="icon-chip bg-tech-accent/10 text-tech-accent">
-          <lucide-icon name="trending-up" [size]="20"></lucide-icon>
+    <div class="kpi group flex items-center justify-between">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-start justify-between mb-3">
+          <div class="icon-chip bg-tech-accent/10 text-tech-accent">
+            <lucide-icon name="trending-up" [size]="20"></lucide-icon>
+          </div>
+          <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Ventas de hoy</span>
         </div>
-        <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Ventas de hoy</span>
+        <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.ventasHoy.total" countPrefix="RD$" [countDecimals]="2"></div>
+        <div class="text-xs text-tech-steel mt-2">{{ d.ventasHoy.cantidad }} ventas · ganancia {{ d.ventasHoy.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
       </div>
-      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.ventasHoy.total" countPrefix="RD$" [countDecimals]="2"></div>
-      <div class="text-xs text-tech-steel mt-2">{{ d.ventasHoy.cantidad }} ventas · ganancia {{ d.ventasHoy.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+      @if (sparklineVentas()) {
+        <div class="w-[120px] h-[40px] shrink-0 ml-4 hidden sm:block opacity-50 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300">
+          <svg viewBox="0 0 120 40" class="w-full h-full">
+            <path [attr.d]="sparklineVentas()" fill="none" stroke="#00E676" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+      }
     </div>
 
     <!-- Ventas mes -->
-    <div class="kpi group">
-      <div class="flex items-start justify-between mb-3">
-        <div class="icon-chip bg-tech-accent/10 text-tech-accent">
-          <lucide-icon name="bar-chart-3" [size]="20"></lucide-icon>
+    <div class="kpi group flex items-center justify-between">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-start justify-between mb-3">
+          <div class="icon-chip bg-tech-accent/10 text-tech-accent">
+            <lucide-icon name="bar-chart-3" [size]="20"></lucide-icon>
+          </div>
+          <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Ventas del mes</span>
         </div>
-        <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Ventas del mes</span>
+        <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.ventasMes.total" countPrefix="RD$" [countDecimals]="2"></div>
+        <div class="text-xs text-tech-steel mt-2">{{ d.ventasMes.cantidad }} ventas · ganancia {{ d.ventasMes.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
       </div>
-      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.ventasMes.total" countPrefix="RD$" [countDecimals]="2"></div>
-      <div class="text-xs text-tech-steel mt-2">{{ d.ventasMes.cantidad }} ventas · ganancia {{ d.ventasMes.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+      @if (sparklineGanancias()) {
+        <div class="w-[120px] h-[40px] shrink-0 ml-4 hidden sm:block opacity-50 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300">
+          <svg viewBox="0 0 120 40" class="w-full h-full">
+            <path [attr.d]="sparklineGanancias()" fill="none" stroke="#6C5CE7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+      }
     </div>
 
     <!-- Inventario -->

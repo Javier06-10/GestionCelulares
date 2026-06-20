@@ -101,13 +101,27 @@
         <h1 class="text-lg font-bold text-tech-charcoal tracking-tight">{{ seccionActual().etiqueta }}</h1>
       </div>
 
-      <button
-        (click)="auth.logout()"
-        class="group flex items-center gap-2 border border-tech-pastel/60 bg-tech-card-light rounded-xl px-4 py-2 text-sm font-medium text-tech-charcoal transition-all duration-300 ease-out hover:bg-tech-bg-light hover:border-tech-steel/50 active:scale-95"
-      >
-        <lucide-icon name="log-out" [size]="16" class="text-tech-steel transition-colors group-hover:text-red-500"></lucide-icon>
-        Salir
-      </button>
+      <div class="flex items-center gap-2.5">
+        <button
+          (click)="sound.toggleMute()"
+          [title]="sound.muted() ? 'Activar sonido' : 'Silenciar'"
+          class="w-9 h-9 grid place-items-center border border-tech-pastel/60 bg-tech-card-light rounded-xl text-tech-steel transition-all duration-300 ease-out hover:bg-tech-bg-light hover:text-tech-charcoal active:scale-90"
+        >
+          @if (sound.muted()) {
+            <lucide-icon name="volume-x" [size]="16" class="text-red-400"></lucide-icon>
+          } @else {
+            <lucide-icon name="volume-2" [size]="16" class="text-tech-accent animate-pulse"></lucide-icon>
+          }
+        </button>
+
+        <button
+          (click)="auth.logout()"
+          class="group flex items-center gap-2 border border-tech-pastel/60 bg-tech-card-light rounded-xl px-4 py-2 text-sm font-medium text-tech-charcoal transition-all duration-300 ease-out hover:bg-tech-bg-light hover:border-tech-steel/50 active:scale-95"
+        >
+          <lucide-icon name="log-out" [size]="16" class="text-tech-steel transition-colors group-hover:text-red-500"></lucide-icon>
+          Salir
+        </button>
+      </div>
     </header>
 
     <main class="flex-1 min-h-0 overflow-y-auto p-7">

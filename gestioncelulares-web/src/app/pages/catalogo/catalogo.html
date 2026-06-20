@@ -97,9 +97,41 @@
                   <tbody>
                     @for (vr of p.variantes; track vr.varianteId) {
                       <tr class="border-t border-tech-pastel/20 hover:bg-white/60 transition-colors">
-                        <td class="py-2 px-2 text-tech-charcoal">
-                          <span class="font-medium">{{ vr.color || '—' }}{{ vr.almacenamiento ? ' · ' + vr.almacenamiento : '' }}{{ vr.condicion ? ' · ' + vr.condicion : '' }}</span>
-                          @if (!vr.activo) { <span class="ml-1 text-[0.6rem] uppercase text-slate-400">inactiva</span> }
+                        <td class="py-2.5 px-2 text-tech-charcoal">
+                          <div class="flex flex-wrap items-center gap-2">
+                            <!-- Color Swatch -->
+                            @if (vr.color) {
+                              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs bg-white border border-tech-pastel/30 shadow-sm font-medium">
+                                @let hex = obtenerColorHex(vr.color);
+                                <span class="w-2.5 h-2.5 rounded-full shrink-0 border border-black/10" 
+                                      [style.backgroundColor]="hex || '#ccc'" 
+                                      [style.boxShadow]="hex ? '0 0 4px ' + hex + '60' : 'none'"></span>
+                                {{ vr.color }}
+                              </span>
+                            } @else {
+                              <span class="text-xs text-tech-steel">—</span>
+                            }
+                            
+                            <!-- Almacenamiento Chip -->
+                            @if (vr.almacenamiento) {
+                              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs bg-tech-bg-light border border-tech-pastel/40 text-tech-charcoal font-semibold tracking-tight">
+                                <lucide-icon name="circle-dot" [size]="10" class="text-tech-purple shrink-0"></lucide-icon>
+                                {{ vr.almacenamiento }}
+                              </span>
+                            }
+
+                            <!-- Condición Badge -->
+                            @if (p.serializado && vr.condicion) {
+                              <span class="inline-flex px-2 py-0.5 rounded-full text-[0.7rem] font-bold" 
+                                    [class]="condicionClase(vr.condicion)">
+                                {{ vr.condicion }}
+                              </span>
+                            }
+                            
+                            @if (!vr.activo) {
+                              <span class="text-[0.6rem] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-slate-200 text-slate-500">Inactiva</span>
+                            }
+                          </div>
                         </td>
                         <td class="py-2 px-2 text-right text-tech-steel">{{ vr.precioCosto | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
                         <td class="py-2 px-2 text-right font-semibold text-tech-charcoal">{{ vr.precioVenta | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>

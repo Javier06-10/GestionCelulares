@@ -20,7 +20,7 @@ import {
   Image, ArrowRight, UserCog, ClipboardList, Camera,
   Download, FileText, Calendar, Printer, SlidersHorizontal,
   Truck, Building2, HandCoins, ShieldAlert, RefreshCcw,
-  PackageX, ClipboardCheck
+  PackageX, ClipboardCheck, Volume2, VolumeX
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
@@ -52,7 +52,7 @@ export const appConfig: ApplicationConfig = {
         Image, ArrowRight, UserCog, ClipboardList, Camera,
         Download, FileText, Calendar, Printer, SlidersHorizontal,
         Truck, Building2, HandCoins, ShieldAlert, RefreshCcw,
-        PackageX, ClipboardCheck
+        PackageX, ClipboardCheck, Volume2, VolumeX
       })
     )
   ]

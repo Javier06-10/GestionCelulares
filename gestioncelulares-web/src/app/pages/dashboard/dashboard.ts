@@ -65,6 +65,44 @@ export class Dashboard {
     return `${linea} L ${pts[pts.length - 1].x.toFixed(1)} ${base} L ${pts[0].x.toFixed(1)} ${base} Z`;
   });
 
+  // Sparkline de Ventas (14 días)
+  sparklineVentas = computed(() => {
+    const serie = this.datos()?.ventasUltimos14Dias ?? [];
+    if (serie.length === 0) return '';
+    const max = Math.max(1, ...serie.map(d => d.total));
+    const min = Math.min(...serie.map(d => d.total));
+    const range = max - min || 1;
+    const w = 120;
+    const h = 40;
+    const padding = 2;
+    const step = w / (serie.length - 1);
+    
+    return serie.map((d, i) => {
+      const x = i * step;
+      const y = padding + h - 2 * padding - ((d.total - min) / range) * (h - 2 * padding);
+      return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    }).join(' ');
+  });
+
+  // Sparkline de Ganancias (14 días)
+  sparklineGanancias = computed(() => {
+    const serie = this.datos()?.ventasUltimos14Dias ?? [];
+    if (serie.length === 0) return '';
+    const max = Math.max(1, ...serie.map(d => d.ganancia));
+    const min = Math.min(...serie.map(d => d.ganancia));
+    const range = max - min || 1;
+    const w = 120;
+    const h = 40;
+    const padding = 2;
+    const step = w / (serie.length - 1);
+    
+    return serie.map((d, i) => {
+      const x = i * step;
+      const y = padding + h - 2 * padding - ((d.ganancia - min) / range) * (h - 2 * padding);
+      return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    }).join(' ');
+  });
+
   constructor() {
     this.servicio.obtener().subscribe({
       next: d => this.datos.set(d),
