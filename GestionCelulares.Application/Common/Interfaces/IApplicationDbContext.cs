@@ -31,6 +31,7 @@ public interface IApplicationDbContext
     DbSet<AbonoApartado> AbonosApartado { get; }
     DbSet<SecuenciaNcf> SecuenciasNcf { get; }
     DbSet<ComprobanteAnulado> ComprobantesAnulados { get; }
+    DbSet<PadronRnc> PadronRnc { get; }
     DbSet<InventarioImei> InventarioImeis { get; }
     DbSet<MovimientoInventario> MovimientosInventario { get; }
     DbSet<SesionCaja> SesionesCaja { get; }

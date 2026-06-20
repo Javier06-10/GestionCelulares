@@ -32,6 +32,7 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
     public DbSet<AbonoApartado> AbonosApartado => Set<AbonoApartado>();
     public DbSet<SecuenciaNcf> SecuenciasNcf => Set<SecuenciaNcf>();
     public DbSet<ComprobanteAnulado> ComprobantesAnulados => Set<ComprobanteAnulado>();
+    public DbSet<PadronRnc> PadronRnc => Set<PadronRnc>();
     public DbSet<InventarioImei> InventarioImeis => Set<InventarioImei>();
     public DbSet<MovimientoInventario> MovimientosInventario => Set<MovimientoInventario>();
     public DbSet<SesionCaja> SesionesCaja => Set<SesionCaja>();
@@ -76,6 +77,7 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<AbonoApartado>().ToTable("AbonoApartado").HasKey(e => e.AbonoApartadoId);
         mb.Entity<SecuenciaNcf>().ToTable("SecuenciaNcf").HasKey(e => e.SecuenciaNcfId);
         mb.Entity<ComprobanteAnulado>().ToTable("ComprobanteAnulado").HasKey(e => e.ComprobanteAnuladoId);
+        mb.Entity<PadronRnc>().ToTable("PadronRnc").HasKey(e => e.Rnc);
         mb.Entity<ComprobanteAnulado>().HasOne(e => e.Venta).WithMany().HasForeignKey(e => e.VentaId);
         mb.Entity<InventarioImei>().ToTable("InventarioImei").HasKey(e => e.ImeiId);
         mb.Entity<MovimientoInventario>().ToTable("MovimientoInventario").HasKey(e => e.MovimientoId);

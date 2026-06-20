@@ -2,6 +2,7 @@ import { Component, inject, input, model, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { Cliente, ClienteService } from '../../core/cliente.service';
+import { RncService } from '../../core/rnc.service';
 
 /**
  * Selector de cliente reutilizable: búsqueda desplegable + creación rápida.
@@ -15,12 +16,17 @@ import { Cliente, ClienteService } from '../../core/cliente.service';
 export class ClienteSelector {
   private fb = inject(FormBuilder);
   private clientesSrv = inject(ClienteService);
+  private rncSrv = inject(RncService);
 
   cliente = model<Cliente | null>(null);
   requerido = input(false);
 
   busqueda = signal('');
   resultados = signal<Cliente[]>([]);
+
+  // Consulta al padrón DGII
+  consultandoRnc = signal(false);
+  rncMsg = signal<string | null>(null);
 
   // Modal de creación rápida
   modalCrear = signal(false);
@@ -50,8 +56,28 @@ export class ClienteSelector {
 
   abrirCrear(): void {
     this.errorForm.set(null);
+    this.rncMsg.set(null);
     this.form.reset({ nombre: this.busqueda().trim(), cedula: '', telefono: '' });
     this.modalCrear.set(true);
+  }
+
+  // Busca el RNC/cédula en el padrón de la DGII y autocompleta la razón social
+  consultarRnc(): void {
+    const ced = this.form.controls.cedula.value?.trim();
+    if (!ced) return;
+    this.consultandoRnc.set(true);
+    this.rncMsg.set(null);
+    this.rncSrv.consultar(ced).subscribe({
+      next: r => {
+        this.consultandoRnc.set(false);
+        this.form.controls.nombre.setValue(r.nombre);
+        this.rncMsg.set(r.estado && r.estado !== 'ACTIVO' ? `Encontrado (estado: ${r.estado})` : 'Encontrado en el padrón DGII');
+      },
+      error: () => {
+        this.consultandoRnc.set(false);
+        this.rncMsg.set('No encontrado en el padrón DGII. Puedes capturarlo manualmente.');
+      }
+    });
   }
 
   crear(): void {
