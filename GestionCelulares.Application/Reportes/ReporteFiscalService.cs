@@ -145,6 +145,7 @@ public class ReporteFiscalService : IReporteFiscalService
                 Itbis = c.Itbis,
                 TipoBienServicio = c.TipoBienServicio,
                 RncProveedor = c.Proveedor.RNC,
+                Metodo = c.MetodoPago != null ? c.MetodoPago.Nombre : null,
                 Contado = _db.PagosProveedor.Any(p => p.CompraId == c.CompraId)
             })
             .ToListAsync();
@@ -167,7 +168,14 @@ public class ReporteFiscalService : IReporteFiscalService
             totalItbis += itbis;
 
             var tipoBS = string.IsNullOrWhiteSpace(c.TipoBienServicio) ? "09" : c.TipoBienServicio;
-            var formaPago = c.Contado ? "01" : "04";   // 01 efectivo (contado) / 04 a crédito
+            // Forma de pago DGII: a crédito = 04; al contado según el método (01 efectivo,
+            // 02 cheque/transferencia/depósito, 03 tarjeta; default 01 si no se registró).
+            var formaPago = !c.Contado ? "04" : c.Metodo switch
+            {
+                "Transferencia" => "02",
+                "Tarjeta" => "03",
+                _ => "01"
+            };
 
             // 14 columnas usadas del formato 606 (las demás van vacías)
             sb.Append(rncProv).Append('|')                       // 1 RNC/Cédula proveedor
@@ -277,6 +285,7 @@ public class ReporteFiscalService : IReporteFiscalService
         public decimal? Itbis { get; set; }
         public string? TipoBienServicio { get; set; }
         public string? RncProveedor { get; set; }
+        public string? Metodo { get; set; }
         public bool Contado { get; set; }
     }
 }

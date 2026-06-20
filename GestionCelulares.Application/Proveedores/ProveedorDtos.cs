@@ -43,6 +43,8 @@ public class CompraRegistroDto
     [Range(0, double.MaxValue)] public decimal Itbis { get; set; }
     /// <summary>Tipo de bien/servicio DGII (01-11). Default 09 = compras del costo de venta.</summary>
     [StringLength(2)] public string? TipoBienServicio { get; set; }
+    /// <summary>Método de pago de la compra al contado (Efectivo, Tarjeta, Transferencia). Para el 606.</summary>
+    public int? MetodoPagoId { get; set; }
     [StringLength(300)] public string? Notas { get; set; }
     /// <summary>true = pago inmediato completo (no afecta el balance); false = a crédito (aumenta lo adeudado).</summary>
     public bool Contado { get; set; }

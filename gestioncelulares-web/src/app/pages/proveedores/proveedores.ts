@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { Compra, Pago, Proveedor, ProveedorService } from '../../core/proveedor.service';
+import { MetodoPago, VentaService } from '../../core/venta.service';
 
 @Component({
   selector: 'app-proveedores',
@@ -13,8 +14,10 @@ import { Compra, Pago, Proveedor, ProveedorService } from '../../core/proveedor.
 export class Proveedores {
   private fb = inject(FormBuilder);
   private servicio = inject(ProveedorService);
+  private ventas = inject(VentaService);
   auth = inject(AuthService);
 
+  metodos = signal<MetodoPago[]>([]);
   proveedores = signal<Proveedor[]>([]);
   cargando = signal(false);
   termino = signal('');
@@ -50,6 +53,7 @@ export class Proveedores {
     total: [0, [Validators.required, Validators.min(0.01)]],
     itbis: [0, [Validators.min(0)]],
     tipoBienServicio: ['09'],
+    metodoPagoId: [null as number | null],
     notas: ['']
   });
 
@@ -73,7 +77,10 @@ export class Proveedores {
     referencia: ['']
   });
 
-  constructor() { this.cargar(); }
+  constructor() {
+    this.cargar();
+    this.ventas.metodosPago().subscribe({ next: m => this.metodos.set(m) });
+  }
 
   cargar(): void {
     this.cargando.set(true);
@@ -121,14 +128,15 @@ export class Proveedores {
   cerrarDetalle(): void { this.detalle.set(null); }
 
   // ----- Compra -----
-  abrirCompra(): void { this.errorCompra.set(null); this.formCompra.reset({ tipo: 'contado', numeroFactura: '', total: 0, itbis: 0, tipoBienServicio: '09', notas: '' }); this.modalCompra.set(true); }
+  abrirCompra(): void { this.errorCompra.set(null); this.formCompra.reset({ tipo: 'contado', numeroFactura: '', total: 0, itbis: 0, tipoBienServicio: '09', metodoPagoId: null, notas: '' }); this.modalCompra.set(true); }
   registrarCompra(): void {
     const p = this.detalle();
     if (this.formCompra.invalid || !p) { this.formCompra.markAllAsTouched(); return; }
     const suc = this.auth.usuario()?.sucursalId;
     if (!suc) { this.errorCompra.set('Tu usuario no tiene sucursal asignada.'); return; }
     const v = this.formCompra.getRawValue();
-    this.servicio.registrarCompra(p.proveedorId, { sucursalId: suc, numeroFactura: v.numeroFactura?.trim() || null, total: v.total, itbis: v.itbis, tipoBienServicio: v.tipoBienServicio, notas: v.notas?.trim() || null, contado: v.tipo === 'contado' }).subscribe({
+    const contado = v.tipo === 'contado';
+    this.servicio.registrarCompra(p.proveedorId, { sucursalId: suc, numeroFactura: v.numeroFactura?.trim() || null, total: v.total, itbis: v.itbis, tipoBienServicio: v.tipoBienServicio, metodoPagoId: contado ? (v.metodoPagoId ? Number(v.metodoPagoId) : null) : null, notas: v.notas?.trim() || null, contado }).subscribe({
       next: () => { this.modalCompra.set(false); this.refrescarDetalle(p.proveedorId); },
       error: err => this.errorCompra.set(err.error?.error ?? 'No se pudo registrar la compra.')
     });

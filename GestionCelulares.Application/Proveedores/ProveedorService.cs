@@ -113,6 +113,15 @@ public class ProveedorService : IProveedorService
         if (!await _db.Sucursales.AnyAsync(s => s.SucursalId == dto.SucursalId))
             throw new ProveedorException("La sucursal indicada no existe.");
 
+        // El método de pago solo aplica a compras al contado
+        int? metodoPagoId = null;
+        if (dto.Contado && dto.MetodoPagoId.HasValue)
+        {
+            if (!await _db.MetodosPago.AnyAsync(m => m.MetodoPagoId == dto.MetodoPagoId.Value))
+                throw new ProveedorException("El método de pago indicado no existe.");
+            metodoPagoId = dto.MetodoPagoId;
+        }
+
         var itbis = Math.Min(dto.Itbis, dto.Total);
         var compra = new Compra
         {
@@ -124,6 +133,7 @@ public class ProveedorService : IProveedorService
             Subtotal = dto.Total - itbis,
             Itbis = itbis,
             TipoBienServicio = string.IsNullOrWhiteSpace(dto.TipoBienServicio) ? "09" : dto.TipoBienServicio.Trim(),
+            MetodoPagoId = metodoPagoId,
             Notas = Normalizar(dto.Notas)
         };
         _db.Compras.Add(compra);

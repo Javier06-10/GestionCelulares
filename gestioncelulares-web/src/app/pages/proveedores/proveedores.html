@@ -193,6 +193,15 @@
             @for (t of tiposBienServicio; track t.v) { <option [value]="t.v">{{ t.n }}</option> }
           </select>
         </div>
+        @if (formCompra.value.tipo === 'contado') {
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Método de pago</label>
+            <select formControlName="metodoPagoId" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white">
+              <option [ngValue]="null">— Sin especificar —</option>
+              @for (m of metodos(); track m.metodoPagoId) { <option [ngValue]="m.metodoPagoId">{{ m.nombre }}</option> }
+            </select>
+          </div>
+        }
         <div>
           <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Notas</label>
           <input formControlName="notas" type="text" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />

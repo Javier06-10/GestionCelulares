@@ -27,10 +27,12 @@ public class Compra
     public decimal? Subtotal { get; set; }            // base sin ITBIS (para el 606)
     public decimal? Itbis { get; set; }               // ITBIS de la compra (para el 606)
     public string? TipoBienServicio { get; set; }     // código DGII 01-11 (default 09)
+    public int? MetodoPagoId { get; set; }            // método de pago si fue al contado (para el 606)
     public string? Notas { get; set; }
 
     public Proveedor Proveedor { get; set; } = null!;
     public Sucursal Sucursal { get; set; } = null!;
+    public MetodoPago? MetodoPago { get; set; }
 }
 
 public class PagoProveedor

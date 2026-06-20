@@ -124,6 +124,7 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
 
         mb.Entity<Compra>().HasOne(c => c.Proveedor).WithMany(p => p.Compras).HasForeignKey(c => c.ProveedorId);
         mb.Entity<Compra>().HasOne(c => c.Sucursal).WithMany().HasForeignKey(c => c.SucursalId);
+        mb.Entity<Compra>().HasOne(c => c.MetodoPago).WithMany().HasForeignKey(c => c.MetodoPagoId);
         mb.Entity<PagoProveedor>().HasOne(p => p.Proveedor).WithMany(x => x.Pagos).HasForeignKey(p => p.ProveedorId);
         mb.Entity<PagoProveedor>().HasOne(p => p.Compra).WithMany().HasForeignKey(p => p.CompraId);
 
