@@ -19,6 +19,8 @@ public class VentaRegistroDto
     public bool EsCredito { get; set; }
     /// <summary>Requerido cuando la venta es de contado.</summary>
     public int? MetodoPagoId { get; set; }
+    /// <summary>Tipo de comprobante: 01 Crédito Fiscal, 02 Consumo. Si es null se infiere por el cliente.</summary>
+    [StringLength(2)] public string? TipoComprobante { get; set; }
     [StringLength(30)] public string? NumeroFactura { get; set; }
     [MinLength(1)] public List<VentaDetalleRegistroDto> Detalles { get; set; } = new();
 }

@@ -94,6 +94,14 @@ export class Pos {
   // Cliente
   clienteSel = signal<Cliente | null>(null);
 
+  // Tipo de comprobante fiscal: '02' Consumo (default) | '01' Crédito Fiscal
+  tipoComprobante = signal<'02' | '01'>('02');
+  // ¿El cliente seleccionado tiene RNC/cédula? (requisito para Crédito Fiscal)
+  clienteTieneRnc = computed(() => {
+    const c = this.clienteSel();
+    return !!c?.cedula && c.cedula.replace(/\D/g, '').length > 0;
+  });
+
   // Resultado / Factura
   procesando = signal(false);
   errorVenta = signal<string | null>(null);
@@ -274,6 +282,8 @@ export class Pos {
     if (this.carrito().length === 0) return false;
     if (this.esCredito() && !this.clienteSel()) return false;
     if (!this.esCredito() && !this.metodoPagoId()) return false;
+    // Crédito Fiscal exige cliente con RNC/cédula
+    if (this.tipoComprobante() === '01' && !this.clienteTieneRnc()) return false;
     return true;
   });
 
@@ -289,6 +299,7 @@ export class Pos {
       clienteId: this.clienteSel()?.clienteId ?? null,
       esCredito: this.esCredito(),
       metodoPagoId: this.esCredito() ? null : this.metodoPagoId(),
+      tipoComprobante: this.tipoComprobante(),
       detalles: this.carrito().map(l => ({
         imeiId: l.imeiId,
         varianteId: l.varianteId,
@@ -326,6 +337,7 @@ export class Pos {
         this.carrito.set([]);
         this.clienteSel.set(null);
         this.esCredito.set(false);
+        this.tipoComprobante.set('02');
       },
       error: err => {
         this.procesando.set(false);

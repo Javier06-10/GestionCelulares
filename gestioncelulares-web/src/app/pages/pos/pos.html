@@ -200,7 +200,18 @@
         }
 
         <!-- Cliente -->
-        <app-cliente-selector [cliente]="clienteSel()" (clienteChange)="clienteSel.set($event)" [requerido]="esCredito()" />
+        <app-cliente-selector [cliente]="clienteSel()" (clienteChange)="clienteSel.set($event)" [requerido]="esCredito() || tipoComprobante() === '01'" />
+
+        <!-- Tipo de comprobante fiscal -->
+        <div>
+          <div class="grid grid-cols-2 gap-2 p-1 bg-tech-bg-light rounded-xl">
+            <button (click)="tipoComprobante.set('02')" class="py-2 rounded-lg text-xs font-semibold transition-all" [class]="tipoComprobante() === '02' ? 'bg-tech-charcoal text-white' : 'text-tech-steel'">Consumo (02)</button>
+            <button (click)="tipoComprobante.set('01')" class="py-2 rounded-lg text-xs font-semibold transition-all" [class]="tipoComprobante() === '01' ? 'bg-tech-accent text-tech-bg-dark' : 'text-tech-steel'">Crédito Fiscal (01)</button>
+          </div>
+          @if (tipoComprobante() === '01' && !clienteTieneRnc()) {
+            <p class="mt-1.5 text-xs text-amber-600 flex items-center gap-1.5"><lucide-icon name="circle-alert" [size]="13"></lucide-icon> Selecciona o crea un cliente con RNC/cédula para Crédito Fiscal.</p>
+          }
+        </div>
 
         @if (errorVenta()) {
           <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorVenta() }}</div>

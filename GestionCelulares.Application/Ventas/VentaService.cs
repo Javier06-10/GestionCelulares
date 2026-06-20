@@ -54,15 +54,20 @@ public class VentaService : IVentaService
             !await _db.MetodosPago.AnyAsync(m => m.MetodoPagoId == dto.MetodoPagoId.Value))
             throw new VentaException("El método de pago indicado no existe.");
 
+        Cliente? clienteVenta = null;
         if (dto.ClienteId.HasValue)
         {
-            var cliente = await _db.Clientes.AsNoTracking()
+            clienteVenta = await _db.Clientes.AsNoTracking()
                 .FirstOrDefaultAsync(c => c.ClienteId == dto.ClienteId.Value)
                 ?? throw new VentaException("El cliente indicado no existe.");
 
-            if (dto.EsCredito && cliente.Bloqueado)
-                throw new VentaException($"El cliente '{cliente.Nombre}' está bloqueado y no puede comprar a crédito.");
+            if (dto.EsCredito && clienteVenta.Bloqueado)
+                throw new VentaException($"El cliente '{clienteVenta.Nombre}' está bloqueado y no puede comprar a crédito.");
         }
+
+        // La Factura de Crédito Fiscal (01) exige identificar al cliente con RNC/Cédula
+        if (dto.TipoComprobante == "01" && SoloDigitos(clienteVenta?.Cedula).Length == 0)
+            throw new VentaException("La Factura de Crédito Fiscal requiere un cliente con RNC o cédula.");
 
         // Stock suficiente para accesorios no serializados (el SP descuenta sin validar)
         foreach (var linea in dto.Detalles.Where(d => d.ImeiId is null))
@@ -89,10 +94,10 @@ public class VentaService : IVentaService
         // La venta ya quedó registrada por el SP: un fallo aquí NO debe tumbarla.
         try
         {
-            var cedula = dto.ClienteId.HasValue
-                ? await _db.Clientes.Where(c => c.ClienteId == dto.ClienteId.Value).Select(c => c.Cedula).FirstOrDefaultAsync()
-                : null;
-            var tipoNcf = SoloDigitos(cedula).Length == 9 ? "01" : "02";
+            // Tipo de comprobante: el que eligió el cajero (01/02); si no, se infiere por el cliente.
+            var tipoNcf = dto.TipoComprobante is "01" or "02"
+                ? dto.TipoComprobante
+                : (SoloDigitos(clienteVenta?.Cedula).Length == 9 ? "01" : "02");
             var ncf = await _ncf.SiguienteNcfAsync(tipoNcf);
             if (!string.IsNullOrEmpty(ncf))
             {

@@ -31,6 +31,7 @@ export interface VentaRegistro {
   clienteId?: number | null;
   esCredito: boolean;
   metodoPagoId?: number | null;
+  tipoComprobante?: string | null;   // '01' Crédito Fiscal, '02' Consumo
   numeroFactura?: string | null;
   detalles: VentaDetalleRegistro[];
 }
