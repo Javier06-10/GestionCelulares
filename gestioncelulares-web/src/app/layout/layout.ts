@@ -100,6 +100,11 @@ export class Layout {
         { etiqueta: 'Proveedores', icono: 'truck', ruta: '/proveedores', soloAdmin: true },
         { etiqueta: 'Nómina', icono: 'hand-coins', ruta: '/nomina', soloAdmin: true },
         {
+          etiqueta: 'Contabilidad', icono: 'calculator', soloAdmin: true, hijos: [
+            { etiqueta: 'Catálogo de cuentas', icono: 'layers', ruta: '/cuentas', soloAdmin: true }
+          ]
+        },
+        {
           etiqueta: 'Fiscal', icono: 'file-text', soloAdmin: true, hijos: [
             { etiqueta: 'NCF', icono: 'receipt', ruta: '/ncf', soloAdmin: true },
             { etiqueta: 'Reportes', icono: 'bar-chart-3', ruta: '/reportes', soloAdmin: true }
