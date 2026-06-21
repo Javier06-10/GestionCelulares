@@ -69,8 +69,14 @@ export class Layout {
       titulo: 'General',
       items: [
         { etiqueta: 'Dashboard', icono: 'layout-dashboard', ruta: '/' },
-        { etiqueta: 'POS / Ventas', icono: 'shopping-cart', ruta: '/pos' },
-        { etiqueta: 'Ventas', icono: 'clipboard-list', ruta: '/ventas' },
+        {
+          etiqueta: 'Ventas', icono: 'shopping-cart', hijos: [
+            { etiqueta: 'POS', icono: 'scan-line', ruta: '/pos' },
+            { etiqueta: 'Historial', icono: 'clipboard-list', ruta: '/ventas' },
+            { etiqueta: 'Caja', icono: 'wallet', ruta: '/caja' },
+            { etiqueta: 'Apartados', icono: 'bookmark', ruta: '/apartados' }
+          ]
+        },
         {
           etiqueta: 'Inventario', icono: 'package', hijos: [
             { etiqueta: 'Existencias', icono: 'boxes', ruta: '/inventario' },
@@ -78,12 +84,14 @@ export class Layout {
             { etiqueta: 'Catálogo', icono: 'layers', ruta: '/catalogo' }
           ]
         },
-        { etiqueta: 'Clientes', icono: 'users', ruta: '/clientes' },
-        { etiqueta: 'Créditos', icono: 'credit-card', ruta: '/creditos' },
-        { etiqueta: 'Apartados', icono: 'bookmark', ruta: '/apartados' },
-        { etiqueta: 'Taller', icono: 'wrench', ruta: '/taller' },
-        { etiqueta: 'Garantías', icono: 'shield-alert', ruta: '/garantias' },
-        { etiqueta: 'Caja', icono: 'wallet', ruta: '/caja' }
+        {
+          etiqueta: 'Clientes y crédito', icono: 'users', hijos: [
+            { etiqueta: 'Clientes', icono: 'users', ruta: '/clientes' },
+            { etiqueta: 'Créditos', icono: 'credit-card', ruta: '/creditos' },
+            { etiqueta: 'Garantías', icono: 'shield-alert', ruta: '/garantias' }
+          ]
+        },
+        { etiqueta: 'Taller', icono: 'wrench', ruta: '/taller' }
       ]
     },
     {
@@ -91,8 +99,12 @@ export class Layout {
       items: [
         { etiqueta: 'Proveedores', icono: 'truck', ruta: '/proveedores', soloAdmin: true },
         { etiqueta: 'Nómina', icono: 'hand-coins', ruta: '/nomina', soloAdmin: true },
-        { etiqueta: 'NCF', icono: 'receipt', ruta: '/ncf', soloAdmin: true },
-        { etiqueta: 'Reportes', icono: 'bar-chart-3', ruta: '/reportes', soloAdmin: true },
+        {
+          etiqueta: 'Fiscal', icono: 'file-text', soloAdmin: true, hijos: [
+            { etiqueta: 'NCF', icono: 'receipt', ruta: '/ncf', soloAdmin: true },
+            { etiqueta: 'Reportes', icono: 'bar-chart-3', ruta: '/reportes', soloAdmin: true }
+          ]
+        },
         { etiqueta: 'Usuarios', icono: 'settings', ruta: '/usuarios', soloAdmin: true }
       ]
     }
