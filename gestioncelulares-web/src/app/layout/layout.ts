@@ -12,6 +12,7 @@ interface ItemMenu {
   icono: string;
   ruta?: string;       // si está definida, el link funciona; si no, "próximamente"
   soloAdmin?: boolean;
+  hijos?: ItemMenu[];  // si tiene hijos, es un grupo desplegable (sin ruta propia)
 }
 
 interface GrupoMenu {
@@ -20,6 +21,7 @@ interface GrupoMenu {
 }
 
 const CLAVE_COLAPSADO = 'gc_sidebar_colapsado';
+const CLAVE_EXPANDIDOS = 'gc_sidebar_expandidos';
 
 @Component({
   selector: 'app-layout',
@@ -69,9 +71,13 @@ export class Layout {
         { etiqueta: 'Dashboard', icono: 'layout-dashboard', ruta: '/' },
         { etiqueta: 'POS / Ventas', icono: 'shopping-cart', ruta: '/pos' },
         { etiqueta: 'Ventas', icono: 'clipboard-list', ruta: '/ventas' },
-        { etiqueta: 'Inventario', icono: 'package', ruta: '/inventario' },
-        { etiqueta: 'Faltantes', icono: 'package-x', ruta: '/faltantes' },
-        { etiqueta: 'Catálogo', icono: 'layers', ruta: '/catalogo' },
+        {
+          etiqueta: 'Inventario', icono: 'package', hijos: [
+            { etiqueta: 'Existencias', icono: 'boxes', ruta: '/inventario' },
+            { etiqueta: 'Faltantes', icono: 'package-x', ruta: '/faltantes' },
+            { etiqueta: 'Catálogo', icono: 'layers', ruta: '/catalogo' }
+          ]
+        },
         { etiqueta: 'Clientes', icono: 'users', ruta: '/clientes' },
         { etiqueta: 'Créditos', icono: 'credit-card', ruta: '/creditos' },
         { etiqueta: 'Apartados', icono: 'bookmark', ruta: '/apartados' },
@@ -92,16 +98,54 @@ export class Layout {
     }
   ];
 
-  // Lista plana (para resolver la sección activa desde la URL)
-  private get menu(): ItemMenu[] {
-    return this.grupos.flatMap(g => g.items);
+  // Grupos desplegables expandidos manualmente por el usuario (persistido)
+  expandidos = signal<Set<string>>(this.leerExpandidos());
+
+  private leerExpandidos(): Set<string> {
+    try { return new Set<string>(JSON.parse(localStorage.getItem(CLAVE_EXPANDIDOS) ?? '[]')); }
+    catch { return new Set<string>(); }
   }
 
-  // Grupos con sus ítems ya filtrados por permiso; se omiten los grupos vacíos
+  alternarGrupo(etiqueta: string): void {
+    this.expandidos.update(s => {
+      const n = new Set(s);
+      n.has(etiqueta) ? n.delete(etiqueta) : n.add(etiqueta);
+      localStorage.setItem(CLAVE_EXPANDIDOS, JSON.stringify([...n]));
+      return n;
+    });
+  }
+
+  /// <summary>¿Está abierto el grupo? Abierto si el usuario lo expandió o si contiene la sección activa.</summary>
+  grupoAbierto(item: ItemMenu): boolean {
+    return this.expandidos().has(item.etiqueta) || this.contieneActivo(item);
+  }
+
+  private contieneActivo(item: ItemMenu): boolean {
+    const url = this.urlActual().split('?')[0];
+    return (item.hijos ?? []).some(h => h.ruta === url || (!!h.ruta && h.ruta !== '/' && url.startsWith(h.ruta)));
+  }
+
+  // Lista plana de hojas (para resolver la sección activa desde la URL)
+  private get menu(): ItemMenu[] {
+    return this.grupos.flatMap(g => g.items.flatMap(i => i.hijos ? i.hijos : [i]));
+  }
+
+  // Grupos con sus ítems (e hijos) ya filtrados por permiso; se omiten los vacíos
   get gruposVisibles(): GrupoMenu[] {
     return this.grupos
-      .map(g => ({ titulo: g.titulo, items: g.items.filter(i => !i.soloAdmin || this.auth.esAdmin()) }))
+      .map(g => ({
+        titulo: g.titulo,
+        items: g.items
+          .filter(i => !i.soloAdmin || this.auth.esAdmin())
+          .map(i => i.hijos ? { ...i, hijos: i.hijos.filter(h => !h.soloAdmin || this.auth.esAdmin()) } : i)
+          .filter(i => !i.hijos || i.hijos.length > 0)
+      }))
       .filter(g => g.items.length > 0);
+  }
+
+  // Hojas planas de un grupo (para el modo colapsado de la barra)
+  hojas(items: ItemMenu[]): ItemMenu[] {
+    return items.flatMap(i => i.hijos ? i.hijos : [i]);
   }
 
   iniciales(nombre: string | undefined): string {

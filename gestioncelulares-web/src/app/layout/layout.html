@@ -43,34 +43,55 @@
         } @else {
           <div class="my-2 mx-3 border-t border-white/5 first:border-0 first:my-0"></div>
         }
-        @for (item of grupo.items; track item.etiqueta) {
-          @if (item.ruta) {
-            <a
-              [routerLink]="item.ruta"
-              routerLinkActive="activo"
-              [routerLinkActiveOptions]="{ exact: item.ruta === '/' }"
-              [title]="colapsado() ? item.etiqueta : ''"
-              class="item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tech-pastel transition-all duration-300 ease-out hover:bg-white/[0.06] hover:text-white active:scale-[0.97]"
-              [class.justify-center]="colapsado()"
-            >
-              <span class="indicador absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 rounded-r-full bg-tech-accent transition-all duration-300"></span>
-              <lucide-icon [name]="item.icono" [size]="19" class="shrink-0"></lucide-icon>
-              @if (!colapsado()) {
+        @if (colapsado()) {
+          <!-- Barra colapsada: solo íconos (los grupos se aplanan a sus hojas) -->
+          @for (item of hojas(grupo.items); track item.etiqueta) {
+            @if (item.ruta) {
+              <a [routerLink]="item.ruta" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: item.ruta === '/' }"
+                [title]="item.etiqueta"
+                class="item group relative flex items-center justify-center px-3 py-2.5 rounded-xl text-sm text-tech-pastel transition-all duration-300 ease-out hover:bg-white/[0.06] hover:text-white active:scale-[0.97]">
+                <span class="indicador absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 rounded-r-full bg-tech-accent transition-all duration-300"></span>
+                <lucide-icon [name]="item.icono" [size]="19" class="shrink-0"></lucide-icon>
+              </a>
+            }
+          }
+        } @else {
+          <!-- Barra expandida: ítems normales y grupos desplegables -->
+          @for (item of grupo.items; track item.etiqueta) {
+            @if (item.hijos) {
+              <!-- Grupo desplegable -->
+              <button type="button" (click)="alternarGrupo(item.etiqueta)"
+                class="item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tech-pastel w-full transition-all duration-200 hover:bg-white/[0.06] hover:text-white">
+                <lucide-icon [name]="item.icono" [size]="19" class="shrink-0"></lucide-icon>
                 <span class="font-medium whitespace-nowrap">{{ item.etiqueta }}</span>
+                <lucide-icon name="chevron-down" [size]="16" class="ml-auto shrink-0 transition-transform duration-200" [class.rotate-180]="grupoAbierto(item)"></lucide-icon>
+              </button>
+              @if (grupoAbierto(item)) {
+                <div class="flex flex-col gap-0.5 ml-3 pl-3 border-l border-white/10">
+                  @for (hijo of item.hijos; track hijo.etiqueta) {
+                    <a [routerLink]="hijo.ruta" routerLinkActive="activo"
+                      class="item group relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-[0.82rem] text-tech-pastel/90 transition-all duration-200 hover:bg-white/[0.06] hover:text-white active:scale-[0.97]">
+                      <span class="indicador absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-0 rounded-r-full bg-tech-accent transition-all duration-300"></span>
+                      <lucide-icon [name]="hijo.icono" [size]="16" class="shrink-0"></lucide-icon>
+                      <span class="font-medium whitespace-nowrap">{{ hijo.etiqueta }}</span>
+                    </a>
+                  }
+                </div>
               }
-            </a>
-          } @else {
-            <span
-              [title]="colapsado() ? item.etiqueta + ' (próximamente)' : ''"
-              class="item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tech-steel/35 cursor-not-allowed"
-              [class.justify-center]="colapsado()"
-            >
-              <lucide-icon [name]="item.icono" [size]="19" class="shrink-0"></lucide-icon>
-              @if (!colapsado()) {
+            } @else if (item.ruta) {
+              <a [routerLink]="item.ruta" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: item.ruta === '/' }"
+                class="item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tech-pastel transition-all duration-300 ease-out hover:bg-white/[0.06] hover:text-white active:scale-[0.97]">
+                <span class="indicador absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 rounded-r-full bg-tech-accent transition-all duration-300"></span>
+                <lucide-icon [name]="item.icono" [size]="19" class="shrink-0"></lucide-icon>
+                <span class="font-medium whitespace-nowrap">{{ item.etiqueta }}</span>
+              </a>
+            } @else {
+              <span class="item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-tech-steel/35 cursor-not-allowed">
+                <lucide-icon [name]="item.icono" [size]="19" class="shrink-0"></lucide-icon>
                 <span class="font-medium whitespace-nowrap">{{ item.etiqueta }}</span>
                 <span class="ml-auto text-[0.6rem] uppercase tracking-wider bg-white/5 text-tech-steel/60 px-1.5 py-0.5 rounded">pronto</span>
-              }
-            </span>
+              </span>
+            }
           }
         }
       }
