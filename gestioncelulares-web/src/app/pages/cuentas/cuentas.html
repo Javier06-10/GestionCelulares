@@ -2,69 +2,127 @@
 <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
   <div>
     <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Catálogo de cuentas</h2>
-    <p class="text-sm text-tech-steel mt-0.5">Plan contable: las 6 cuentas principales y las que tú agregues.</p>
+    <p class="text-sm text-tech-steel mt-0.5">Plan contable: las 6 familias principales y las cuentas que tú agregues.</p>
   </div>
-  <button (click)="abrirNueva()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
-    <lucide-icon name="plus" [size]="18"></lucide-icon> Nueva cuenta
-  </button>
+  <div class="flex items-center gap-2">
+    <div class="relative">
+      <lucide-icon name="search" [size]="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
+      <input [value]="buscar()" (input)="buscar.set($any($event.target).value)" type="text" placeholder="Buscar cuenta o código…"
+        class="w-56 pl-9 pr-3 py-2.5 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal text-sm outline-none transition-all focus:border-tech-accent/60 focus:w-64" />
+    </div>
+    <button (click)="abrirNueva()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all duration-300 ease-out hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
+      <lucide-icon name="plus" [size]="18"></lucide-icon> Nueva cuenta
+    </button>
+  </div>
 </div>
 
-<!-- Resumen por tipo -->
-<div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-5">
-  @for (r of resumen(); track r.tipo) {
-    <div class="rounded-2xl border border-tech-pastel/30 bg-tech-card-light px-3 py-3 text-center">
-      <div class="text-[0.7rem] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-lg inline-block mb-1" [class]="tipoClase(r.tipo)">{{ r.tipo }}</div>
-      <div class="text-lg font-bold text-tech-charcoal">{{ r.cantidad }}</div>
+<!-- Resumen por familia (vista de un vistazo) -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+  @for (f of familias(); track f.tipo) {
+    <button (click)="alternarFamilia(f.tipo)" class="group relative text-left rounded-2xl border border-tech-pastel/30 bg-tech-card-light p-3.5 overflow-hidden transition-all duration-300 ease-out hover:border-tech-pastel/60 hover:shadow-[0_8px_24px_-18px_rgba(15,23,42,0.4)] active:scale-[0.98]">
+      <span class="absolute left-0 top-0 bottom-0 w-1 {{ f.tema.stripe }}"></span>
+      <div class="flex items-center gap-2.5 mb-2">
+        <span class="w-9 h-9 grid place-items-center rounded-xl {{ f.tema.chip }} shrink-0">
+          <lucide-icon [name]="f.tema.icono" [size]="18"></lucide-icon>
+        </span>
+        <div class="min-w-0">
+          <div class="font-semibold text-tech-charcoal text-sm leading-tight truncate">{{ f.tipo }}</div>
+          <div class="text-[0.65rem] text-tech-steel uppercase tracking-wide">{{ f.tema.naturaleza }}</div>
+        </div>
+      </div>
+      <div class="flex items-end justify-between">
+        <span class="text-2xl font-bold text-tech-charcoal leading-none">{{ f.total }}</span>
+        <span class="text-[0.65rem] text-tech-steel mb-0.5">cuenta{{ f.total === 1 ? '' : 's' }}</span>
+      </div>
+    </button>
+  }
+</div>
+
+<!-- Barra de utilidades -->
+<div class="flex items-center justify-between gap-3 mb-3">
+  <span class="text-xs text-tech-steel">{{ totalCuentas() }} cuentas de detalle · {{ familias().length }} familias</span>
+  @if (!buscando()) {
+    <div class="flex items-center gap-1">
+      <button (click)="colapsarTodo(false)" class="text-xs font-medium text-tech-steel hover:text-tech-charcoal px-2.5 py-1 rounded-lg hover:bg-tech-card-light transition-all">Expandir todo</button>
+      <span class="text-tech-pastel">·</span>
+      <button (click)="colapsarTodo(true)" class="text-xs font-medium text-tech-steel hover:text-tech-charcoal px-2.5 py-1 rounded-lg hover:bg-tech-card-light transition-all">Contraer todo</button>
     </div>
   }
 </div>
 
-<!-- Tabla / árbol -->
-<div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
-  <div class="overflow-x-auto">
-    <table class="w-full text-sm border-collapse min-w-[680px]">
-      <thead>
-        <tr class="bg-tech-bg-light/80 text-tech-steel text-left">
-          <th class="font-semibold py-3 px-4">Código</th>
-          <th class="font-semibold py-3 px-4">Cuenta</th>
-          <th class="font-semibold py-3 px-4">Tipo</th>
-          <th class="font-semibold py-3 px-4">Naturaleza</th>
-          <th class="font-semibold py-3 px-4 text-center">Movim.</th>
-          <th class="font-semibold py-3 px-4 text-right">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (cargando()) {
-          @for (i of [1,2,3,4]; track i) { <tr class="border-t border-tech-pastel/20"><td colspan="6" class="py-3 px-4"><div class="h-5 bg-tech-bg-light rounded animate-pulse"></div></td></tr> }
-        } @else {
-          @for (c of cuentas(); track c.cuentaContableId) {
-            <tr class="border-t border-tech-pastel/20 transition-colors hover:bg-tech-bg-light/60" [class.opacity-50]="!c.activo">
-              <td class="py-2.5 px-4 font-mono text-tech-charcoal whitespace-nowrap">{{ c.codigo }}</td>
-              <td class="py-2.5 px-4">
-                <span [style.padding-left.px]="c.nivel * 18" class="block">
-                  <span [class]="c.nivel === 0 ? 'font-bold text-tech-charcoal' : 'text-tech-charcoal'">{{ c.nombre }}</span>
-                  @if (c.esSistema) { <span class="ml-2 text-[0.6rem] uppercase tracking-wider text-tech-steel/60">base</span> }
-                </span>
-              </td>
-              <td class="py-2.5 px-4"><span class="inline-block px-2 py-0.5 rounded-lg text-xs font-semibold" [class]="tipoClase(c.tipo)">{{ c.tipo }}</span></td>
-              <td class="py-2.5 px-4 text-tech-steel">{{ c.naturaleza }}</td>
-              <td class="py-2.5 px-4 text-center">
-                @if (c.permiteMovimiento) { <lucide-icon name="check" [size]="15" class="text-tech-accent inline"></lucide-icon> } @else { <span class="text-tech-steel/40">—</span> }
-              </td>
-              <td class="py-2.5 px-4 text-right whitespace-nowrap">
-                <button (click)="abrirNueva(c)" title="Agregar sub-cuenta" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light hover:text-tech-accent active:scale-90 transition-all inline-grid"><lucide-icon name="plus" [size]="15"></lucide-icon></button>
-                <button (click)="abrirEditar(c)" title="Editar" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light hover:text-tech-charcoal active:scale-90 transition-all inline-grid"><lucide-icon name="pencil" [size]="15"></lucide-icon></button>
-                @if (!c.esSistema) {
-                  <button (click)="eliminar(c)" title="Eliminar" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-red-50 hover:text-red-500 active:scale-90 transition-all inline-grid"><lucide-icon name="trash-2" [size]="15"></lucide-icon></button>
-                }
-              </td>
-            </tr>
-          }
-        }
-      </tbody>
-    </table>
+<!-- Estado de carga -->
+@if (cargando()) {
+  <div class="flex flex-col gap-3">
+    @for (i of [1,2,3]; track i) { <div class="h-16 rounded-2xl bg-tech-card-light border border-tech-pastel/30 animate-pulse"></div> }
   </div>
-</div>
+}
+
+<!-- Sin resultados de búsqueda -->
+@else if (familias().length === 0) {
+  <div class="rounded-2xl border border-tech-pastel/30 bg-tech-card-light py-16 text-center text-tech-steel">
+    <lucide-icon name="search" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon>
+    <p>No se encontraron cuentas para «{{ buscar() }}».</p>
+  </div>
+}
+
+<!-- Familias agrupadas -->
+@else {
+  <div class="flex flex-col gap-3">
+    @for (f of familias(); track f.tipo) {
+      <section class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-22px_rgba(15,23,42,0.18)]">
+        <!-- Cabecera de la familia -->
+        <header class="relative flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-tech-bg-light/50" (click)="alternarFamilia(f.tipo)">
+          <span class="absolute left-0 top-0 bottom-0 w-1 {{ f.tema.stripe }}"></span>
+          <span class="w-10 h-10 grid place-items-center rounded-xl {{ f.tema.chip }} shrink-0">
+            <lucide-icon [name]="f.tema.icono" [size]="20"></lucide-icon>
+          </span>
+          <div class="flex items-baseline gap-2 min-w-0">
+            <span class="font-mono text-sm font-bold {{ f.tema.texto }}">{{ f.raiz?.codigo }}</span>
+            <span class="font-bold text-tech-charcoal truncate">{{ f.tipo }}s</span>
+          </div>
+          <span class="px-2 py-0.5 rounded-lg text-[0.65rem] font-semibold uppercase tracking-wide bg-tech-bg-light text-tech-steel">{{ f.tema.naturaleza }}</span>
+          <span class="ml-auto flex items-center gap-3 shrink-0">
+            <span class="text-xs text-tech-steel hidden sm:inline">{{ f.conMovimiento }}/{{ f.total }} operables</span>
+            <button (click)="abrirNueva(f.raiz!); $event.stopPropagation()" title="Agregar subcuenta a {{ f.tipo }}" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light hover:text-tech-accent active:scale-90 transition-all"><lucide-icon name="plus" [size]="16"></lucide-icon></button>
+            <lucide-icon name="chevron-down" [size]="18" class="text-tech-steel transition-transform duration-200" [class.rotate-180]="abierta(f.tipo)"></lucide-icon>
+          </span>
+        </header>
+
+        <!-- Subcuentas (árbol) -->
+        @if (abierta(f.tipo)) {
+          <div class="border-t border-tech-pastel/25">
+            @for (c of f.hijas; track c.cuentaContableId) {
+              <div class="group flex items-center gap-3 pr-3 py-2.5 border-b border-tech-pastel/15 last:border-b-0 transition-colors hover:bg-tech-bg-light/50" [class.opacity-45]="!c.activo">
+                <!-- Indentación + guía -->
+                <div class="flex items-center" [style.padding-left.px]="16 + (c.nivel - 1) * 22">
+                  <span class="w-1.5 h-1.5 rounded-full {{ c.permiteMovimiento ? f.tema.punto : 'bg-tech-pastel' }} mr-3 shrink-0"></span>
+                  <span class="font-mono text-[0.8rem] text-tech-steel w-14 shrink-0">{{ c.codigo }}</span>
+                </div>
+                <span class="text-sm text-tech-charcoal truncate" [class.font-semibold]="!c.permiteMovimiento">{{ c.nombre }}</span>
+                @if (c.esSistema) { <span class="px-1.5 py-0.5 rounded text-[0.55rem] uppercase tracking-wider bg-tech-bg-light text-tech-steel/70 shrink-0">base</span> }
+                @if (!c.permiteMovimiento) { <span class="px-1.5 py-0.5 rounded text-[0.55rem] uppercase tracking-wider bg-tech-sand/20 text-tech-sand shrink-0">grupo</span> }
+
+                <!-- Acciones (aparecen al hover) -->
+                <span class="ml-auto flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button (click)="abrirNueva(c)" title="Agregar subcuenta" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-card-light hover:text-tech-accent active:scale-90 transition-all"><lucide-icon name="plus" [size]="15"></lucide-icon></button>
+                  <button (click)="abrirEditar(c)" title="Editar" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-card-light hover:text-tech-charcoal active:scale-90 transition-all"><lucide-icon name="pencil" [size]="15"></lucide-icon></button>
+                  @if (!c.esSistema) {
+                    <button (click)="eliminar(c)" title="Eliminar" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-red-50 hover:text-red-500 active:scale-90 transition-all"><lucide-icon name="trash-2" [size]="15"></lucide-icon></button>
+                  }
+                </span>
+              </div>
+            } @empty {
+              <div class="px-5 py-5 text-center text-sm text-tech-steel">
+                Sin subcuentas todavía.
+                <button (click)="abrirNueva(f.raiz!)" class="font-medium {{ f.tema.texto }} hover:underline">Crear la primera</button>.
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
+  </div>
+}
 
 <!-- ===== Modal alta / edición ===== -->
 @if (modal()) {

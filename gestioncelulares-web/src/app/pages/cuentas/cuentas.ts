@@ -5,6 +5,35 @@ import { Cuenta, CuentaService } from '../../core/cuenta.service';
 
 const TIPOS = ['Activo', 'Pasivo', 'Capital', 'Ingreso', 'Costo', 'Gasto'];
 
+/** Metadatos visuales y contables de cada familia de cuentas. */
+interface TemaFamilia {
+  icono: string;
+  naturaleza: 'Deudora' | 'Acreedora';
+  grupo: 'Balance' | 'Resultado';
+  chip: string;     // chip del ícono (bg + texto)
+  texto: string;    // color de texto/acento
+  stripe: string;   // franja lateral de acento
+  punto: string;    // punto/indicador
+}
+
+const FAMILIAS: Record<string, TemaFamilia> = {
+  Activo:  { icono: 'wallet',       naturaleza: 'Deudora',   grupo: 'Balance',   chip: 'bg-emerald-500/10 text-emerald-600', texto: 'text-emerald-600', stripe: 'bg-emerald-500', punto: 'bg-emerald-500' },
+  Pasivo:  { icono: 'credit-card',  naturaleza: 'Acreedora', grupo: 'Balance',   chip: 'bg-rose-500/10 text-rose-500',       texto: 'text-rose-500',    stripe: 'bg-rose-500',    punto: 'bg-rose-500' },
+  Capital: { icono: 'hand-coins',   naturaleza: 'Acreedora', grupo: 'Balance',   chip: 'bg-violet-500/10 text-violet-600',   texto: 'text-violet-600',  stripe: 'bg-violet-500',  punto: 'bg-violet-500' },
+  Ingreso: { icono: 'trending-up',  naturaleza: 'Acreedora', grupo: 'Resultado', chip: 'bg-teal-500/10 text-teal-600',       texto: 'text-teal-600',    stripe: 'bg-teal-500',    punto: 'bg-teal-500' },
+  Costo:   { icono: 'package',      naturaleza: 'Deudora',   grupo: 'Resultado', chip: 'bg-amber-500/10 text-amber-600',     texto: 'text-amber-600',   stripe: 'bg-amber-500',   punto: 'bg-amber-500' },
+  Gasto:   { icono: 'receipt',      naturaleza: 'Deudora',   grupo: 'Resultado', chip: 'bg-orange-500/10 text-orange-600',   texto: 'text-orange-600',  stripe: 'bg-orange-500',  punto: 'bg-orange-500' }
+};
+
+interface FamiliaVista {
+  tipo: string;
+  tema: TemaFamilia;
+  raiz: Cuenta | null;
+  hijas: Cuenta[];
+  total: number;
+  conMovimiento: number;
+}
+
 @Component({
   selector: 'app-cuentas',
   imports: [ReactiveFormsModule, LucideAngularModule],
@@ -18,14 +47,53 @@ export class Cuentas {
 
   cuentas = signal<Cuenta[]>([]);
   cargando = signal(false);
+  buscar = signal('');
+  colapsados = signal<Set<string>>(new Set());
 
-  // Resumen por tipo (las 6 principales)
-  resumen = computed(() => TIPOS.map(t => ({
-    tipo: t,
-    cantidad: this.cuentas().filter(c => c.tipo === t).length
-  })));
+  tema(tipo: string): TemaFamilia { return FAMILIAS[tipo] ?? FAMILIAS['Activo']; }
 
-  // Modal alta / edición
+  // Agrupación por familia, ordenada y filtrada por el buscador
+  familias = computed<FamiliaVista[]>(() => {
+    const q = this.buscar().trim().toLowerCase();
+    return TIPOS.map(tipo => {
+      let cuentas = this.cuentas().filter(c => c.tipo === tipo);
+      const raiz = cuentas.find(c => c.nivel === 0) ?? null;
+      let hijas = cuentas.filter(c => c.nivel >= 1);
+      if (q) hijas = hijas.filter(c => c.codigo.toLowerCase().includes(q) || c.nombre.toLowerCase().includes(q));
+      hijas = [...hijas].sort((a, b) => a.codigo.localeCompare(b.codigo, undefined, { numeric: true }));
+      return {
+        tipo,
+        tema: this.tema(tipo),
+        raiz,
+        hijas,
+        total: hijas.length,
+        conMovimiento: hijas.filter(c => c.permiteMovimiento && c.activo).length
+      };
+    }).filter(f => f.raiz && (!q || f.hijas.length > 0));
+  });
+
+  totalCuentas = computed(() => this.cuentas().filter(c => c.nivel >= 1).length);
+
+  buscando = computed(() => this.buscar().trim().length > 0);
+
+  abierta(tipo: string): boolean {
+    return this.buscando() || !this.colapsados().has(tipo);
+  }
+
+  alternarFamilia(tipo: string): void {
+    if (this.buscando()) return;
+    this.colapsados.update(s => {
+      const n = new Set(s);
+      n.has(tipo) ? n.delete(tipo) : n.add(tipo);
+      return n;
+    });
+  }
+
+  colapsarTodo(colapsar: boolean): void {
+    this.colapsados.set(colapsar ? new Set(TIPOS) : new Set());
+  }
+
+  // ---- Modal alta / edición ----
   modal = signal(false);
   editando = signal<Cuenta | null>(null);
   guardando = signal(false);
@@ -39,7 +107,6 @@ export class Cuentas {
     activo: [true]
   });
 
-  // Posibles padres (todas las cuentas, para anidar)
   padres = computed(() => this.cuentas());
 
   constructor() { this.cargar(); }
@@ -50,18 +117,6 @@ export class Cuentas {
       next: c => { this.cuentas.set(c); this.cargando.set(false); },
       error: () => this.cargando.set(false)
     });
-  }
-
-  tipoClase(tipo: string): string {
-    switch (tipo) {
-      case 'Activo': return 'bg-blue-500/10 text-blue-600';
-      case 'Pasivo': return 'bg-red-500/10 text-red-500';
-      case 'Capital': return 'bg-tech-purple/10 text-tech-purple';
-      case 'Ingreso': return 'bg-tech-accent/10 text-tech-accent';
-      case 'Costo': return 'bg-amber-500/10 text-amber-600';
-      case 'Gasto': return 'bg-rose-500/10 text-rose-500';
-      default: return 'bg-slate-400/15 text-slate-500';
-    }
   }
 
   abrirNueva(padre?: Cuenta): void {
@@ -92,7 +147,6 @@ export class Cuentas {
     this.modal.set(true);
   }
 
-  // Sugiere el próximo código bajo un padre (o raíz)
   private sugerirCodigo(padre: Cuenta | null): string {
     const prefijo = padre ? padre.codigo + '.' : '';
     const hijas = this.cuentas().filter(c => c.cuentaPadreId === (padre?.cuentaContableId ?? null));
@@ -106,7 +160,6 @@ export class Cuentas {
     return prefijo + sig;
   }
 
-  // Recalcula el código sugerido cuando cambia el padre (solo en alta)
   onPadreChange(valor: string): void {
     if (this.editando()) return;
     const id = valor ? Number(valor) : null;

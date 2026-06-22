@@ -55,14 +55,14 @@
     </div>
     <div class="px-6 py-4 text-sm">
       <!-- Ingresos -->
-      <p class="font-semibold text-tech-charcoal mb-1.5">Ingresos</p>
+      <p class="flex items-center gap-2 font-semibold text-tech-charcoal mb-1.5"><span class="w-1.5 h-4 rounded-full bg-teal-500"></span>Ingresos</p>
       @for (l of r.ingresos; track l.codigo) {
         <div class="flex justify-between py-1 text-tech-steel"><span><span class="font-mono">{{ l.codigo }}</span> {{ l.nombre }}</span><span class="text-tech-charcoal">{{ l.monto | currency: 'DOP':'RD$':'1.2-2' }}</span></div>
       } @empty { <p class="py-1 text-tech-steel italic">Sin ingresos.</p> }
       <div class="flex justify-between py-1.5 mt-1 border-t border-tech-pastel/30 font-semibold text-tech-charcoal"><span>Total ingresos</span><span>{{ r.totalIngresos | currency: 'DOP':'RD$':'1.2-2' }}</span></div>
 
       <!-- Costos -->
-      <p class="font-semibold text-tech-charcoal mb-1.5 mt-4">Costos</p>
+      <p class="flex items-center gap-2 font-semibold text-tech-charcoal mb-1.5 mt-4"><span class="w-1.5 h-4 rounded-full bg-amber-500"></span>Costos</p>
       @for (l of r.costos; track l.codigo) {
         <div class="flex justify-between py-1 text-tech-steel"><span><span class="font-mono">{{ l.codigo }}</span> {{ l.nombre }}</span><span class="text-tech-charcoal">({{ l.monto | currency: 'DOP':'RD$':'1.2-2' }})</span></div>
       } @empty { <p class="py-1 text-tech-steel italic">Sin costos.</p> }
@@ -71,7 +71,7 @@
       <div class="flex justify-between py-2 mt-2 rounded-lg bg-tech-bg-light/60 px-3 font-bold text-tech-charcoal"><span>Utilidad bruta</span><span>{{ r.utilidadBruta | currency: 'DOP':'RD$':'1.2-2' }}</span></div>
 
       <!-- Gastos -->
-      <p class="font-semibold text-tech-charcoal mb-1.5 mt-4">Gastos operativos</p>
+      <p class="flex items-center gap-2 font-semibold text-tech-charcoal mb-1.5 mt-4"><span class="w-1.5 h-4 rounded-full bg-orange-500"></span>Gastos operativos</p>
       @for (l of r.gastos; track l.codigo) {
         <div class="flex justify-between py-1 text-tech-steel"><span><span class="font-mono">{{ l.codigo }}</span> {{ l.nombre }}</span><span class="text-tech-charcoal">({{ l.monto | currency: 'DOP':'RD$':'1.2-2' }})</span></div>
       } @empty { <p class="py-1 text-tech-steel italic">Sin gastos.</p> }
@@ -96,10 +96,14 @@
 
   <div class="grid md:grid-cols-2 gap-4 max-w-4xl">
     <!-- Activos -->
-    <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
-      <div class="px-5 py-3.5 border-b border-tech-pastel/30">
-        <h3 class="font-bold text-tech-charcoal">Activos</h3>
-        <span class="text-xs text-tech-steel">Al {{ b.hasta | date:'dd/MM/yyyy' }}</span>
+    <div class="relative bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
+      <span class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></span>
+      <div class="px-5 py-3.5 border-b border-tech-pastel/30 flex items-center gap-2.5">
+        <span class="w-8 h-8 grid place-items-center rounded-lg bg-emerald-500/10 text-emerald-600"><lucide-icon name="wallet" [size]="16"></lucide-icon></span>
+        <div>
+          <h3 class="font-bold text-tech-charcoal leading-tight">Activos</h3>
+          <span class="text-xs text-tech-steel">Al {{ b.hasta | date:'dd/MM/yyyy' }}</span>
+        </div>
       </div>
       <div class="px-5 py-3 text-sm">
         @for (l of b.activos; track l.codigo) {
@@ -110,19 +114,23 @@
     </div>
 
     <!-- Pasivos + Capital -->
-    <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
-      <div class="px-5 py-3.5 border-b border-tech-pastel/30">
-        <h3 class="font-bold text-tech-charcoal">Pasivos y Capital</h3>
-        <span class="text-xs text-tech-steel">Al {{ b.hasta | date:'dd/MM/yyyy' }}</span>
+    <div class="relative bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
+      <span class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-rose-500 to-violet-500"></span>
+      <div class="px-5 py-3.5 border-b border-tech-pastel/30 flex items-center gap-2.5">
+        <span class="w-8 h-8 grid place-items-center rounded-lg bg-violet-500/10 text-violet-600"><lucide-icon name="hand-coins" [size]="16"></lucide-icon></span>
+        <div>
+          <h3 class="font-bold text-tech-charcoal leading-tight">Pasivos y Capital</h3>
+          <span class="text-xs text-tech-steel">Al {{ b.hasta | date:'dd/MM/yyyy' }}</span>
+        </div>
       </div>
       <div class="px-5 py-3 text-sm">
-        <p class="font-semibold text-tech-charcoal mb-1">Pasivos</p>
+        <p class="flex items-center gap-2 font-semibold text-tech-charcoal mb-1"><span class="w-1.5 h-4 rounded-full bg-rose-500"></span>Pasivos</p>
         @for (l of b.pasivos; track l.codigo) {
           <div class="flex justify-between py-1 text-tech-steel"><span><span class="font-mono">{{ l.codigo }}</span> {{ l.nombre }}</span><span class="text-tech-charcoal">{{ l.monto | currency: 'DOP':'RD$':'1.2-2' }}</span></div>
         } @empty { <p class="py-1 text-tech-steel italic">Sin pasivos.</p> }
         <div class="flex justify-between py-1.5 border-t border-tech-pastel/30 font-semibold text-tech-charcoal"><span>Total pasivos</span><span>{{ b.totalPasivos | currency: 'DOP':'RD$':'1.2-2' }}</span></div>
 
-        <p class="font-semibold text-tech-charcoal mb-1 mt-3">Capital</p>
+        <p class="flex items-center gap-2 font-semibold text-tech-charcoal mb-1 mt-3"><span class="w-1.5 h-4 rounded-full bg-violet-500"></span>Capital</p>
         @for (l of b.capital; track l.codigo) {
           <div class="flex justify-between py-1 text-tech-steel"><span><span class="font-mono">{{ l.codigo }}</span> {{ l.nombre }}</span><span class="text-tech-charcoal">{{ l.monto | currency: 'DOP':'RD$':'1.2-2' }}</span></div>
         }
