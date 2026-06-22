@@ -1,24 +1,32 @@
 <!-- Encabezado -->
-<div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+<div class="no-print flex flex-wrap items-center justify-between gap-3 mb-5">
   <div>
     <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Estados financieros</h2>
     <p class="text-sm text-tech-steel mt-0.5">Estado de resultados y balance general a partir de los asientos registrados.</p>
   </div>
-  @if (tab() === 'balance') {
-    <button (click)="cerrarEjercicio()" [disabled]="cerrando()" title="Trasladar el resultado acumulado a Capital (Resultados Acumulados)" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-semibold text-sm transition-all hover:bg-tech-bg-light active:scale-95 disabled:opacity-50">
-      @if (cerrando()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Cerrando… } @else { <lucide-icon name="lock-keyhole" [size]="16"></lucide-icon> Cerrar ejercicio }
+  <div class="flex items-center gap-2">
+    <button (click)="exportar()" title="Descargar en CSV (Excel)" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-semibold text-sm transition-all hover:bg-tech-bg-light active:scale-95">
+      <lucide-icon name="download" [size]="16"></lucide-icon> Exportar CSV
     </button>
-  }
+    <button (click)="imprimir()" title="Imprimir o guardar como PDF" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-semibold text-sm transition-all hover:bg-tech-bg-light active:scale-95">
+      <lucide-icon name="printer" [size]="16"></lucide-icon> Imprimir / PDF
+    </button>
+    @if (tab() === 'balance') {
+      <button (click)="cerrarEjercicio()" [disabled]="cerrando()" title="Trasladar el resultado acumulado a Capital (Resultados Acumulados)" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-semibold text-sm transition-all hover:bg-tech-bg-light active:scale-95 disabled:opacity-50">
+        @if (cerrando()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Cerrando… } @else { <lucide-icon name="lock-keyhole" [size]="16"></lucide-icon> Cerrar ejercicio }
+      </button>
+    }
+  </div>
 </div>
 
 <!-- Tabs -->
-<div class="flex items-center gap-1 mb-4 p-1 bg-tech-card-light border border-tech-pastel/40 rounded-xl w-fit">
+<div class="no-print flex items-center gap-1 mb-4 p-1 bg-tech-card-light border border-tech-pastel/40 rounded-xl w-fit">
   <button (click)="cambiarTab('resultados')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="tab() === 'resultados' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'"><lucide-icon name="trending-up" [size]="15"></lucide-icon> Estado de resultados</button>
   <button (click)="cambiarTab('balance')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="tab() === 'balance' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'"><lucide-icon name="scale" [size]="15"></lucide-icon> Balance general</button>
 </div>
 
 <!-- Filtro de fechas -->
-<div class="flex flex-wrap items-end gap-3 mb-4">
+<div class="no-print flex flex-wrap items-end gap-3 mb-4">
   @if (tab() === 'resultados') {
     <div>
       <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Desde</label>
@@ -40,7 +48,7 @@
 
 <!-- ===== ESTADO DE RESULTADOS ===== -->
 @else if (tab() === 'resultados' && resultados(); as r) {
-  <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)] max-w-2xl">
+  <div id="estado-print" class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)] max-w-2xl">
     <div class="px-6 py-4 border-b border-tech-pastel/30">
       <h3 class="font-bold text-tech-charcoal">Estado de resultados</h3>
       <span class="text-xs text-tech-steel">Del {{ r.desde | date:'dd/MM/yyyy' }} al {{ r.hasta | date:'dd/MM/yyyy' }}</span>
@@ -80,6 +88,7 @@
 
 <!-- ===== BALANCE GENERAL ===== -->
 @else if (tab() === 'balance' && balance(); as b) {
+  <div id="estado-print">
   <div class="mb-3 px-3.5 py-2.5 rounded-xl text-sm flex items-center gap-2 max-w-4xl" [class]="b.cuadrado ? 'bg-tech-accent/10 text-tech-accent' : 'bg-red-500/10 text-red-500'">
     <lucide-icon [name]="b.cuadrado ? 'circle-check' : 'triangle-alert'" [size]="16"></lucide-icon>
     {{ b.cuadrado ? 'Balance cuadrado: Activo = Pasivo + Capital.' : 'El balance NO cuadra. Revisa los asientos del período.' }}
@@ -123,5 +132,6 @@
         <div class="flex justify-between py-2 mt-2 rounded-lg bg-tech-bg-light/60 px-3 font-bold text-tech-charcoal"><span>Pasivo + Capital</span><span>{{ b.totalPasivoCapital | currency: 'DOP':'RD$':'1.2-2' }}</span></div>
       </div>
     </div>
+  </div>
   </div>
 }

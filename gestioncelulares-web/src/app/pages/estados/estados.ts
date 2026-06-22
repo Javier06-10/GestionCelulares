@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { BalanceGeneral, ContabilidadService, EstadoResultados } from '../../core/contabilidad.service';
+import { exportarCsv } from '../../core/reporte.service';
 
 @Component({
   selector: 'app-estados',
@@ -43,6 +44,44 @@ export class Estados {
         next: b => { this.balance.set(b); this.cargando.set(false); },
         error: () => this.cargando.set(false)
       });
+    }
+  }
+
+  imprimir(): void { window.print(); }
+
+  exportar(): void {
+    if (this.tab() === 'resultados') {
+      const r = this.resultados();
+      if (!r) return;
+      const filas: (string | number)[][] = [];
+      filas.push(['INGRESOS', '']);
+      r.ingresos.forEach(l => filas.push([`${l.codigo} ${l.nombre}`, l.monto]));
+      filas.push(['Total ingresos', r.totalIngresos]);
+      filas.push(['COSTOS', '']);
+      r.costos.forEach(l => filas.push([`${l.codigo} ${l.nombre}`, l.monto]));
+      filas.push(['Total costos', r.totalCostos]);
+      filas.push(['Utilidad bruta', r.utilidadBruta]);
+      filas.push(['GASTOS', '']);
+      r.gastos.forEach(l => filas.push([`${l.codigo} ${l.nombre}`, l.monto]));
+      filas.push(['Total gastos', r.totalGastos]);
+      filas.push([r.utilidadNeta >= 0 ? 'Utilidad neta' : 'Pérdida neta', r.utilidadNeta]);
+      exportarCsv(`estado-resultados-${r.desde}-a-${r.hasta}`, ['Concepto', 'Monto'], filas);
+    } else {
+      const b = this.balance();
+      if (!b) return;
+      const filas: (string | number)[][] = [];
+      filas.push(['ACTIVOS', '']);
+      b.activos.forEach(l => filas.push([`${l.codigo} ${l.nombre}`, l.monto]));
+      filas.push(['Total activos', b.totalActivos]);
+      filas.push(['PASIVOS', '']);
+      b.pasivos.forEach(l => filas.push([`${l.codigo} ${l.nombre}`, l.monto]));
+      filas.push(['Total pasivos', b.totalPasivos]);
+      filas.push(['CAPITAL', '']);
+      b.capital.forEach(l => filas.push([`${l.codigo} ${l.nombre}`, l.monto]));
+      filas.push(['Resultado del ejercicio', b.resultadoEjercicio]);
+      filas.push(['Total capital', b.totalCapital]);
+      filas.push(['Total pasivo + capital', b.totalPasivoCapital]);
+      exportarCsv(`balance-general-al-${b.hasta}`, ['Concepto', 'Monto'], filas);
     }
   }
 

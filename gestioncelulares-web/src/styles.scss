@@ -104,4 +104,18 @@ body {
   .no-print {
     display: none !important;
   }
+
+  /* Documentos contables (estados financieros): imprimir solo el documento */
+  #estado-print,
+  #estado-print * {
+    visibility: visible;
+  }
+  #estado-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 8px 16px;
+    color: #000;
+  }
 }

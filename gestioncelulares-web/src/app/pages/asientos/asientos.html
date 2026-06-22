@@ -35,6 +35,11 @@
   <button (click)="generar()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
     <lucide-icon name="calendar" [size]="16"></lucide-icon> Generar
   </button>
+  @if (tab() === 'balance' && balance()) {
+    <button (click)="exportarBalance()" title="Descargar en CSV (Excel)" class="flex items-center gap-2 px-4 py-2 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-semibold text-sm transition-all hover:bg-tech-bg-light active:scale-95">
+      <lucide-icon name="download" [size]="16"></lucide-icon> Exportar CSV
+    </button>
+  }
 </div>
 
 @if (cargando()) {

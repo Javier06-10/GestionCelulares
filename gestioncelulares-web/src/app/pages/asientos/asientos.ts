@@ -5,6 +5,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { Asiento, AsientoResumen, AsientoService, BalanceComprobacion } from '../../core/asiento.service';
 import { ContabilidadService } from '../../core/contabilidad.service';
 import { Cuenta, CuentaService } from '../../core/cuenta.service';
+import { exportarCsv } from '../../core/reporte.service';
 
 @Component({
   selector: 'app-asientos',
@@ -102,6 +103,15 @@ export class Asientos {
         alert(err.error?.error ?? 'No se pudo contabilizar el período.');
       }
     });
+  }
+
+  exportarBalance(): void {
+    const b = this.balance();
+    if (!b) return;
+    const filas = b.lineas.map(l => [l.codigo, l.nombre, l.debito, l.credito, l.saldoDeudor, l.saldoAcreedor] as (string | number)[]);
+    filas.push(['', 'TOTALES', b.totalDebito, b.totalCredito, b.totalSaldoDeudor, b.totalSaldoAcreedor]);
+    exportarCsv(`balance-comprobacion-${this.desde()}-a-${this.hasta()}`,
+      ['Código', 'Cuenta', 'Débitos', 'Créditos', 'Saldo deudor', 'Saldo acreedor'], filas);
   }
 
   verDetalle(a: AsientoResumen): void {
