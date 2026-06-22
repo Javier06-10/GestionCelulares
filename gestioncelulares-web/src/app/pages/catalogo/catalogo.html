@@ -16,11 +16,50 @@
   </div>
 </div>
 
-<!-- Búsqueda -->
-<div class="relative mb-4 max-w-md">
-  <lucide-icon name="search" [size]="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
-  <input type="text" placeholder="Buscar por nombre o marca…" (input)="buscar($any($event.target).value)"
-    class="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal placeholder:text-tech-steel/60 outline-none transition-all focus:border-tech-accent/60 focus:shadow-[0_0_0_4px_rgba(0,230,118,0.08)]" />
+<!-- KPIs -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+  <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-tech-steel">Productos</span>
+      <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-charcoal/5 text-tech-charcoal"><lucide-icon name="layers" [size]="16"></lucide-icon></span>
+    </div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ productos().length }}</div>
+  </div>
+  <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-tech-steel">Dispositivos</span>
+      <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-accent/10 text-tech-accent"><lucide-icon name="smartphone" [size]="16"></lucide-icon></span>
+    </div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiDispositivos() }}</div>
+  </div>
+  <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-tech-steel">Accesorios</span>
+      <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-purple/10 text-tech-purple"><lucide-icon name="tag" [size]="16"></lucide-icon></span>
+    </div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiAccesorios() }}</div>
+  </div>
+  <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-tech-steel">Variantes</span>
+      <span class="w-8 h-8 grid place-items-center rounded-lg bg-emerald-500/10 text-emerald-600"><lucide-icon name="circle-dot" [size]="16"></lucide-icon></span>
+    </div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiVariantes() }}</div>
+  </div>
+</div>
+
+<!-- Búsqueda + filtro por tipo -->
+<div class="flex flex-wrap items-center gap-3 mb-4">
+  <div class="relative flex-1 min-w-[220px] max-w-md">
+    <lucide-icon name="search" [size]="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
+    <input type="text" placeholder="Buscar por nombre o marca…" (input)="buscar($any($event.target).value)"
+      class="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal placeholder:text-tech-steel/60 outline-none transition-all focus:border-tech-accent/60 focus:shadow-[0_0_0_4px_rgba(0,230,118,0.08)]" />
+  </div>
+  <div class="flex items-center gap-1 p-1 bg-tech-card-light border border-tech-pastel/40 rounded-xl">
+    <button (click)="filtrar('todos')" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="filtroTipo() === 'todos' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">Todos</button>
+    <button (click)="filtrar('dispositivo')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="filtroTipo() === 'dispositivo' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'"><lucide-icon name="smartphone" [size]="14"></lucide-icon> Dispositivos</button>
+    <button (click)="filtrar('accesorio')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="filtroTipo() === 'accesorio' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'"><lucide-icon name="tag" [size]="14"></lucide-icon> Accesorios</button>
+  </div>
 </div>
 
 <!-- Lista de productos -->
@@ -29,13 +68,13 @@
     @for (i of [1,2,3]; track i) {
       <div class="h-16 rounded-2xl bg-tech-card-light border border-tech-pastel/30 animate-pulse"></div>
     }
-  } @else if (productos().length === 0) {
+  } @else if (productosVista().length === 0) {
     <div class="py-16 text-center text-tech-steel bg-tech-card-light border border-tech-pastel/30 rounded-2xl">
       <lucide-icon name="layers" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon>
-      <p>No hay productos. Crea el primero.</p>
+      <p>No hay productos que coincidan.</p>
     </div>
   } @else {
-    @for (p of productos(); track p.productoId) {
+    @for (p of productosVista(); track p.productoId) {
       <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
         <!-- Cabecera del producto -->
         <div class="flex items-center gap-3 px-4 py-3.5">
@@ -44,8 +83,8 @@
             <lucide-icon [name]="expandido() === p.productoId ? 'chevron-down' : 'chevron-right'" [size]="18"></lucide-icon>
           </button>
 
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-tech-accent/15 to-tech-purple/15 grid place-items-center">
-            <lucide-icon name="smartphone" [size]="20" class="text-tech-charcoal"></lucide-icon>
+          <div class="w-10 h-10 rounded-xl grid place-items-center" [class]="p.serializado ? 'bg-tech-accent/10 text-tech-accent' : 'bg-tech-purple/10 text-tech-purple'">
+            <lucide-icon [name]="p.serializado ? 'smartphone' : 'tag'" [size]="20"></lucide-icon>
           </div>
 
           <div class="min-w-0 flex-1">
@@ -90,6 +129,7 @@
                       <th class="font-semibold py-2 px-2">Variante</th>
                       <th class="font-semibold py-2 px-2 text-right">Costo</th>
                       <th class="font-semibold py-2 px-2 text-right">Venta</th>
+                      <th class="font-semibold py-2 px-2 text-center">Margen</th>
                       <th class="font-semibold py-2 px-2 text-center">Stock</th>
                       <th class="font-semibold py-2 px-2"></th>
                     </tr>
@@ -135,6 +175,7 @@
                         </td>
                         <td class="py-2 px-2 text-right text-tech-steel">{{ vr.precioCosto | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
                         <td class="py-2 px-2 text-right font-semibold text-tech-charcoal">{{ vr.precioVenta | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
+                        <td class="py-2 px-2 text-center"><span class="inline-block px-2 py-0.5 rounded-lg text-xs font-bold" [class]="margenClase(margen(vr))">{{ margen(vr) }}%</span></td>
                         <td class="py-2 px-2 text-center text-tech-charcoal">{{ p.serializado ? '—' : vr.stockNoSerial }}</td>
                         <td class="py-2 px-2 text-right">
                           <button (click)="abrirEditarVariante(p, vr)" title="Editar variante"

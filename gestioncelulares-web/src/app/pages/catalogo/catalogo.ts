@@ -1,10 +1,12 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   CatalogoService, Categoria, Marca, Producto, Variante
 } from '../../core/catalogo.service';
+
+type FiltroTipo = 'todos' | 'dispositivo' | 'accesorio';
 
 @Component({
   selector: 'app-catalogo',
@@ -21,6 +23,33 @@ export class Catalogo {
   cargando = signal(false);
   termino = signal('');
   expandido = signal<number | null>(null);
+  filtroTipo = signal<FiltroTipo>('todos');
+
+  // Vista filtrada por tipo (sobre lo que devuelve la búsqueda del servidor)
+  productosVista = computed<Producto[]>(() => {
+    const f = this.filtroTipo();
+    const lista = this.productos();
+    if (f === 'dispositivo') return lista.filter(p => p.serializado);
+    if (f === 'accesorio') return lista.filter(p => !p.serializado);
+    return lista;
+  });
+
+  // KPIs
+  kpiDispositivos = computed(() => this.productos().filter(p => p.serializado).length);
+  kpiAccesorios = computed(() => this.productos().filter(p => !p.serializado).length);
+  kpiVariantes = computed(() => this.productos().reduce((a, p) => a + p.variantes.length, 0));
+
+  filtrar(f: FiltroTipo): void { this.filtroTipo.set(f); }
+
+  // Margen de ganancia de una variante (%)
+  margen(vr: Variante): number {
+    return vr.precioVenta > 0 ? Math.round(((vr.precioVenta - vr.precioCosto) / vr.precioVenta) * 100) : 0;
+  }
+  margenClase(m: number): string {
+    if (m >= 30) return 'bg-emerald-500/10 text-emerald-600';
+    if (m >= 10) return 'bg-amber-500/10 text-amber-600';
+    return 'bg-rose-500/10 text-rose-500';
+  }
 
   // Modal producto
   modalProducto = signal(false);
