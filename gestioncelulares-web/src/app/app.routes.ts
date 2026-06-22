@@ -9,6 +9,7 @@ import { Clientes } from './pages/clientes/clientes';
 import { Creditos } from './pages/creditos/creditos';
 import { Cuentas } from './pages/cuentas/cuentas';
 import { Dashboard } from './pages/dashboard/dashboard';
+import { Estados } from './pages/estados/estados';
 import { Faltantes } from './pages/faltantes/faltantes';
 import { Garantias } from './pages/garantias/garantias';
 import { Inventario } from './pages/inventario/inventario';
@@ -46,6 +47,7 @@ export const routes: Routes = [
       { path: 'nomina', component: Nomina },
       { path: 'cuentas', component: Cuentas },
       { path: 'asientos', component: Asientos },
+      { path: 'estados', component: Estados },
       { path: 'ncf', component: Ncf },
       { path: 'reportes', component: Reportes }
     ]

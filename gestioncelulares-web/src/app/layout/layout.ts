@@ -102,7 +102,8 @@ export class Layout {
         {
           etiqueta: 'Contabilidad', icono: 'calculator', soloAdmin: true, hijos: [
             { etiqueta: 'Catálogo de cuentas', icono: 'layers', ruta: '/cuentas', soloAdmin: true },
-            { etiqueta: 'Libro Diario', icono: 'clipboard-list', ruta: '/asientos', soloAdmin: true }
+            { etiqueta: 'Libro Diario', icono: 'clipboard-list', ruta: '/asientos', soloAdmin: true },
+            { etiqueta: 'Estados financieros', icono: 'scale', ruta: '/estados', soloAdmin: true }
           ]
         },
         {

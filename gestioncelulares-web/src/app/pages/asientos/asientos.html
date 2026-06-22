@@ -5,9 +5,14 @@
     <p class="text-sm text-tech-steel mt-0.5">Libro diario (asientos) y balance de comprobación.</p>
   </div>
   @if (tab() === 'diario') {
-    <button (click)="abrirNuevo()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
-      <lucide-icon name="plus" [size]="18"></lucide-icon> Nuevo asiento
-    </button>
+    <div class="flex items-center gap-2">
+      <button (click)="contabilizar()" [disabled]="contabilizando()" title="Generar asientos automáticos de ventas, nómina y caja del período" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-semibold text-sm transition-all hover:bg-tech-bg-light active:scale-95 disabled:opacity-50">
+        @if (contabilizando()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Contabilizando… } @else { <lucide-icon name="wand-sparkles" [size]="16"></lucide-icon> Contabilizar período }
+      </button>
+      <button (click)="abrirNuevo()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
+        <lucide-icon name="plus" [size]="18"></lucide-icon> Nuevo asiento
+      </button>
+    </div>
   }
 </div>
 

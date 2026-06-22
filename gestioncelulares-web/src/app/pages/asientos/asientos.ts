@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { Asiento, AsientoResumen, AsientoService, BalanceComprobacion } from '../../core/asiento.service';
+import { ContabilidadService } from '../../core/contabilidad.service';
 import { Cuenta, CuentaService } from '../../core/cuenta.service';
 
 @Component({
@@ -14,6 +15,7 @@ export class Asientos {
   private fb = inject(FormBuilder);
   private servicio = inject(AsientoService);
   private cuentasSrv = inject(CuentaService);
+  private contabilidad = inject(ContabilidadService);
 
   tab = signal<'diario' | 'balance'>('diario');
 
@@ -81,6 +83,25 @@ export class Asientos {
 
   generar(): void {
     if (this.tab() === 'diario') this.cargar(); else this.cargarBalance();
+  }
+
+  // ----- Contabilización automática del período -----
+  contabilizando = signal(false);
+  contabilizar(): void {
+    if (this.contabilizando()) return;
+    if (!confirm('Generar los asientos automáticos (ventas, nómina y caja) del período seleccionado. Los documentos ya contabilizados se omiten. ¿Continuar?')) return;
+    this.contabilizando.set(true);
+    this.contabilidad.contabilizar(this.desde(), this.hasta()).subscribe({
+      next: r => {
+        this.contabilizando.set(false);
+        alert(r.mensajes.join('\n'));
+        this.cargar();
+      },
+      error: err => {
+        this.contabilizando.set(false);
+        alert(err.error?.error ?? 'No se pudo contabilizar el período.');
+      }
+    });
   }
 
   verDetalle(a: AsientoResumen): void {
