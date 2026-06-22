@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/auth-guard';
 import { Layout } from './layout/layout';
 import { Apartados } from './pages/apartados/apartados';
+import { Asientos } from './pages/asientos/asientos';
 import { Caja } from './pages/caja/caja';
 import { Catalogo } from './pages/catalogo/catalogo';
 import { Clientes } from './pages/clientes/clientes';
@@ -44,6 +45,7 @@ export const routes: Routes = [
       { path: 'usuarios', component: Usuarios },
       { path: 'nomina', component: Nomina },
       { path: 'cuentas', component: Cuentas },
+      { path: 'asientos', component: Asientos },
       { path: 'ncf', component: Ncf },
       { path: 'reportes', component: Reportes }
     ]

@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<Ncf.INcfService, Ncf.NcfService>();
         services.AddScoped<Rnc.IRncConsultaService, Rnc.RncConsultaService>();
         services.AddScoped<Contabilidad.ICuentaService, Contabilidad.CuentaService>();
+        services.AddScoped<Contabilidad.IAsientoService, Contabilidad.AsientoService>();
         return services;
     }
 }

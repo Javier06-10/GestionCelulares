@@ -101,7 +101,8 @@ export class Layout {
         { etiqueta: 'Nómina', icono: 'hand-coins', ruta: '/nomina', soloAdmin: true },
         {
           etiqueta: 'Contabilidad', icono: 'calculator', soloAdmin: true, hijos: [
-            { etiqueta: 'Catálogo de cuentas', icono: 'layers', ruta: '/cuentas', soloAdmin: true }
+            { etiqueta: 'Catálogo de cuentas', icono: 'layers', ruta: '/cuentas', soloAdmin: true },
+            { etiqueta: 'Libro Diario', icono: 'clipboard-list', ruta: '/asientos', soloAdmin: true }
           ]
         },
         {
