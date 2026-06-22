@@ -4,10 +4,21 @@ namespace GestionCelulares.Application.Contabilidad;
 public class ContabilizacionResultadoDto
 {
     public int Ventas { get; set; }
+    public int Compras { get; set; }
+    public int PagosProveedor { get; set; }
     public int Nomina { get; set; }
     public int Caja { get; set; }
-    public int Total => Ventas + Nomina + Caja;
+    public int Total => Ventas + Compras + PagosProveedor + Nomina + Caja;
     public List<string> Mensajes { get; set; } = new();
+}
+
+/// <summary>Resultado del cierre del ejercicio (asiento de cierre).</summary>
+public class CierreEjercicioResultadoDto
+{
+    public bool Generado { get; set; }
+    public int? AsientoNumero { get; set; }
+    public decimal Resultado { get; set; }     // utilidad (+) o pérdida (-) trasladada a Capital
+    public string Mensaje { get; set; } = "";
 }
 
 // ---------- Estado de Resultados ----------

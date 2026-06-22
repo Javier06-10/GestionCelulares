@@ -40,4 +40,18 @@ public class ContabilidadController : ControllerBase
     [HttpGet("balance-general")]
     public async Task<IActionResult> BalanceGeneral([FromQuery] DateTime hasta)
         => Ok(await _contabilizacion.BalanceGeneralAsync(hasta));
+
+    /// <summary>Genera el asiento de cierre del ejercicio (traslada el resultado a Capital).</summary>
+    [HttpPost("cerrar-ejercicio")]
+    public async Task<IActionResult> CerrarEjercicio([FromQuery] DateTime hasta)
+    {
+        try
+        {
+            return Ok(await _contabilizacion.CerrarEjercicioAsync(hasta, UsuarioId));
+        }
+        catch (ContabilidadException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }

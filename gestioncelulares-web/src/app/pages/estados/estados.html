@@ -4,6 +4,11 @@
     <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Estados financieros</h2>
     <p class="text-sm text-tech-steel mt-0.5">Estado de resultados y balance general a partir de los asientos registrados.</p>
   </div>
+  @if (tab() === 'balance') {
+    <button (click)="cerrarEjercicio()" [disabled]="cerrando()" title="Trasladar el resultado acumulado a Capital (Resultados Acumulados)" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-semibold text-sm transition-all hover:bg-tech-bg-light active:scale-95 disabled:opacity-50">
+      @if (cerrando()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Cerrando… } @else { <lucide-icon name="lock-keyhole" [size]="16"></lucide-icon> Cerrar ejercicio }
+    </button>
+  }
 </div>
 
 <!-- Tabs -->

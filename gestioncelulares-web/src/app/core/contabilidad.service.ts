@@ -4,10 +4,19 @@ import { environment } from '../../environments/environment';
 
 export interface ContabilizacionResultado {
   ventas: number;
+  compras: number;
+  pagosProveedor: number;
   nomina: number;
   caja: number;
   total: number;
   mensajes: string[];
+}
+
+export interface CierreEjercicioResultado {
+  generado: boolean;
+  asientoNumero: number | null;
+  resultado: number;
+  mensaje: string;
 }
 
 export interface EstadoResultadosLinea {
@@ -67,5 +76,10 @@ export class ContabilidadService {
   balanceGeneral(hasta: string) {
     const p = new HttpParams().set('hasta', hasta);
     return this.http.get<BalanceGeneral>(`${this.base}/balance-general`, { params: p });
+  }
+
+  cerrarEjercicio(hasta: string) {
+    const p = new HttpParams().set('hasta', hasta);
+    return this.http.post<CierreEjercicioResultado>(`${this.base}/cerrar-ejercicio`, {}, { params: p });
   }
 }

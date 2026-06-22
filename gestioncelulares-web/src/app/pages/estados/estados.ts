@@ -45,4 +45,22 @@ export class Estados {
       });
     }
   }
+
+  cerrando = signal(false);
+  cerrarEjercicio(): void {
+    if (this.cerrando()) return;
+    if (!confirm(`Cerrar el ejercicio al ${this.hasta()}: el resultado (utilidad o pérdida) acumulado hasta esa fecha se trasladará a Resultados Acumulados (Capital). ¿Continuar?`)) return;
+    this.cerrando.set(true);
+    this.servicio.cerrarEjercicio(this.hasta()).subscribe({
+      next: r => {
+        this.cerrando.set(false);
+        alert(r.mensaje);
+        this.cargar();
+      },
+      error: err => {
+        this.cerrando.set(false);
+        alert(err.error?.error ?? 'No se pudo cerrar el ejercicio.');
+      }
+    });
+  }
 }
