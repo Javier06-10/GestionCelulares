@@ -80,7 +80,6 @@ export class Layout {
         {
           etiqueta: 'Inventario', icono: 'package', hijos: [
             { etiqueta: 'Existencias', icono: 'boxes', ruta: '/inventario' },
-            { etiqueta: 'Faltantes', icono: 'package-x', ruta: '/faltantes' },
             { etiqueta: 'Catálogo', icono: 'layers', ruta: '/catalogo' }
           ]
         },

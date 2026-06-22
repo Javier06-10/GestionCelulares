@@ -1,28 +1,42 @@
-import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { CatalogoService, Producto, Variante } from '../../core/catalogo.service';
+import { Agotado, FaltanteManual, FaltanteService } from '../../core/faltante.service';
 import { Imei, InventarioService, StockDisponible } from '../../core/inventario.service';
 
 interface OpcionSerializada { varianteId: number; etiqueta: string; }
 interface AccesorioFila { producto: Producto; variante: Variante; nombre: string; detalle: string; }
 
+type TabInv = 'existencias' | 'agotados' | 'faltantes';
+
 @Component({
   selector: 'app-inventario',
-  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DecimalPipe],
+  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DecimalPipe, DatePipe],
   templateUrl: './inventario.html'
 })
 export class Inventario {
   private fb = inject(FormBuilder);
   private servicio = inject(InventarioService);
   private catalogo = inject(CatalogoService);
+  private faltantesSrv = inject(FaltanteService);
   auth = inject(AuthService);
+
+  tab = signal<TabInv>('existencias');
+  irA(t: TabInv): void { this.tab.set(t); }
 
   stock = signal<StockDisponible[]>([]);
   cargando = signal(false);
   productos = signal<Producto[]>([]);
+
+  // Faltantes / reposición
+  agotados = signal<Agotado[]>([]);
+  manuales = signal<FaltanteManual[]>([]);
+  cargandoFalt = signal(false);
+  agotadosCount = computed(() => this.agotados().length);
+  porPedirCount = computed(() => this.manuales().length);
 
   // Solo dispositivos serializados, para registrar IMEI
   variantesSerializadas = computed<OpcionSerializada[]>(() =>
@@ -86,9 +100,20 @@ export class Inventario {
   errorStock = signal<string | null>(null);
   nuevoStock = signal(0);
 
+  // Modal faltante manual
+  modalFalt = signal(false);
+  guardandoFalt = signal(false);
+  errorFalt = signal<string | null>(null);
+  formFalt = this.fb.nonNullable.group({
+    descripcion: ['', [Validators.required, Validators.maxLength(200)]],
+    cantidadDeseada: [1, [Validators.required, Validators.min(1)]],
+    notas: ['']
+  });
+
   constructor() {
     this.cargar();
     this.cargarCatalogo();
+    this.cargarFaltantes();
   }
 
   cargar(): void {
@@ -99,8 +124,43 @@ export class Inventario {
     });
   }
 
+  cargarFaltantes(): void {
+    this.cargandoFalt.set(true);
+    this.faltantesSrv.listar().subscribe({
+      next: r => { this.agotados.set(r.agotados); this.manuales.set(r.manuales); this.cargandoFalt.set(false); },
+      error: () => this.cargandoFalt.set(false)
+    });
+  }
+
+  abrirFaltante(): void {
+    this.errorFalt.set(null);
+    this.formFalt.reset({ descripcion: '', cantidadDeseada: 1, notas: '' });
+    this.modalFalt.set(true);
+  }
+
+  guardarFaltante(): void {
+    if (this.formFalt.invalid) { this.formFalt.markAllAsTouched(); return; }
+    this.guardandoFalt.set(true);
+    this.errorFalt.set(null);
+    const v = this.formFalt.getRawValue();
+    this.faltantesSrv.agregar({ descripcion: v.descripcion.trim(), cantidadDeseada: v.cantidadDeseada, notas: v.notas?.trim() || null }).subscribe({
+      next: () => { this.guardandoFalt.set(false); this.modalFalt.set(false); this.cargarFaltantes(); },
+      error: err => { this.guardandoFalt.set(false); this.errorFalt.set(err.error?.error ?? 'No se pudo guardar.'); }
+    });
+  }
+
+  resolver(f: FaltanteManual): void {
+    this.faltantesSrv.resolver(f.faltanteId).subscribe({ next: () => this.cargarFaltantes() });
+  }
+
   cargarCatalogo(): void {
     this.catalogo.productos().subscribe(p => this.productos.set(p));
+  }
+
+  refrescar(): void {
+    this.cargar();
+    this.cargarCatalogo();
+    this.cargarFaltantes();
   }
 
   buscarImei(valor: string): void {
@@ -144,7 +204,7 @@ export class Inventario {
     this.errorForm.set(null);
     const v = this.form.getRawValue();
     this.servicio.registrar({ imei: v.imei.trim(), varianteId: v.varianteId, sucursalId, precioCosto: v.precioCosto }).subscribe({
-      next: () => { this.guardando.set(false); this.modalAbierto.set(false); this.cargar(); },
+      next: () => { this.guardando.set(false); this.modalAbierto.set(false); this.cargar(); this.cargarFaltantes(); },
       error: err => { this.guardando.set(false); this.errorForm.set(err.error?.error ?? 'No se pudo registrar el equipo.'); }
     });
   }
@@ -169,7 +229,7 @@ export class Inventario {
       stockNoSerial: va.stockNoSerial + Number(v.cantidad),
       activo: va.activo
     }).subscribe({
-      next: () => { this.guardando.set(false); this.modalAbierto.set(false); this.cargarCatalogo(); },
+      next: () => { this.guardando.set(false); this.modalAbierto.set(false); this.cargarCatalogo(); this.cargarFaltantes(); },
       error: err => { this.guardando.set(false); this.errorForm.set(err.error?.error ?? 'No se pudo agregar el accesorio.'); }
     });
   }
@@ -199,7 +259,7 @@ export class Inventario {
       stockNoSerial: Math.max(0, this.nuevoStock()),
       activo: v.activo
     }).subscribe({
-      next: () => { this.guardandoStock.set(false); this.modalStock.set(false); this.cargarCatalogo(); },
+      next: () => { this.guardandoStock.set(false); this.modalStock.set(false); this.cargarCatalogo(); this.cargarFaltantes(); },
       error: err => { this.guardandoStock.set(false); this.errorStock.set(err.error?.error ?? 'No se pudo ajustar el stock.'); }
     });
   }
