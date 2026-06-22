@@ -28,6 +28,7 @@ public class ContabilizacionService : IContabilizacionService
     private const string CxCCod = "1.03";
     private const string InventarioCod = "1.04";
     private const string ItbisAdelantadoCod = "1.05";
+    private const string MobiliarioCod = "1.06";
     private const string CxPCod = "2.01";
     private const string ItbisPorPagarCod = "2.02";
     private const string ResultadosAcumCod = "3.02";
@@ -35,8 +36,19 @@ public class ContabilizacionService : IContabilizacionService
     private const string OtrosIngresosCod = "4.03";
     private const string CostoVentaCod = "5.01";
     private const string SueldosCod = "6.01";
+    private const string AlquilerCod = "6.02";
     private const string ComisionesCod = "6.04";
     private const string OtrosGastosCod = "6.06";
+
+    /// <summary>Cuenta de cargo de una compra según el tipo de bien/servicio DGII (606).</summary>
+    private static string CuentaCompraPorTipo(string? tipoDgii) => tipoDgii switch
+    {
+        "10" => MobiliarioCod,    // 10 - Adquisiciones de activos fijos
+        "01" => SueldosCod,       // 01 - Gastos de personal
+        "03" => AlquilerCod,      // 03 - Arrendamientos
+        "02" or "04" or "05" or "06" or "07" or "08" or "11" => OtrosGastosCod,
+        _ => InventarioCod        // 09 (mercancía/costo de venta) y por defecto
+    };
 
     /// <summary>Un cobro/pago va a Bancos si el método es tarjeta, transferencia, cheque o depósito; si no, a Caja.</summary>
     private static bool EsBanco(string? metodo)
@@ -161,19 +173,20 @@ public class ContabilizacionService : IContabilizacionService
             resultado.Ventas++;
         }
 
-        // ---- Compras (entrada de inventario) ----
+        // ---- Compras (inventario o gasto/activo según el tipo DGII) ----
         var compras = await _db.Compras.AsNoTracking()
             .Where(co => co.Fecha >= d && co.Fecha < hExclusivo)
-            .Select(co => new { co.CompraId, co.NumeroFactura, co.Fecha, co.Total, co.Itbis, co.MetodoPagoId, Metodo = co.MetodoPago!.Nombre })
+            .Select(co => new { co.CompraId, co.NumeroFactura, co.Fecha, co.Total, co.Itbis, co.TipoBienServicio, co.MetodoPagoId, Metodo = co.MetodoPago!.Nombre })
             .ToListAsync();
 
         foreach (var co in compras.Where(co => !comprasHechas.Contains(co.CompraId)))
         {
             var itbis = R(co.Itbis ?? 0);
             var baseInv = R(co.Total) - itbis;   // se deriva del total para garantizar el cuadre
+            var cuentaCargo = Cuenta(CuentaCompraPorTipo(co.TipoBienServicio));
             var lineas = new List<(int, decimal, decimal)>
             {
-                (Cuenta(InventarioCod), baseInv, 0),
+                (cuentaCargo, baseInv, 0),
                 (Cuenta(ItbisAdelantadoCod), itbis, 0)
             };
             // Crédito: contado (Caja/Bancos) o a crédito (Cuentas por Pagar)
