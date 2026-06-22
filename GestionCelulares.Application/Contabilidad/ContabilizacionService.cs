@@ -24,9 +24,11 @@ public class ContabilizacionService : IContabilizacionService
     // Códigos del plan de cuentas base (v11). Si el usuario los renombra el código se mantiene.
     private const string CajaCod = "1.01";
     private const string CxCCod = "1.03";
+    private const string InventarioCod = "1.04";
     private const string ItbisPorPagarCod = "2.02";
     private const string VentasCod = "4.01";
     private const string OtrosIngresosCod = "4.03";
+    private const string CostoVentaCod = "5.01";
     private const string SueldosCod = "6.01";
     private const string ComisionesCod = "6.04";
     private const string OtrosGastosCod = "6.06";
@@ -92,15 +94,35 @@ public class ContabilizacionService : IContabilizacionService
             .Select(v => new { v.VentaId, v.NumeroFactura, v.Fecha, v.Total, v.Impuesto, v.EsCredito })
             .ToListAsync();
 
+        var pendientesVenta = ventas.Where(v => !ventasHechas.Contains(v.VentaId)).Select(v => v.VentaId).ToList();
+
+        // Costo de mercancía vendida por venta: IMEI serializado usa su costo de compra;
+        // accesorio no serializado usa el costo de la variante por la cantidad.
+        var costoPorVenta = await _db.VentaDetalles.AsNoTracking()
+            .Where(dt => pendientesVenta.Contains(dt.VentaId))
+            .GroupBy(dt => dt.VentaId)
+            .Select(g => new
+            {
+                VentaId = g.Key,
+                Costo = g.Sum(dt => dt.ImeiId != null ? dt.Imei!.PrecioCosto : dt.Variante.PrecioCosto * dt.Cantidad)
+            })
+            .ToDictionaryAsync(x => x.VentaId, x => x.Costo);
+
         foreach (var v in ventas.Where(v => !ventasHechas.Contains(v.VentaId)))
         {
             var itbis = R(v.Impuesto);
             var neto = R(v.Total) - itbis;
             var cargo = v.EsCredito ? Cuenta(CxCCod) : Cuenta(CajaCod);
+            var costo = R(costoPorVenta.TryGetValue(v.VentaId, out var c) ? c : 0);
+
             nuevos.Add(Crear(v.Fecha, $"Venta factura {v.NumeroFactura}", "Venta", v.VentaId,
+                // Ingreso
                 (cargo, R(v.Total), 0),
                 (Cuenta(VentasCod), 0, neto),
-                (Cuenta(ItbisPorPagarCod), 0, itbis)));
+                (Cuenta(ItbisPorPagarCod), 0, itbis),
+                // Costo de la mercancía vendida (descarga el inventario al costo)
+                (Cuenta(CostoVentaCod), costo, 0),
+                (Cuenta(InventarioCod), 0, costo)));
             resultado.Ventas++;
         }
 
