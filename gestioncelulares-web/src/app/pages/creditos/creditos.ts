@@ -64,8 +64,37 @@ export class Creditos {
   // Mora
   corriendoMora = signal(false);
 
+  // Vista filtrada por estado (en cliente, instantáneo)
+  creditosVista = computed<CreditoResumen[]>(() => {
+    const e = this.estado();
+    return e ? this.creditos().filter(c => c.estado === e) : this.creditos();
+  });
+
   totalCartera = computed(() => this.creditos().reduce((a, c) => a + c.saldo, 0));
   totalVencido = computed(() => this.vencidas().reduce((a, c) => a + c.saldo, 0));
+
+  // KPIs (sobre el total)
+  kpiActivos = computed(() => this.creditos().filter(c => c.estado === 'Activo').length);
+  kpiMora = computed(() => this.creditos().filter(c => c.estado === 'EnMora').length);
+
+  // Progreso de pago de un crédito (% saldado)
+  progreso(montoTotal: number, saldo: number): number {
+    if (montoTotal <= 0) return 0;
+    return Math.min(100, Math.max(0, Math.round(((montoTotal - saldo) / montoTotal) * 100)));
+  }
+
+  // Estimación en vivo para el nuevo crédito
+  get netoFinanciar(): number {
+    const v = this.formNuevo.getRawValue();
+    return Math.max(0, (+v.montoFinanciado || 0) - (+v.inicial || 0));
+  }
+  get cuotaEstimada(): number {
+    const v = this.formNuevo.getRawValue();
+    const n = +v.numeroCuotas || 0;
+    if (n <= 0) return 0;
+    const total = this.netoFinanciar * (1 + ((+v.tasaInteresMensual || 0) / 100) * n);
+    return total / n;
+  }
 
   constructor() {
     this.cargar();
@@ -78,27 +107,23 @@ export class Creditos {
 
   cambiarVista(v: Vista): void {
     this.vista.set(v);
-    this.cargar();
   }
 
   cargar(): void {
     this.cargando.set(true);
-    if (this.vista() === 'creditos') {
-      this.servicio.buscar(undefined, this.estado() || undefined).subscribe({
-        next: d => { this.creditos.set(d); this.cargando.set(false); },
-        error: () => this.cargando.set(false)
-      });
-    } else {
-      this.servicio.cuotasVencidas().subscribe({
-        next: d => { this.vencidas.set(d); this.cargando.set(false); },
-        error: () => this.cargando.set(false)
-      });
-    }
+    this.servicio.buscar().subscribe({
+      next: d => { this.creditos.set(d); this.cargando.set(false); },
+      error: () => this.cargando.set(false)
+    });
+    this.cargarVencidas();
+  }
+
+  cargarVencidas(): void {
+    this.servicio.cuotasVencidas().subscribe({ next: d => this.vencidas.set(d) });
   }
 
   filtrarEstado(e: string): void {
     this.estado.set(e);
-    this.cargar();
   }
 
   // ----- Detalle -----
