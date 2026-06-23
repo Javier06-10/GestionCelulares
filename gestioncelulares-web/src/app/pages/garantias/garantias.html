@@ -16,21 +16,21 @@
       <span class="text-xs font-medium text-tech-steel">Vigentes</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-accent/10 text-tech-accent"><lucide-icon name="shield-check" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiVigentes() }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="kpiVigentes()"></div>
   </button>
   <button (click)="cambiarVista('casos')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="vista() === 'casos' ? 'border-tech-purple/50 ring-1 ring-tech-purple/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-tech-steel">Casos activos</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-purple/10 text-tech-purple"><lucide-icon name="shield-alert" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold mt-1.5" [class]="casosActivos() > 0 ? 'text-tech-purple' : 'text-tech-charcoal'">{{ casosActivos() }}</div>
+    <div class="text-2xl font-bold mt-1.5" [class]="casosActivos() > 0 ? 'text-tech-purple' : 'text-tech-charcoal'" [gcCountUp]="casosActivos()"></div>
   </button>
   <button (click)="cambiarVista('fallas')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="vista() === 'fallas' ? 'border-amber-500/50 ring-1 ring-amber-500/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-tech-steel">Resueltos</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-emerald-500/10 text-emerald-600"><lucide-icon name="circle-check" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiResueltos() }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="kpiResueltos()"></div>
   </button>
 </div>
 

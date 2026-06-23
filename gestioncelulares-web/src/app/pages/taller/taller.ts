@@ -9,12 +9,13 @@ import { ComisionTecnico, Orden, OrdenResumen, TallerService } from '../../core/
 import { Usuario, UsuarioService } from '../../core/usuario.service';
 import { MetodoPago, VentaService } from '../../core/venta.service';
 import { ClienteSelector } from '../../shared/cliente-selector/cliente-selector';
+import { CountUpDirective } from '../../shared/count-up.directive';
 
 interface Columna { estado: string; titulo: string; color: string; }
 
 @Component({
   selector: 'app-taller',
-  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe, ClienteSelector],
+  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe, ClienteSelector, CountUpDirective],
   templateUrl: './taller.html'
 })
 export class Taller {

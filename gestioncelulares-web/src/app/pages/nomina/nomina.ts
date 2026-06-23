@@ -3,12 +3,13 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { Empleado, NominaService, PagoEmpleado } from '../../core/nomina.service';
+import { CountUpDirective } from '../../shared/count-up.directive';
 
 const TIPOS = ['Salario', 'Adelanto', 'Bono', 'Comisión'] as const;
 
 @Component({
   selector: 'app-nomina',
-  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe],
+  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe, CountUpDirective],
   templateUrl: './nomina.html'
 })
 export class Nomina {

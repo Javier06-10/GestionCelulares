@@ -1,4 +1,4 @@
-import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
@@ -6,6 +6,7 @@ import { AuthService } from '../../core/auth.service';
 import { CatalogoService, Producto, Variante } from '../../core/catalogo.service';
 import { Agotado, FaltanteManual, FaltanteService } from '../../core/faltante.service';
 import { Imei, InventarioService, StockDisponible } from '../../core/inventario.service';
+import { CountUpDirective } from '../../shared/count-up.directive';
 
 interface OpcionSerializada { varianteId: number; etiqueta: string; }
 interface AccesorioFila { producto: Producto; variante: Variante; nombre: string; detalle: string; }
@@ -14,7 +15,7 @@ type TabInv = 'existencias' | 'agotados' | 'faltantes';
 
 @Component({
   selector: 'app-inventario',
-  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DecimalPipe, DatePipe],
+  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe, CountUpDirective],
   templateUrl: './inventario.html'
 })
 export class Inventario {

@@ -66,20 +66,18 @@ body {
   }
 }
 
-/* ===== Entrada en cascada de CADA página (global) =====
-   El componente de ruta se renderiza como hermano inmediato de <router-outlet>;
-   animamos sus bloques de primer nivel en cascada cada vez que se navega. */
-router-outlet + * > * {
-  animation: gcFadeUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+/* ===== Entrada en cascada de las tarjetas KPI (glassmorphism) =====
+   Solo las tarjetas KPI cascadean; los bloques con tablas NO, para no
+   enmascarar la animación de armado de filas. */
+.grid > .rounded-2xl.backdrop-blur-md {
+  animation: gcFadeUp 0.42s cubic-bezier(0.4, 0, 0.2, 1) backwards;
 }
-router-outlet + * > *:nth-child(1)  { animation-delay: 0.02s; }
-router-outlet + * > *:nth-child(2)  { animation-delay: 0.07s; }
-router-outlet + * > *:nth-child(3)  { animation-delay: 0.12s; }
-router-outlet + * > *:nth-child(4)  { animation-delay: 0.17s; }
-router-outlet + * > *:nth-child(5)  { animation-delay: 0.22s; }
-router-outlet + * > *:nth-child(6)  { animation-delay: 0.27s; }
-router-outlet + * > *:nth-child(7)  { animation-delay: 0.32s; }
-router-outlet + * > *:nth-child(n+8) { animation-delay: 0.36s; }
+.grid > .rounded-2xl.backdrop-blur-md:nth-child(1) { animation-delay: 0.04s; }
+.grid > .rounded-2xl.backdrop-blur-md:nth-child(2) { animation-delay: 0.10s; }
+.grid > .rounded-2xl.backdrop-blur-md:nth-child(3) { animation-delay: 0.16s; }
+.grid > .rounded-2xl.backdrop-blur-md:nth-child(4) { animation-delay: 0.22s; }
+.grid > .rounded-2xl.backdrop-blur-md:nth-child(5) { animation-delay: 0.28s; }
+.grid > .rounded-2xl.backdrop-blur-md:nth-child(n+6) { animation-delay: 0.32s; }
 
 /* ===== Hover-lift en las tarjetas KPI (glassmorphism) ===== */
 .rounded-2xl.backdrop-blur-md {
@@ -167,7 +165,7 @@ tbody tr:nth-child(n+8) { animation-delay: 0.22s; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  router-outlet + * > *,
+  .grid > .rounded-2xl.backdrop-blur-md,
   .fixed.inset-0,
   .fixed.inset-0 > div,
   .fixed.inset-0 > form,

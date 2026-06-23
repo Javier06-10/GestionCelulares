@@ -3,10 +3,11 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { NcfService, SecuenciaNcf } from '../../core/ncf.service';
+import { CountUpDirective } from '../../shared/count-up.directive';
 
 @Component({
   selector: 'app-ncf',
-  imports: [ReactiveFormsModule, LucideAngularModule, DecimalPipe, DatePipe],
+  imports: [ReactiveFormsModule, LucideAngularModule, DecimalPipe, DatePipe, CountUpDirective],
   templateUrl: './ncf.html'
 })
 export class Ncf {

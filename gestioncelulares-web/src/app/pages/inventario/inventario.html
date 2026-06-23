@@ -27,28 +27,28 @@
       <span class="text-xs font-medium text-tech-steel">Equipos disponibles</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-accent/10 text-tech-accent"><lucide-icon name="smartphone" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ totalEquipos() | number }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="totalEquipos()"></div>
   </div>
   <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-tech-steel">Valor en venta</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-emerald-500/10 text-emerald-600"><lucide-icon name="circle-dollar-sign" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ valorVenta() | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="valorVenta()" countPrefix="RD$ " [countDecimals]="0"></div>
   </div>
   <button (click)="irA('agotados')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4 transition-all duration-300 hover:border-red-500/40 active:scale-[0.98]">
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-tech-steel">Agotados</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-red-500/10 text-red-500"><lucide-icon name="package-x" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold mt-1.5" [class]="agotadosCount() > 0 ? 'text-red-500' : 'text-tech-charcoal'">{{ agotadosCount() }}</div>
+    <div class="text-2xl font-bold mt-1.5" [class]="agotadosCount() > 0 ? 'text-red-500' : 'text-tech-charcoal'" [gcCountUp]="agotadosCount()"></div>
   </button>
   <button (click)="irA('faltantes')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4 transition-all duration-300 hover:border-tech-purple/40 active:scale-[0.98]">
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-tech-steel">Por pedir</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-purple/10 text-tech-purple"><lucide-icon name="clipboard-list" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ porPedirCount() }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="porPedirCount()"></div>
   </button>
 </div>
 

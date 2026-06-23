@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { SoundService } from '../../core/sound.service';
+import { FlyToCartService } from '../../core/fly-to-cart.service';
 import { CajaService } from '../../core/caja.service';
 import { CatalogoService, Producto } from '../../core/catalogo.service';
 import { Cliente } from '../../core/cliente.service';
@@ -53,7 +54,13 @@ export class Pos {
   private caja = inject(CajaService);
   private ventas = inject(VentaService);
   private sound = inject(SoundService);
+  private fly = inject(FlyToCartService);
   auth = inject(AuthService);
+
+  /** Dispara la animación "volar al carrito" desde el botón clicado. */
+  volar(ev: Event): void {
+    this.fly.fly(ev.currentTarget as Element);
+  }
 
   // Estado de caja
   cajaAbierta = signal<boolean | null>(null); // null = cargando

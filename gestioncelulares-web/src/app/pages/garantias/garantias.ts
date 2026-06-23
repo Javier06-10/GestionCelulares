@@ -4,12 +4,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { Caso, Garantia, GarantiaService, IndiceFalla } from '../../core/garantia.service';
+import { CountUpDirective } from '../../shared/count-up.directive';
 
 type Vista = 'garantias' | 'casos' | 'fallas';
 
 @Component({
   selector: 'app-garantias',
-  imports: [ReactiveFormsModule, LucideAngularModule, DatePipe],
+  imports: [ReactiveFormsModule, LucideAngularModule, DatePipe, CountUpDirective],
   templateUrl: './garantias.html'
 })
 export class Garantias {

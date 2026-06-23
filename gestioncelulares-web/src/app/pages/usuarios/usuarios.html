@@ -14,15 +14,15 @@
 <div class="grid grid-cols-3 gap-3 mb-5">
   <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
     <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">Usuarios</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-charcoal/5 text-tech-charcoal"><lucide-icon name="users" [size]="16"></lucide-icon></span></div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ usuarios().length }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="usuarios().length"></div>
   </div>
   <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
     <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">Activos</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-accent/10 text-tech-accent"><lucide-icon name="circle-check" [size]="16"></lucide-icon></span></div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ activos() }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="activos()"></div>
   </div>
   <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
     <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">Administradores</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-violet-500/10 text-violet-600"><lucide-icon name="shield-check" [size]="16"></lucide-icon></span></div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ admins() }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="admins()"></div>
   </div>
 </div>
 

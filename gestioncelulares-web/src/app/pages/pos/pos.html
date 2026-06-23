@@ -79,7 +79,7 @@
           }
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
             @for (d of dispositivosFiltrados(); track d.varianteId) {
-              <button (click)="agregarDispositivo(d)"
+              <button (click)="agregarDispositivo(d); volar($event)"
                 class="text-left p-3 rounded-xl border border-tech-pastel/40 bg-tech-bg-light/40 transition-all duration-200 hover:border-tech-accent/50 hover:shadow-[0_4px_12px_-6px_rgba(0,230,118,0.4)] active:scale-95">
                 <div class="font-medium text-tech-charcoal text-sm truncate">{{ d.producto }}</div>
                 <div class="text-xs text-tech-steel truncate">{{ d.marca }}{{ d.color ? ' · ' + d.color : '' }}{{ d.almacenamiento ? ' · ' + d.almacenamiento : '' }}</div>
@@ -105,7 +105,7 @@
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
             @for (a of accesoriosFiltrados(); track a.varianteId) {
-              <button (click)="agregarAccesorio(a)" [disabled]="a.stock <= 0"
+              <button (click)="agregarAccesorio(a); volar($event)" [disabled]="a.stock <= 0"
                 class="text-left p-3 rounded-xl border border-tech-pastel/40 bg-tech-bg-light/40 transition-all duration-200 hover:border-tech-accent/50 hover:shadow-[0_4px_12px_-6px_rgba(0,230,118,0.4)] active:scale-95 disabled:opacity-40 disabled:active:scale-100">
                 <div class="font-medium text-tech-charcoal text-sm truncate">{{ a.nombre }}</div>
                 @if (a.detalle) { <div class="text-xs text-tech-steel truncate">{{ a.detalle }}</div> }
@@ -127,7 +127,7 @@
       <!-- Header carrito -->
       <div class="flex items-center justify-between px-5 py-3.5 border-b border-tech-pastel/30">
         <div class="flex items-center gap-2">
-          <lucide-icon name="shopping-cart" [size]="18" class="text-tech-charcoal"></lucide-icon>
+          <span id="gc-cart-target" class="inline-flex"><lucide-icon name="shopping-cart" [size]="18" class="text-tech-charcoal"></lucide-icon></span>
           <h3 class="font-semibold text-tech-charcoal">Carrito</h3>
           <span class="text-xs text-tech-steel">({{ carrito().length }})</span>
         </div>

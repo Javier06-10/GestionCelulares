@@ -4,12 +4,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { Cliente, ClienteService } from '../../core/cliente.service';
+import { CountUpDirective } from '../../shared/count-up.directive';
 
 type Filtro = 'todos' | 'aldia' | 'morosos' | 'bloqueados';
 
 @Component({
   selector: 'app-clientes',
-  imports: [ReactiveFormsModule, LucideAngularModule, DatePipe],
+  imports: [ReactiveFormsModule, LucideAngularModule, DatePipe, CountUpDirective],
   templateUrl: './clientes.html'
 })
 export class Clientes {

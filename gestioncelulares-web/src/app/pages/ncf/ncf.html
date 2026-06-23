@@ -8,15 +8,15 @@
 <div class="grid grid-cols-3 gap-3 mb-5">
   <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
     <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">Rangos activos</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-accent/10 text-tech-accent"><lucide-icon name="receipt" [size]="16"></lucide-icon></span></div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ rangosActivos() }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="rangosActivos()"></div>
   </div>
   <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
     <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">NCF disponibles</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-charcoal/5 text-tech-charcoal"><lucide-icon name="hash" [size]="16"></lucide-icon></span></div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ totalDisponibles() | number }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="totalDisponibles()"></div>
   </div>
   <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4" [class]="porAgotarse() > 0 ? 'border-amber-500/40 ring-1 ring-amber-500/20' : 'border-tech-pastel/40'">
     <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">Por agotarse</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-amber-500/10 text-amber-600"><lucide-icon name="triangle-alert" [size]="16"></lucide-icon></span></div>
-    <div class="text-2xl font-bold mt-1.5" [class]="porAgotarse() > 0 ? 'text-amber-600' : 'text-tech-charcoal'">{{ porAgotarse() }}</div>
+    <div class="text-2xl font-bold mt-1.5" [class]="porAgotarse() > 0 ? 'text-amber-600' : 'text-tech-charcoal'" [gcCountUp]="porAgotarse()"></div>
   </div>
 </div>
 

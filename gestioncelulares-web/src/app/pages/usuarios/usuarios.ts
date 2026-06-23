@@ -4,10 +4,11 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { Rol, Usuario, UsuarioService } from '../../core/usuario.service';
+import { CountUpDirective } from '../../shared/count-up.directive';
 
 @Component({
   selector: 'app-usuarios',
-  imports: [ReactiveFormsModule, LucideAngularModule, DatePipe],
+  imports: [ReactiveFormsModule, LucideAngularModule, DatePipe, CountUpDirective],
   templateUrl: './usuarios.html'
 })
 export class Usuarios {

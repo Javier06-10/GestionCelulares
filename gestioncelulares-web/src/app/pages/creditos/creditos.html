@@ -25,28 +25,28 @@
       <span class="text-xs font-medium text-tech-steel">Cartera por cobrar</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-purple/10 text-tech-purple"><lucide-icon name="credit-card" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ totalCartera() | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="totalCartera()" countPrefix="RD$ " [countDecimals]="0"></div>
   </div>
   <button (click)="vista.set('creditos'); filtrarEstado('Activo')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="vista() === 'creditos' && estado() === 'Activo' ? 'border-tech-accent/50 ring-1 ring-tech-accent/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-tech-steel">Activos</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-accent/10 text-tech-accent"><lucide-icon name="circle-check" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiActivos() }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="kpiActivos()"></div>
   </button>
   <button (click)="vista.set('creditos'); filtrarEstado('EnMora')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="vista() === 'creditos' && estado() === 'EnMora' ? 'border-red-500/50 ring-1 ring-red-500/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-tech-steel">En mora</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-red-500/10 text-red-500"><lucide-icon name="circle-alert" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold mt-1.5" [class]="kpiMora() > 0 ? 'text-red-500' : 'text-tech-charcoal'">{{ kpiMora() }}</div>
+    <div class="text-2xl font-bold mt-1.5" [class]="kpiMora() > 0 ? 'text-red-500' : 'text-tech-charcoal'" [gcCountUp]="kpiMora()"></div>
   </button>
   <button (click)="cambiarVista('vencidas')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="vista() === 'vencidas' ? 'border-amber-500/50 ring-1 ring-amber-500/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-tech-steel">Vencido</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-amber-500/10 text-amber-600"><lucide-icon name="calendar-clock" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold mt-1.5" [class]="totalVencido() > 0 ? 'text-amber-600' : 'text-tech-charcoal'">{{ totalVencido() | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+    <div class="text-2xl font-bold mt-1.5" [class]="totalVencido() > 0 ? 'text-amber-600' : 'text-tech-charcoal'" [gcCountUp]="totalVencido()" countPrefix="RD$ " [countDecimals]="0"></div>
   </button>
 </div>
 

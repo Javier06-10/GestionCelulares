@@ -20,28 +20,28 @@
       <span class="text-xs font-medium text-tech-steel">Total</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-charcoal/5 text-tech-charcoal"><lucide-icon name="users" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiTotal() }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="kpiTotal()"></div>
   </button>
   <button (click)="cambiarFiltro('aldia')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="filtro() === 'aldia' ? 'border-tech-accent/50 ring-1 ring-tech-accent/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-tech-steel">Al día</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-accent/10 text-tech-accent"><lucide-icon name="circle-check" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiAlDia() }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="kpiAlDia()"></div>
   </button>
   <button (click)="cambiarFiltro('morosos')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="filtro() === 'morosos' ? 'border-amber-500/50 ring-1 ring-amber-500/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-tech-steel">Morosos</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-amber-500/10 text-amber-600"><lucide-icon name="circle-alert" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold mt-1.5" [class]="kpiMorosos() > 0 ? 'text-amber-600' : 'text-tech-charcoal'">{{ kpiMorosos() }}</div>
+    <div class="text-2xl font-bold mt-1.5" [class]="kpiMorosos() > 0 ? 'text-amber-600' : 'text-tech-charcoal'" [gcCountUp]="kpiMorosos()"></div>
   </button>
   <button (click)="cambiarFiltro('bloqueados')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="filtro() === 'bloqueados' ? 'border-red-500/50 ring-1 ring-red-500/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-tech-steel">Bloqueados</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-red-500/10 text-red-500"><lucide-icon name="ban" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold mt-1.5" [class]="kpiBloqueados() > 0 ? 'text-red-500' : 'text-tech-charcoal'">{{ kpiBloqueados() }}</div>
+    <div class="text-2xl font-bold mt-1.5" [class]="kpiBloqueados() > 0 ? 'text-red-500' : 'text-tech-charcoal'" [gcCountUp]="kpiBloqueados()"></div>
   </button>
 </div>
 

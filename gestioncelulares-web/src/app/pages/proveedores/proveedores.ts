@@ -5,10 +5,11 @@ import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { Compra, Pago, Proveedor, ProveedorService } from '../../core/proveedor.service';
 import { MetodoPago, VentaService } from '../../core/venta.service';
+import { CountUpDirective } from '../../shared/count-up.directive';
 
 @Component({
   selector: 'app-proveedores',
-  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe],
+  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe, CountUpDirective],
   templateUrl: './proveedores.html'
 })
 export class Proveedores {

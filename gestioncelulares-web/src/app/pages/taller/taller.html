@@ -22,19 +22,19 @@
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
   <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
     <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">Órdenes activas</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-charcoal/5 text-tech-charcoal"><lucide-icon name="wrench" [size]="16"></lucide-icon></span></div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiActivas() }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="kpiActivas()"></div>
   </div>
   <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
     <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">En reparación</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-violet-500/10 text-violet-600"><lucide-icon name="user-cog" [size]="16"></lucide-icon></span></div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiEnReparacion() }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="kpiEnReparacion()"></div>
   </div>
   <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
     <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">Listas para entregar</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-accent/10 text-tech-accent"><lucide-icon name="circle-check" [size]="16"></lucide-icon></span></div>
-    <div class="text-2xl font-bold mt-1.5" [class]="kpiListas() > 0 ? 'text-tech-accent' : 'text-tech-charcoal'">{{ kpiListas() }}</div>
+    <div class="text-2xl font-bold mt-1.5" [class]="kpiListas() > 0 ? 'text-tech-accent' : 'text-tech-charcoal'" [gcCountUp]="kpiListas()"></div>
   </div>
   <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
     <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">Valor estimado</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-emerald-500/10 text-emerald-600"><lucide-icon name="circle-dollar-sign" [size]="16"></lucide-icon></span></div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ valorActivo() | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="valorActivo()" countPrefix="RD$ " [countDecimals]="0"></div>
   </div>
 </div>
 

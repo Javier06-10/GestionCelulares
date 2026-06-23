@@ -5,12 +5,13 @@ import { LucideAngularModule } from 'lucide-angular';
 import {
   CatalogoService, Categoria, Marca, Producto, Variante
 } from '../../core/catalogo.service';
+import { CountUpDirective } from '../../shared/count-up.directive';
 
 type FiltroTipo = 'todos' | 'dispositivo' | 'accesorio';
 
 @Component({
   selector: 'app-catalogo',
-  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe],
+  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, CountUpDirective],
   templateUrl: './catalogo.html'
 })
 export class Catalogo {
