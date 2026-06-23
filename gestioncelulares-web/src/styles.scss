@@ -107,14 +107,82 @@ router-outlet + * > *:nth-child(n+8) { animation-delay: 0.36s; }
   animation: gcPop 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ===== Hover-lift con glow de acento en tarjetas KPI ===== */
+.rounded-2xl.backdrop-blur-md:hover {
+  box-shadow: 0 14px 30px -18px rgba(15, 23, 42, 0.45), 0 0 0 1px rgba(0, 230, 118, 0.18);
+}
+
+/* ===== Sheen: destello que recorre los botones primarios ===== */
+.from-tech-accent,
+.from-tech-purple {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.from-tech-accent::after,
+.from-tech-purple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.5) 50%, transparent 68%);
+  transform: translateX(-140%);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+.from-tech-accent:hover::after,
+.from-tech-purple:hover::after {
+  transform: translateX(140%);
+}
+
+/* ===== Entrada escalonada de filas de tabla ===== */
+@keyframes gcRowIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+tbody tr {
+  animation: gcRowIn 0.34s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+tbody tr:nth-child(1) { animation-delay: 0.02s; }
+tbody tr:nth-child(2) { animation-delay: 0.05s; }
+tbody tr:nth-child(3) { animation-delay: 0.08s; }
+tbody tr:nth-child(4) { animation-delay: 0.11s; }
+tbody tr:nth-child(5) { animation-delay: 0.14s; }
+tbody tr:nth-child(6) { animation-delay: 0.17s; }
+tbody tr:nth-child(7) { animation-delay: 0.20s; }
+tbody tr:nth-child(n+8) { animation-delay: 0.22s; }
+
+/* ===== Micro-interacciones del sidebar ===== */
+.sidebar lucide-icon {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.sidebar a:hover lucide-icon,
+.sidebar button:hover lucide-icon {
+  transform: scale(1.15);
+}
+
+/* ===== Botón activo (cobrar/guardar) con latido sutil del glow ===== */
+@keyframes gcGlowPulse {
+  0%, 100% { box-shadow: 0 8px 30px -10px rgba(0, 230, 118, 0.45); }
+  50% { box-shadow: 0 8px 34px -8px rgba(0, 230, 118, 0.75); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   router-outlet + * > *,
   .fixed.inset-0,
   .fixed.inset-0 > div,
-  .fixed.inset-0 > form {
+  .fixed.inset-0 > form,
+  tbody tr {
     animation: none !important;
   }
   .rounded-2xl.backdrop-blur-md:hover {
+    transform: none;
+  }
+  .from-tech-accent::after,
+  .from-tech-purple::after {
+    display: none;
+  }
+  .sidebar a:hover lucide-icon,
+  .sidebar button:hover lucide-icon {
     transform: none;
   }
 }
