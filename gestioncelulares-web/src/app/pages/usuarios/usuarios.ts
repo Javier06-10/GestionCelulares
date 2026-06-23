@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
@@ -18,6 +18,9 @@ export class Usuarios {
   usuarios = signal<Usuario[]>([]);
   roles = signal<Rol[]>([]);
   cargando = signal(false);
+
+  activos = computed(() => this.usuarios().filter(u => u.activo).length);
+  admins = computed(() => this.usuarios().filter(u => u.rol === 'Admin').length);
 
   // Modal crear / editar
   modal = signal(false);

@@ -2,11 +2,31 @@
 <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
   <div>
     <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Proveedores</h2>
-    <p class="text-sm text-tech-steel mt-0.5">{{ proveedores().length }} proveedor(es) · adeudado: <span class="font-semibold text-tech-charcoal">{{ totalAdeudado() | currency: 'DOP':'RD$':'1.2-2' }}</span></p>
+    <p class="text-sm text-tech-steel mt-0.5">Suplidores, compras y cuentas por pagar.</p>
   </div>
   <button (click)="abrirNuevo()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
     <lucide-icon name="plus" [size]="18"></lucide-icon> Nuevo proveedor
   </button>
+</div>
+
+<!-- KPIs -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+  <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
+    <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">Proveedores</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-charcoal/5 text-tech-charcoal"><lucide-icon name="truck" [size]="16"></lucide-icon></span></div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ proveedores().length }}</div>
+  </div>
+  <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
+    <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">Activos</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-accent/10 text-tech-accent"><lucide-icon name="circle-check" [size]="16"></lucide-icon></span></div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ activos() }}</div>
+  </div>
+  <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
+    <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">Con deuda</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-amber-500/10 text-amber-600"><lucide-icon name="circle-alert" [size]="16"></lucide-icon></span></div>
+    <div class="text-2xl font-bold mt-1.5" [class]="conDeuda() > 0 ? 'text-amber-600' : 'text-tech-charcoal'">{{ conDeuda() }}</div>
+  </div>
+  <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
+    <div class="flex items-center justify-between"><span class="text-xs font-medium text-tech-steel">Total adeudado</span><span class="w-8 h-8 grid place-items-center rounded-lg bg-rose-500/10 text-rose-500"><lucide-icon name="credit-card" [size]="16"></lucide-icon></span></div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ totalAdeudado() | currency: 'DOP':'RD$':'1.0-0' }}</div>
+  </div>
 </div>
 
 <!-- Búsqueda -->

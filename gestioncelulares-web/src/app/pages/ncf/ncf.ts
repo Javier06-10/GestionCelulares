@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { NcfService, SecuenciaNcf } from '../../core/ncf.service';
@@ -15,6 +15,10 @@ export class Ncf {
 
   secuencias = signal<SecuenciaNcf[]>([]);
   cargando = signal(false);
+
+  rangosActivos = computed(() => this.secuencias().filter(s => s.activo).length);
+  totalDisponibles = computed(() => this.secuencias().filter(s => s.activo).reduce((a, s) => a + Math.max(0, s.disponibles), 0));
+  porAgotarse = computed(() => this.secuencias().filter(s => s.activo && s.disponibles > 0 && s.disponibles < 20).length);
 
   modal = signal(false);
   editando = signal<SecuenciaNcf | null>(null);

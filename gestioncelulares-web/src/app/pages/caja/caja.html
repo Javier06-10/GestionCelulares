@@ -101,20 +101,20 @@
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div>
-            <div class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel mb-1">Fondo</div>
+          <div class="rounded-xl bg-tech-bg-light/60 p-3">
+            <div class="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel mb-1"><lucide-icon name="banknote" [size]="13"></lucide-icon> Fondo</div>
             <div class="text-lg font-bold text-tech-charcoal">{{ s.montoApertura | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
           </div>
-          <div>
-            <div class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel mb-1">Ingresos</div>
+          <div class="rounded-xl bg-tech-bg-light/60 p-3">
+            <div class="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel mb-1"><lucide-icon name="arrow-down-left" [size]="13" class="text-tech-accent"></lucide-icon> Ingresos</div>
             <div class="text-lg font-bold text-tech-accent">+{{ s.totalIngresos | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
           </div>
-          <div>
-            <div class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel mb-1">Egresos</div>
+          <div class="rounded-xl bg-tech-bg-light/60 p-3">
+            <div class="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel mb-1"><lucide-icon name="arrow-up-right" [size]="13" class="text-red-500"></lucide-icon> Egresos</div>
             <div class="text-lg font-bold text-red-500">-{{ s.totalEgresos | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
           </div>
-          <div>
-            <div class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel mb-1">En caja</div>
+          <div class="rounded-xl bg-tech-accent/5 border border-tech-accent/20 p-3">
+            <div class="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel mb-1"><lucide-icon name="wallet" [size]="13" class="text-tech-accent"></lucide-icon> En caja</div>
             <div class="text-lg font-bold text-tech-charcoal">{{ saldoMovimientos() | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
           </div>
         </div>

@@ -44,6 +44,13 @@ export class Taller {
     return map;
   });
 
+  // KPIs operativos
+  private activas = computed(() => this.ordenes().filter(o => o.estado === 'Recibido' || o.estado === 'EnReparacion' || o.estado === 'Reparado'));
+  kpiActivas = computed(() => this.activas().length);
+  kpiEnReparacion = computed(() => this.ordenes().filter(o => o.estado === 'EnReparacion').length);
+  kpiListas = computed(() => this.ordenes().filter(o => o.estado === 'Reparado').length);
+  valorActivo = computed(() => this.activas().reduce((a, o) => a + (o.costoEstimado || 0), 0));
+
   // Detalle
   detalle = signal<Orden | null>(null);
   errorDetalle = signal<string | null>(null);

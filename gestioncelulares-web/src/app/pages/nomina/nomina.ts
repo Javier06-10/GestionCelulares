@@ -52,6 +52,16 @@ export class Nomina {
     this.cargar();
   }
 
+  tipoClase(t: string): string {
+    switch (t) {
+      case 'Salario': return 'bg-tech-accent/10 text-tech-accent';
+      case 'Adelanto': return 'bg-amber-500/10 text-amber-600';
+      case 'Bono': return 'bg-violet-500/10 text-violet-600';
+      case 'Comisión': return 'bg-teal-500/10 text-teal-600';
+      default: return 'bg-slate-400/15 text-slate-500';
+    }
+  }
+
   abrirNuevo(): void {
     this.errorForm.set(null);
     this.form.reset({ empleadoId: 0, tipo: 'Salario', monto: 0, periodo: '', notas: '' });

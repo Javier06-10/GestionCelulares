@@ -23,6 +23,8 @@ export class Proveedores {
   termino = signal('');
 
   totalAdeudado = computed(() => this.proveedores().reduce((a, p) => a + p.balance, 0));
+  conDeuda = computed(() => this.proveedores().filter(p => p.balance > 0).length);
+  activos = computed(() => this.proveedores().filter(p => p.activo).length);
 
   // Alta / edición
   modal = signal(false);
