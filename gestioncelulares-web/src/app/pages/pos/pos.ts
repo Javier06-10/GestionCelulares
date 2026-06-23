@@ -75,6 +75,21 @@ export class Pos {
       })))
   );
 
+  // Filtro rápido de productos (dispositivos + accesorios)
+  filtroProd = signal('');
+  dispositivosFiltrados = computed(() => {
+    const q = this.filtroProd().toLowerCase().trim();
+    const list = this.dispositivos();
+    if (!q) return list;
+    return list.filter(d => `${d.producto} ${d.marca ?? ''} ${d.color ?? ''} ${d.almacenamiento ?? ''}`.toLowerCase().includes(q));
+  });
+  accesoriosFiltrados = computed(() => {
+    const q = this.filtroProd().toLowerCase().trim();
+    const list = this.accesorios();
+    if (!q) return list;
+    return list.filter(a => `${a.nombre} ${a.detalle}`.toLowerCase().includes(q));
+  });
+
   // Búsqueda IMEI
   imeiInput = signal('');
   buscandoImei = signal(false);

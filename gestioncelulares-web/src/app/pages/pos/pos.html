@@ -55,12 +55,22 @@
         }
       </div>
 
+      <!-- Filtro rápido de productos -->
+      @if (dispositivos().length > 0 || accesorios().length > 0) {
+        <div class="relative">
+          <lucide-icon name="search" [size]="16" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
+          <input [ngModel]="filtroProd()" (ngModelChange)="filtroProd.set($event)" name="filtroProd" type="text" placeholder="Filtrar productos por nombre, color, marca…"
+            class="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal text-sm outline-none transition-all focus:border-tech-accent/60 focus:shadow-[0_0_0_4px_rgba(0,230,118,0.08)]" />
+        </div>
+      }
+
       <!-- Dispositivos disponibles -->
       @if (dispositivos().length > 0) {
         <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-4">
           <div class="flex items-center gap-2 mb-3">
-            <lucide-icon name="smartphone" [size]="16" class="text-tech-accent"></lucide-icon>
+            <span class="w-7 h-7 grid place-items-center rounded-lg bg-tech-accent/10 text-tech-accent"><lucide-icon name="smartphone" [size]="15"></lucide-icon></span>
             <h3 class="font-semibold text-tech-charcoal text-sm">Dispositivos disponibles</h3>
+            <span class="text-xs text-tech-steel ml-auto">{{ dispositivosFiltrados().length }}</span>
           </div>
           @if (errorDispositivo()) {
             <div class="mb-2 flex items-center gap-2 text-sm text-red-500">
@@ -68,16 +78,18 @@
             </div>
           }
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            @for (d of dispositivos(); track d.varianteId) {
+            @for (d of dispositivosFiltrados(); track d.varianteId) {
               <button (click)="agregarDispositivo(d)"
                 class="text-left p-3 rounded-xl border border-tech-pastel/40 bg-tech-bg-light/40 transition-all duration-200 hover:border-tech-accent/50 hover:shadow-[0_4px_12px_-6px_rgba(0,230,118,0.4)] active:scale-95">
                 <div class="font-medium text-tech-charcoal text-sm truncate">{{ d.producto }}</div>
                 <div class="text-xs text-tech-steel truncate">{{ d.marca }}{{ d.color ? ' · ' + d.color : '' }}{{ d.almacenamiento ? ' · ' + d.almacenamiento : '' }}</div>
                 <div class="flex items-center justify-between mt-1">
                   <span class="text-sm font-semibold text-tech-accent">{{ d.precioVenta | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
-                  <span class="text-[0.65rem] text-tech-steel">{{ d.disponibles }} disp.</span>
+                  <span class="px-1.5 py-0.5 rounded-md text-[0.6rem] font-bold" [class]="d.disponibles <= 2 ? 'bg-amber-500/10 text-amber-600' : 'bg-tech-accent/10 text-tech-accent'">{{ d.disponibles }} disp.</span>
                 </div>
               </button>
+            } @empty {
+              <p class="col-span-full text-xs text-tech-steel py-3 text-center">Sin coincidencias.</p>
             }
           </div>
         </div>
@@ -87,20 +99,23 @@
       @if (accesorios().length > 0) {
         <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-4">
           <div class="flex items-center gap-2 mb-3">
-            <lucide-icon name="package" [size]="16" class="text-tech-charcoal"></lucide-icon>
+            <span class="w-7 h-7 grid place-items-center rounded-lg bg-tech-purple/10 text-tech-purple"><lucide-icon name="package" [size]="15"></lucide-icon></span>
             <h3 class="font-semibold text-tech-charcoal text-sm">Accesorios</h3>
+            <span class="text-xs text-tech-steel ml-auto">{{ accesoriosFiltrados().length }}</span>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            @for (a of accesorios(); track a.varianteId) {
+            @for (a of accesoriosFiltrados(); track a.varianteId) {
               <button (click)="agregarAccesorio(a)" [disabled]="a.stock <= 0"
                 class="text-left p-3 rounded-xl border border-tech-pastel/40 bg-tech-bg-light/40 transition-all duration-200 hover:border-tech-accent/50 hover:shadow-[0_4px_12px_-6px_rgba(0,230,118,0.4)] active:scale-95 disabled:opacity-40 disabled:active:scale-100">
                 <div class="font-medium text-tech-charcoal text-sm truncate">{{ a.nombre }}</div>
                 @if (a.detalle) { <div class="text-xs text-tech-steel truncate">{{ a.detalle }}</div> }
                 <div class="flex items-center justify-between mt-1">
                   <span class="text-sm font-semibold text-tech-accent">{{ a.precioVenta | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
-                  <span class="text-[0.65rem] text-tech-steel">stock {{ a.stock }}</span>
+                  <span class="px-1.5 py-0.5 rounded-md text-[0.6rem] font-bold" [class]="a.stock <= 0 ? 'bg-red-500/10 text-red-500' : a.stock <= 3 ? 'bg-amber-500/10 text-amber-600' : 'bg-tech-purple/10 text-tech-purple'">stock {{ a.stock }}</span>
                 </div>
               </button>
+            } @empty {
+              <p class="col-span-full text-xs text-tech-steel py-3 text-center">Sin coincidencias.</p>
             }
           </div>
         </div>

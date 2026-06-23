@@ -1,14 +1,15 @@
+import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { Cliente, ClienteService } from '../../core/cliente.service';
 
-type Filtro = 'todos' | 'morosos' | 'bloqueados';
+type Filtro = 'todos' | 'aldia' | 'morosos' | 'bloqueados';
 
 @Component({
   selector: 'app-clientes',
-  imports: [ReactiveFormsModule, LucideAngularModule],
+  imports: [ReactiveFormsModule, LucideAngularModule, DatePipe],
   templateUrl: './clientes.html'
 })
 export class Clientes {
@@ -20,6 +21,25 @@ export class Clientes {
   cargando = signal(false);
   termino = signal('');
   filtro = signal<Filtro>('todos');
+
+  // Filtrado en cliente: búsqueda instantánea + filtro por estado
+  clientesVista = computed<Cliente[]>(() => {
+    const q = this.termino().toLowerCase().trim();
+    const f = this.filtro();
+    return this.clientes().filter(c => {
+      if (f === 'morosos' && !c.esMoroso) return false;
+      if (f === 'bloqueados' && !c.bloqueado) return false;
+      if (f === 'aldia' && (c.esMoroso || c.bloqueado)) return false;
+      if (!q) return true;
+      return `${c.nombre} ${c.cedula ?? ''} ${c.telefono ?? ''} ${c.email ?? ''}`.toLowerCase().includes(q);
+    });
+  });
+
+  // KPIs (sobre el total, no la vista filtrada)
+  kpiTotal = computed(() => this.clientes().length);
+  kpiAlDia = computed(() => this.clientes().filter(c => !c.esMoroso && !c.bloqueado).length);
+  kpiMorosos = computed(() => this.clientes().filter(c => c.esMoroso).length);
+  kpiBloqueados = computed(() => this.clientes().filter(c => c.bloqueado).length);
 
   // Estado del modal
   modalAbierto = signal(false);
@@ -43,30 +63,21 @@ export class Clientes {
 
   cargar(): void {
     this.cargando.set(true);
-    const f = this.filtro();
-    this.servicio
-      .buscar(
-        this.termino() || undefined,
-        f === 'morosos' ? true : undefined,
-        f === 'bloqueados' ? true : undefined
-      )
-      .subscribe({
-        next: data => {
-          this.clientes.set(data);
-          this.cargando.set(false);
-        },
-        error: () => this.cargando.set(false)
-      });
+    this.servicio.buscar().subscribe({
+      next: data => {
+        this.clientes.set(data);
+        this.cargando.set(false);
+      },
+      error: () => this.cargando.set(false)
+    });
   }
 
   buscar(valor: string): void {
     this.termino.set(valor);
-    this.cargar();
   }
 
   cambiarFiltro(f: Filtro): void {
     this.filtro.set(f);
-    this.cargar();
   }
 
   abrirNuevo(): void {

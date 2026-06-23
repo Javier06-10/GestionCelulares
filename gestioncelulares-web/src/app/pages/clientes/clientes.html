@@ -1,8 +1,8 @@
 <!-- Encabezado -->
-<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+<div class="flex flex-wrap items-center justify-between gap-3 mb-5">
   <div>
     <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Clientes</h2>
-    <p class="text-sm text-tech-steel mt-0.5">{{ clientes().length }} cliente(s)</p>
+    <p class="text-sm text-tech-steel mt-0.5">Cartera de clientes y su estado de crédito.</p>
   </div>
   <button
     (click)="abrirNuevo()"
@@ -13,27 +13,50 @@
   </button>
 </div>
 
-<!-- Barra de búsqueda y filtros -->
+<!-- KPIs (también actúan como filtro) -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+  <button (click)="cambiarFiltro('todos')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="filtro() === 'todos' ? 'border-tech-charcoal/40 ring-1 ring-tech-charcoal/20' : 'border-tech-pastel/40 hover:border-tech-pastel'">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-tech-steel">Total</span>
+      <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-charcoal/5 text-tech-charcoal"><lucide-icon name="users" [size]="16"></lucide-icon></span>
+    </div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiTotal() }}</div>
+  </button>
+  <button (click)="cambiarFiltro('aldia')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="filtro() === 'aldia' ? 'border-tech-accent/50 ring-1 ring-tech-accent/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-tech-steel">Al día</span>
+      <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-accent/10 text-tech-accent"><lucide-icon name="circle-check" [size]="16"></lucide-icon></span>
+    </div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiAlDia() }}</div>
+  </button>
+  <button (click)="cambiarFiltro('morosos')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="filtro() === 'morosos' ? 'border-amber-500/50 ring-1 ring-amber-500/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-tech-steel">Morosos</span>
+      <span class="w-8 h-8 grid place-items-center rounded-lg bg-amber-500/10 text-amber-600"><lucide-icon name="circle-alert" [size]="16"></lucide-icon></span>
+    </div>
+    <div class="text-2xl font-bold mt-1.5" [class]="kpiMorosos() > 0 ? 'text-amber-600' : 'text-tech-charcoal'">{{ kpiMorosos() }}</div>
+  </button>
+  <button (click)="cambiarFiltro('bloqueados')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="filtro() === 'bloqueados' ? 'border-red-500/50 ring-1 ring-red-500/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-tech-steel">Bloqueados</span>
+      <span class="w-8 h-8 grid place-items-center rounded-lg bg-red-500/10 text-red-500"><lucide-icon name="ban" [size]="16"></lucide-icon></span>
+    </div>
+    <div class="text-2xl font-bold mt-1.5" [class]="kpiBloqueados() > 0 ? 'text-red-500' : 'text-tech-charcoal'">{{ kpiBloqueados() }}</div>
+  </button>
+</div>
+
+<!-- Búsqueda -->
 <div class="flex flex-wrap items-center gap-3 mb-4">
-  <div class="relative flex-1 min-w-[240px]">
+  <div class="relative flex-1 min-w-[240px] max-w-lg">
     <lucide-icon name="search" [size]="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
     <input
       type="text"
-      placeholder="Buscar por nombre, cédula o teléfono…"
+      placeholder="Buscar por nombre, cédula, teléfono o email…"
       (input)="buscar($any($event.target).value)"
       class="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal placeholder:text-tech-steel/60 outline-none transition-all duration-300 focus:border-tech-accent/60 focus:shadow-[0_0_0_4px_rgba(0,230,118,0.08)]"
     />
   </div>
-
-  <div class="flex items-center gap-1 bg-tech-card-light border border-tech-pastel/40 rounded-xl p-1">
-    @for (f of ['todos', 'morosos', 'bloqueados']; track f) {
-      <button
-        (click)="cambiarFiltro($any(f))"
-        class="px-3.5 py-1.5 rounded-lg text-sm font-medium capitalize transition-all duration-200"
-        [class]="filtro() === f ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'"
-      >{{ f }}</button>
-    }
-  </div>
+  <span class="text-xs text-tech-steel">{{ clientesVista().length }} mostrado(s)</span>
 </div>
 
 <!-- Tabla -->
@@ -46,6 +69,7 @@
           <th class="font-semibold py-3 px-4">Cédula</th>
           <th class="font-semibold py-3 px-4">Teléfono</th>
           <th class="font-semibold py-3 px-4">Estado</th>
+          <th class="font-semibold py-3 px-4">Registrado</th>
           <th class="font-semibold py-3 px-4 text-right">Acciones</th>
         </tr>
       </thead>
@@ -53,18 +77,18 @@
         @if (cargando()) {
           @for (i of [1,2,3,4,5]; track i) {
             <tr class="border-t border-tech-pastel/20">
-              <td colspan="5" class="py-3 px-4"><div class="h-5 bg-tech-bg-light rounded animate-pulse"></div></td>
+              <td colspan="6" class="py-3 px-4"><div class="h-5 bg-tech-bg-light rounded animate-pulse"></div></td>
             </tr>
           }
-        } @else if (clientes().length === 0) {
+        } @else if (clientesVista().length === 0) {
           <tr>
-            <td colspan="5" class="py-12 text-center text-tech-steel">
+            <td colspan="6" class="py-12 text-center text-tech-steel">
               <lucide-icon name="users" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon>
               <p>No hay clientes que coincidan.</p>
             </td>
           </tr>
         } @else {
-          @for (c of clientes(); track c.clienteId) {
+          @for (c of clientesVista(); track c.clienteId) {
             <tr class="border-t border-tech-pastel/20 transition-colors duration-200 hover:bg-tech-bg-light/60">
               <td class="py-3 px-4">
                 <div class="flex items-center gap-3">
@@ -98,6 +122,7 @@
                   }
                 </div>
               </td>
+              <td class="py-3 px-4 text-tech-steel">{{ c.fechaCreacion | date:'dd/MM/yy' }}</td>
               <td class="py-3 px-4">
                 <div class="flex items-center justify-end gap-1.5">
                   <button
