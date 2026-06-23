@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
@@ -51,16 +51,35 @@ export class Garantias {
     notas: ['']
   });
 
+  // KPIs (sobre los datos completos, cargados al inicio)
+  kpiVigentes = computed(() => this.garantias().filter(g => g.vigente).length);
+  casosActivos = computed(() => this.casos().filter(c => c.estado === 'Abierto' || c.estado === 'EnProceso').length);
+  kpiResueltos = computed(() => this.casos().filter(c => c.estado === 'Resuelto').length);
+
+  // Días restantes de cobertura
+  diasRestantes(fechaVenc: string): number {
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const v = new Date(fechaVenc);
+    return Math.ceil((v.getTime() - hoy.getTime()) / 86400000);
+  }
+  diasClase(dias: number, vigente: boolean): string {
+    if (!vigente || dias < 0) return 'bg-slate-400/15 text-slate-500';
+    if (dias <= 30) return 'bg-amber-500/10 text-amber-600';
+    return 'bg-tech-accent/10 text-tech-accent';
+  }
+
   constructor() { this.cargar(); }
 
-  cambiarVista(v: Vista): void { this.vista.set(v); this.cargar(); }
+  cambiarVista(v: Vista): void { this.vista.set(v); }
 
   cargar(): void {
     this.cargando.set(true);
-    const fin = () => this.cargando.set(false);
-    if (this.vista() === 'garantias') this.servicio.buscar().subscribe({ next: d => { this.garantias.set(d); fin(); }, error: fin });
-    else if (this.vista() === 'casos') this.servicio.casos().subscribe({ next: d => { this.casos.set(d); fin(); }, error: fin });
-    else this.servicio.indiceFallas().subscribe({ next: d => { this.fallas.set(d); fin(); }, error: fin });
+    this.servicio.buscar().subscribe({ next: d => this.garantias.set(d) });
+    this.servicio.casos().subscribe({ next: d => this.casos.set(d) });
+    this.servicio.indiceFallas().subscribe({
+      next: d => { this.fallas.set(d); this.cargando.set(false); },
+      error: () => this.cargando.set(false)
+    });
   }
 
   buscarImei(v: string): void {

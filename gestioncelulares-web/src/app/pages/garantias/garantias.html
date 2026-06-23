@@ -9,6 +9,31 @@
   </button>
 </div>
 
+<!-- KPIs -->
+<div class="grid grid-cols-3 gap-3 mb-5">
+  <button (click)="cambiarVista('garantias')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="vista() === 'garantias' ? 'border-tech-accent/50 ring-1 ring-tech-accent/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-tech-steel">Vigentes</span>
+      <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-accent/10 text-tech-accent"><lucide-icon name="shield-check" [size]="16"></lucide-icon></span>
+    </div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiVigentes() }}</div>
+  </button>
+  <button (click)="cambiarVista('casos')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="vista() === 'casos' ? 'border-tech-purple/50 ring-1 ring-tech-purple/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-tech-steel">Casos activos</span>
+      <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-purple/10 text-tech-purple"><lucide-icon name="shield-alert" [size]="16"></lucide-icon></span>
+    </div>
+    <div class="text-2xl font-bold mt-1.5" [class]="casosActivos() > 0 ? 'text-tech-purple' : 'text-tech-charcoal'">{{ casosActivos() }}</div>
+  </button>
+  <button (click)="cambiarVista('fallas')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border p-4 transition-all duration-300 active:scale-[0.98]" [class]="vista() === 'fallas' ? 'border-amber-500/50 ring-1 ring-amber-500/30' : 'border-tech-pastel/40 hover:border-tech-pastel'">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-tech-steel">Resueltos</span>
+      <span class="w-8 h-8 grid place-items-center rounded-lg bg-emerald-500/10 text-emerald-600"><lucide-icon name="circle-check" [size]="16"></lucide-icon></span>
+    </div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5">{{ kpiResueltos() }}</div>
+  </button>
+</div>
+
 <!-- Consulta por IMEI -->
 <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-4 mb-4">
   <div class="relative">
@@ -30,7 +55,10 @@
 <!-- Pestañas -->
 <div class="flex items-center gap-1 mb-4 p-1 bg-tech-card-light border border-tech-pastel/40 rounded-xl w-fit">
   <button (click)="cambiarVista('garantias')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="vista() === 'garantias' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">Garantías</button>
-  <button (click)="cambiarVista('casos')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="vista() === 'casos' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">Casos RMA</button>
+  <button (click)="cambiarVista('casos')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="vista() === 'casos' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">
+    Casos RMA
+    @if (casosActivos() > 0) { <span class="px-1.5 py-0.5 rounded-md text-[0.65rem] font-bold" [class]="vista() === 'casos' ? 'bg-white/20 text-white' : 'bg-tech-purple/10 text-tech-purple'">{{ casosActivos() }}</span> }
+  </button>
   <button (click)="cambiarVista('fallas')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="vista() === 'fallas' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">Índice de fallas</button>
 </div>
 
@@ -41,7 +69,7 @@
   <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full text-sm border-collapse min-w-[640px]">
-        <thead><tr class="bg-tech-bg-light/80 text-tech-steel text-left"><th class="font-semibold py-3 px-4">IMEI</th><th class="font-semibold py-3 px-4">Cliente</th><th class="font-semibold py-3 px-4 text-center">Cobertura</th><th class="font-semibold py-3 px-4">Vence</th><th class="font-semibold py-3 px-4 text-center">Estado</th></tr></thead>
+        <thead><tr class="bg-tech-bg-light/80 text-tech-steel text-left"><th class="font-semibold py-3 px-4">IMEI</th><th class="font-semibold py-3 px-4">Cliente</th><th class="font-semibold py-3 px-4 text-center">Cobertura</th><th class="font-semibold py-3 px-4">Vence</th><th class="font-semibold py-3 px-4 text-center">Restan</th><th class="font-semibold py-3 px-4 text-center">Estado</th></tr></thead>
         <tbody>
           @for (g of garantias(); track g.garantiaId) {
             <tr class="border-t border-tech-pastel/20 hover:bg-tech-bg-light/60 transition-colors">
@@ -49,9 +77,14 @@
               <td class="py-3 px-4 text-tech-charcoal">{{ g.cliente || '—' }}</td>
               <td class="py-3 px-4 text-center text-tech-charcoal">{{ g.mesesCobertura }} m</td>
               <td class="py-3 px-4 text-tech-charcoal">{{ g.fechaVencimiento | date:'dd/MM/yyyy' }}</td>
+              <td class="py-3 px-4 text-center">
+                <span class="inline-flex px-2 py-0.5 rounded-lg text-xs font-semibold" [class]="diasClase(diasRestantes(g.fechaVencimiento), g.vigente)">
+                  {{ g.vigente && diasRestantes(g.fechaVencimiento) >= 0 ? diasRestantes(g.fechaVencimiento) + ' días' : 'Vencida' }}
+                </span>
+              </td>
               <td class="py-3 px-4 text-center"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold" [class]="estadoGarClase(g.estado, g.vigente)">{{ g.vigente ? 'Vigente' : g.estado }}</span></td>
             </tr>
-          } @empty { <tr><td colspan="5" class="py-12 text-center text-tech-steel"><lucide-icon name="shield-check" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon><p>No hay garantías registradas.</p></td></tr> }
+          } @empty { <tr><td colspan="6" class="py-12 text-center text-tech-steel"><lucide-icon name="shield-check" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon><p>No hay garantías registradas.</p></td></tr> }
         </tbody>
       </table>
     </div>
