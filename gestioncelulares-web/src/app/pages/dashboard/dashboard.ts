@@ -34,6 +34,7 @@ export class Dashboard implements OnDestroy {
   error = signal<string | null>(null);
   refrescando = signal(false);
   ultima = signal<Date>(new Date());
+  reloj = signal<Date>(new Date());   // reloj en vivo (segundos corriendo)
 
   // Métrica de la gráfica: monto vendido o ganancia
   metrica = signal<Metrica>('total');
@@ -44,15 +45,19 @@ export class Dashboard implements OnDestroy {
   }
 
   private timer?: ReturnType<typeof setInterval>;
+  private relojTimer?: ReturnType<typeof setInterval>;
 
   constructor() {
     this.cargar();
     // Auto-refresco en vivo cada 30 s
     this.timer = setInterval(() => this.cargar(true), 30000);
+    // Reloj en tiempo real: avanza cada segundo
+    this.relojTimer = setInterval(() => this.reloj.set(new Date()), 1000);
   }
 
   ngOnDestroy(): void {
     if (this.timer) clearInterval(this.timer);
+    if (this.relojTimer) clearInterval(this.relojTimer);
   }
 
   cargar(silencioso = false): void {

@@ -1,21 +1,16 @@
 <!-- ===== Encabezado ===== -->
 <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
   <div>
-    <nav class="flex items-center gap-1.5 mb-1 text-[0.62rem] font-mono uppercase tracking-[0.15em]">
-      <span class="text-tech-steel/60">Sistema</span>
-      <lucide-icon name="chevron-right" [size]="11" class="text-tech-steel/50"></lucide-icon>
-      <span class="text-tech-accent">Panel · Analítica</span>
-    </nav>
     <h2 class="text-2xl sm:text-3xl font-bold text-tech-charcoal tracking-tight">Inteligencia &amp; Analítica</h2>
   </div>
   <div class="flex items-center gap-2">
-    <span class="hidden sm:flex items-center gap-1.5 text-[0.7rem] text-tech-steel font-mono">
-      <span class="w-1.5 h-1.5 rounded-full bg-tech-accent" [class.animate-pulse]="refrescando()"></span>
-      {{ ultima() | date:'HH:mm:ss' }}
+    <span class="hidden sm:flex items-center gap-1.5 text-[0.78rem] text-tech-charcoal font-mono tabular-nums">
+      <span class="w-1.5 h-1.5 rounded-full bg-tech-accent animate-pulse"></span>
+      {{ reloj() | date:'HH:mm:ss' }}
     </span>
     <div class="px-3.5 py-2 rounded-xl bg-tech-card-light border border-tech-pastel/40 flex items-center gap-2">
       <lucide-icon name="calendar" [size]="14" class="text-tech-accent"></lucide-icon>
-      <span class="text-xs text-tech-charcoal font-mono capitalize">{{ ultima() | date:'MMM y' }}</span>
+      <span class="text-xs text-tech-charcoal font-mono capitalize">{{ reloj() | date:'MMM y' }}</span>
     </div>
     <button (click)="cargar()" [disabled]="refrescando()" title="Refrescar" class="w-9 h-9 grid place-items-center rounded-xl border border-tech-pastel/60 text-tech-steel hover:bg-tech-bg-light hover:text-tech-charcoal active:scale-90 transition-all disabled:opacity-50">
       <lucide-icon name="refresh-cw" [size]="16" [class.animate-spin]="refrescando()"></lucide-icon>
