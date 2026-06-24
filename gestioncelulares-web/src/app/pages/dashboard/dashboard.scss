@@ -1,80 +1,7 @@
-/* ===== Command Center (oscuro, glassmorphism) — scoped al dashboard ===== */
-:host {
-  display: block;
-}
-
-.cmd {
-  position: relative;
-  overflow: hidden;
-  background: #0e1216;
-  color: #e0e2e8;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1.25rem;
-  box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.8);
-}
-
-/* Patrón de puntos + halo verde ambiental */
-.cmd::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 24px 24px;
-  pointer-events: none;
-}
-.cmd::after {
-  content: '';
-  position: absolute;
-  top: -160px;
-  right: -120px;
-  width: 420px;
-  height: 420px;
-  border-radius: 9999px;
-  background: radial-gradient(circle, rgba(0, 230, 118, 0.16), transparent 70%);
-  filter: blur(40px);
-  pointer-events: none;
-}
-
-/* Línea de escaneo que recorre el panel */
-.scanline {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 120px;
-  z-index: 1;
-  background: linear-gradient(0deg, rgba(0, 230, 118, 0) 0%, rgba(0, 230, 118, 0.05) 50%, rgba(0, 230, 118, 0) 100%);
-  animation: scanline 9s linear infinite;
-  pointer-events: none;
-}
-@keyframes scanline {
-  0% { top: -120px; }
-  100% { top: 100%; }
-}
-
-/* Panel de cristal */
-.glass {
-  background: rgba(255, 255, 255, 0.035);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 0.85rem;
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-}
-.glass:hover {
-  transform: translateY(-3px);
-  border-color: rgba(0, 230, 118, 0.35);
-  box-shadow: 0 16px 40px -22px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 230, 118, 0.15);
-}
-
-.glow {
-  box-shadow: 0 0 16px rgba(0, 230, 118, 0.35);
-}
-
-.status-pulse {
-  animation: pulseGlow 2s ease-in-out infinite;
-}
-@keyframes pulseGlow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.55; transform: scale(0.9); }
+/* Panel (gráficas / tablas) en modo claro, coherente con el resto de la app */
+.panel {
+  @apply bg-tech-card-light rounded-2xl p-5 border border-tech-pastel/30;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -16px rgba(15, 23, 42, 0.12);
 }
 
 /* La línea de la gráfica se dibuja al entrar; el área hace fade */
@@ -95,8 +22,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scanline,
-  .status-pulse { animation: none; }
   .chart-line {
     stroke-dasharray: none;
     stroke-dashoffset: 0;
