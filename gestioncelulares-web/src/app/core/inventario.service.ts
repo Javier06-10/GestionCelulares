@@ -39,6 +39,10 @@ export interface ImeiRegistro {
   precioCosto: number;
 }
 
+export interface LoteItem { imei: string; varianteId: number; }
+export interface LoteRegistro { sucursalId: number; precioCosto: number; items: LoteItem[]; }
+export interface LoteResultado { registrados: number; duplicados: string[]; invalidos: string[]; }
+
 @Injectable({ providedIn: 'root' })
 export class InventarioService {
   private http = inject(HttpClient);
@@ -62,6 +66,10 @@ export class InventarioService {
 
   registrar(dto: ImeiRegistro) {
     return this.http.post<Imei>(this.base, dto);
+  }
+
+  registrarLote(dto: LoteRegistro) {
+    return this.http.post<LoteResultado>(`${this.base}/lote`, dto);
   }
 
   transferir(imeiId: number, sucursalDestinoId: number) {

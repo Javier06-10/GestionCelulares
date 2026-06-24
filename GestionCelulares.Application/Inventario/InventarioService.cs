@@ -13,6 +13,7 @@ public interface IInventarioService
     Task<ImeiDto?> PorImeiAsync(string imei);
     Task<ImeiDto?> PorIdAsync(int id);
     Task<ImeiDto> RegistrarAsync(ImeiRegistroDto dto, int? usuarioId);
+    Task<LoteResultadoDto> RegistrarLoteAsync(LoteRegistroDto dto, int? usuarioId);
     Task TransferirAsync(int imeiId, int sucursalDestinoId, int? usuarioId);
 }
 
@@ -93,6 +94,76 @@ public class InventarioService : IInventarioService
         await _db.SaveChangesAsync();
 
         return (await PorIdAsync(equipo.ImeiId))!;
+    }
+
+    public async Task<LoteResultadoDto> RegistrarLoteAsync(LoteRegistroDto dto, int? usuarioId)
+    {
+        if (!await _db.Sucursales.AnyAsync(s => s.SucursalId == dto.SucursalId))
+            throw new InventarioException("La sucursal indicada no existe.");
+        if (dto.Items.Count == 0)
+            throw new InventarioException("El lote no tiene equipos.");
+
+        // Normaliza IMEIs y reúne identificadores para validar en bloque
+        var items = dto.Items
+            .Select(i => new { Imei = (i.Imei ?? "").Trim(), i.VarianteId })
+            .ToList();
+
+        var imeisLote = items.Where(i => i.Imei.Length > 0).Select(i => i.Imei).Distinct().ToList();
+        var existentes = (await _db.InventarioImeis.AsNoTracking()
+            .Where(i => imeisLote.Contains(i.Imei))
+            .Select(i => i.Imei)
+            .ToListAsync()).ToHashSet();
+
+        var varianteIds = items.Select(i => i.VarianteId).Distinct().ToList();
+        var variantesOk = (await _db.ProductoVariantes.AsNoTracking()
+            .Where(v => varianteIds.Contains(v.VarianteId))
+            .Select(v => v.VarianteId)
+            .ToListAsync()).ToHashSet();
+
+        var resultado = new LoteResultadoDto();
+        var vistos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var it in items)
+        {
+            if (it.Imei.Length == 0 || !variantesOk.Contains(it.VarianteId))
+            {
+                resultado.Invalidos.Add(it.Imei.Length == 0 ? "(IMEI vacío)" : it.Imei);
+                continue;
+            }
+            if (existentes.Contains(it.Imei) || !vistos.Add(it.Imei))
+            {
+                resultado.Duplicados.Add(it.Imei);
+                continue;
+            }
+
+            var equipo = new InventarioImei
+            {
+                Imei = it.Imei,
+                VarianteId = it.VarianteId,
+                SucursalId = dto.SucursalId,
+                CompraId = dto.CompraId,
+                PrecioCosto = dto.PrecioCosto,
+                Estado = "Disponible",
+                FechaIngreso = DateTime.Now
+            };
+            _db.InventarioImeis.Add(equipo);
+            // El movimiento usa la navegación para que EF resuelva el ImeiId al guardar
+            _db.MovimientosInventario.Add(new MovimientoInventario
+            {
+                Imei = equipo,
+                Tipo = "Entrada",
+                SucursalDestino = dto.SucursalId,
+                Referencia = dto.CompraId.HasValue ? $"Compra #{dto.CompraId} (lote)" : "Ingreso por lote",
+                UsuarioId = usuarioId,
+                Fecha = DateTime.Now
+            });
+            resultado.Registrados++;
+        }
+
+        if (resultado.Registrados > 0)
+            await _db.SaveChangesAsync();
+
+        return resultado;
     }
 
     public async Task TransferirAsync(int imeiId, int sucursalDestinoId, int? usuarioId)

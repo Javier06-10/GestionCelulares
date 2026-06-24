@@ -60,6 +60,21 @@ public class InventarioController : ControllerBase
         }
     }
 
+    /// <summary>Registra varios equipos (IMEI) de un golpe; reporta duplicados e inválidos.</summary>
+    [Authorize(Roles = Roles.Admin)]
+    [HttpPost("lote")]
+    public async Task<IActionResult> RegistrarLote([FromBody] LoteRegistroDto dto)
+    {
+        try
+        {
+            return Ok(await _inv.RegistrarLoteAsync(dto, UsuarioId));
+        }
+        catch (InventarioException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     /// <summary>Transfiere un equipo a otra sucursal y registra el movimiento.</summary>
     [Authorize(Roles = Roles.Admin)]
     [HttpPost("{id:int}/transferir")]

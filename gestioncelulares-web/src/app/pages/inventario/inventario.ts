@@ -12,6 +12,10 @@ import { CountUpDirective } from '../../shared/count-up.directive';
 interface OpcionSerializada { varianteId: number; etiqueta: string; }
 interface AccesorioFila { producto: Producto; variante: Variante; nombre: string; detalle: string; }
 
+interface ModeloGrupo { modelo: string; variantes: StockDisponible[]; total: number; valor: number; }
+interface MarcaGrupo { marca: string; total: number; modelos: ModeloGrupo[]; }
+interface LoteFila { varianteId: number; imei: string; etiqueta: string; }
+
 type TabInv = 'existencias' | 'agotados' | 'faltantes';
 
 @Component({
@@ -110,6 +114,128 @@ export class Inventario {
       'Accesorio', a.nombre, '', a.detalle, a.variante.precioVenta, a.variante.stockNoSerial
     ]));
     exportarCsv('inventario', ['Tipo', 'Producto', 'Marca', 'Variante', 'Precio venta', 'Stock'], filas);
+  }
+
+  // ===== Agrupación de dispositivos: marca → modelo → variantes =====
+  gruposInv = computed<MarcaGrupo[]>(() => {
+    const porMarca = new Map<string, Map<string, StockDisponible[]>>();
+    for (const s of this.stock()) {
+      const marca = s.marca || 'Sin marca';
+      if (!porMarca.has(marca)) porMarca.set(marca, new Map());
+      const modelos = porMarca.get(marca)!;
+      if (!modelos.has(s.producto)) modelos.set(s.producto, []);
+      modelos.get(s.producto)!.push(s);
+    }
+    return [...porMarca.entries()]
+      .map(([marca, modelos]) => ({
+        marca,
+        total: [...modelos.values()].flat().reduce((a, s) => a + s.disponibles, 0),
+        modelos: [...modelos.entries()]
+          .map(([modelo, variantes]) => ({
+            modelo,
+            variantes: [...variantes].sort((a, b) => (a.color || '').localeCompare(b.color || '')),
+            total: variantes.reduce((a, s) => a + s.disponibles, 0),
+            valor: variantes.reduce((a, s) => a + s.precioVenta * s.disponibles, 0)
+          }))
+          .sort((a, b) => a.modelo.localeCompare(b.modelo))
+      }))
+      .sort((a, b) => a.marca.localeCompare(b.marca));
+  });
+
+  private marcasColap = signal<Set<string>>(new Set());   // marcas contraídas (default: todas abiertas)
+  private modelosAbiertos = signal<Set<string>>(new Set()); // modelos expandidos (default: contraídos)
+  modeloKey(marca: string, modelo: string): string { return marca + '|' + modelo; }
+  marcaAbierta(m: string): boolean { return !this.marcasColap().has(m); }
+  modeloAbierto(k: string): boolean { return this.modelosAbiertos().has(k); }
+  alternarMarca(m: string): void {
+    this.marcasColap.update(s => { const n = new Set(s); n.has(m) ? n.delete(m) : n.add(m); return n; });
+  }
+  alternarModelo(k: string): void {
+    this.modelosAbiertos.update(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; });
+  }
+
+  // ===== Lote: ingreso de varios IMEI de un golpe =====
+  modalLote = signal(false);
+  guardandoLote = signal(false);
+  errorLote = signal<string | null>(null);
+  resultadoLote = signal<string | null>(null);
+  loteProducto = signal<Producto | null>(null);
+  loteVarianteId = signal<number | null>(null);
+  loteCosto = signal(0);
+  loteImei = signal('');
+  loteItems = signal<LoteFila[]>([]);
+
+  // Modelos serializados disponibles para el lote
+  modelosSerializados = computed(() => this.productos().filter(p => p.serializado && p.activo));
+  loteVariantes = computed<Variante[]>(() => this.loteProducto()?.variantes.filter(v => v.activo) ?? []);
+
+  etiquetaVar(v: Variante): string {
+    return [v.color, v.almacenamiento, v.condicion].filter(Boolean).join(' · ') || 'Estándar';
+  }
+
+  abrirLote(): void {
+    this.errorLote.set(null);
+    this.resultadoLote.set(null);
+    this.loteProducto.set(null);
+    this.loteVarianteId.set(null);
+    this.loteCosto.set(0);
+    this.loteImei.set('');
+    this.loteItems.set([]);
+    this.modalLote.set(true);
+  }
+
+  elegirModeloLote(productoId: number): void {
+    const p = this.productos().find(x => x.productoId === Number(productoId)) ?? null;
+    this.loteProducto.set(p);
+    const v = p?.variantes.find(x => x.activo);
+    this.loteVarianteId.set(v ? v.varianteId : null);
+  }
+
+  agregarImeiLote(valor: string): void {
+    const imei = valor.trim();
+    this.loteImei.set('');
+    if (imei.length < 4) return;
+    const varId = this.loteVarianteId();
+    if (!varId) { this.errorLote.set('Selecciona primero el modelo y la variante.'); return; }
+    if (this.loteItems().some(i => i.imei.toLowerCase() === imei.toLowerCase())) {
+      this.errorLote.set(`El IMEI ${imei} ya está en la lista.`);
+      return;
+    }
+    const v = this.loteVariantes().find(x => x.varianteId === varId);
+    this.errorLote.set(null);
+    this.loteItems.update(l => [{ varianteId: varId, imei, etiqueta: v ? this.etiquetaVar(v) : '' }, ...l]);
+  }
+
+  quitarLote(imei: string): void {
+    this.loteItems.update(l => l.filter(i => i.imei !== imei));
+  }
+
+  guardarLote(): void {
+    const items = this.loteItems();
+    const sucursalId = this.auth.usuario()?.sucursalId;
+    if (!sucursalId) { this.errorLote.set('Tu usuario no tiene una sucursal asignada.'); return; }
+    if (items.length === 0) { this.errorLote.set('Agrega al menos un IMEI.'); return; }
+    this.guardandoLote.set(true);
+    this.errorLote.set(null);
+    this.servicio.registrarLote({
+      sucursalId,
+      precioCosto: this.loteCosto(),
+      items: items.map(i => ({ imei: i.imei, varianteId: i.varianteId }))
+    }).subscribe({
+      next: r => {
+        this.guardandoLote.set(false);
+        let msg = `${r.registrados} equipo(s) registrado(s).`;
+        if (r.duplicados.length) msg += ` ${r.duplicados.length} duplicado(s) omitido(s).`;
+        if (r.invalidos.length) msg += ` ${r.invalidos.length} inválido(s).`;
+        this.resultadoLote.set(msg);
+        // Deja en la lista solo los que fallaron, para corregir
+        const fallidos = new Set([...r.duplicados, ...r.invalidos].map(x => x.toLowerCase()));
+        this.loteItems.update(l => l.filter(i => fallidos.has(i.imei.toLowerCase())));
+        this.cargar();
+        this.cargarFaltantes();
+      },
+      error: err => { this.guardandoLote.set(false); this.errorLote.set(err.error?.error ?? 'No se pudo registrar el lote.'); }
+    });
   }
 
   // Búsqueda por IMEI
