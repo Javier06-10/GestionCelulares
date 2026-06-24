@@ -356,11 +356,23 @@
         </div>
 
         @if (!productoVariante()?.serializado) {
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Stock inicial (cantidad)</label>
+              <input formControlName="stockNoSerial" type="number" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-purple/60 focus:bg-white" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Stock mínimo (alerta)</label>
+              <input formControlName="stockMinimo" type="number" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-amber-500/60 focus:bg-white" />
+            </div>
+          </div>
+        } @else {
           <div>
-            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Stock inicial (cantidad)</label>
-            <input formControlName="stockNoSerial" type="number" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-purple/60 focus:bg-white" />
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Stock mínimo (alerta de unidades)</label>
+            <input formControlName="stockMinimo" type="number" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-amber-500/60 focus:bg-white" />
           </div>
         }
+        <p class="text-[0.7rem] text-tech-steel flex items-center gap-1.5"><lucide-icon name="circle-alert" [size]="13" class="text-amber-600"></lucide-icon> Cuando el stock baje al mínimo, el producto se marca como “próximo a agotar”.</p>
 
         @if (editandoVariante()) {
           <label class="flex items-center gap-3 cursor-pointer">

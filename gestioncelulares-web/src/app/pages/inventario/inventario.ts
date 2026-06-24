@@ -77,11 +77,27 @@ export class Inventario {
     if (n <= 5) return 'bg-amber-500';
     return 'bg-tech-accent';
   }
-  claseAcc(n: number): string {
-    if (n <= 0) return 'bg-red-500';
-    if (n <= 3) return 'bg-amber-500';
-    return 'bg-tech-purple';
+
+  // Estado de un accesorio según su stock mínimo configurado
+  estadoAcc(stock: number, minimo: number): 'agotado' | 'bajo' | 'ok' {
+    if (stock <= 0) return 'agotado';
+    if (minimo > 0 && stock <= minimo) return 'bajo';
+    return 'ok';
   }
+  claseAcc(stock: number, minimo: number): string {
+    const e = this.estadoAcc(stock, minimo);
+    return e === 'agotado' ? 'bg-red-500' : e === 'bajo' ? 'bg-amber-500' : 'bg-tech-purple';
+  }
+  textoAcc(stock: number, minimo: number): string {
+    const e = this.estadoAcc(stock, minimo);
+    return e === 'agotado' ? 'agotado' : e === 'bajo' ? 'por agotar' : 'ok';
+  }
+
+  // Accesorios próximos a agotar (al/por debajo del mínimo, pero aún con stock)
+  porAgotar = computed<AccesorioFila[]>(() =>
+    this.accesorios().filter(a => this.estadoAcc(a.variante.stockNoSerial, a.variante.stockMinimo) === 'bajo')
+  );
+  porAgotarCount = computed(() => this.porAgotar().length);
 
   exportar(): void {
     const filas: (string | number)[][] = [];
@@ -260,6 +276,7 @@ export class Inventario {
       precioVenta: va.precioVenta,
       precioCosto: va.precioCosto,
       stockNoSerial: va.stockNoSerial + Number(v.cantidad),
+      stockMinimo: va.stockMinimo,
       activo: va.activo
     }).subscribe({
       next: () => { this.guardando.set(false); this.modalAbierto.set(false); this.cargarCatalogo(); this.cargarFaltantes(); },
@@ -290,6 +307,7 @@ export class Inventario {
       precioVenta: v.precioVenta,
       precioCosto: v.precioCosto,
       stockNoSerial: Math.max(0, this.nuevoStock()),
+      stockMinimo: v.stockMinimo,
       activo: v.activo
     }).subscribe({
       next: () => { this.guardandoStock.set(false); this.modalStock.set(false); this.cargarCatalogo(); this.cargarFaltantes(); },

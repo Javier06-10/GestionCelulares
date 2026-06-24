@@ -49,6 +49,7 @@ public class VarianteCrearDto
     [Range(0, double.MaxValue)] public decimal PrecioVenta { get; set; }
     [Range(0, double.MaxValue)] public decimal PrecioCosto { get; set; }
     public int StockNoSerial { get; set; }
+    public int StockMinimo { get; set; }
 }
 
 public class VarianteActualizarDto
@@ -60,6 +61,7 @@ public class VarianteActualizarDto
     [Range(0, double.MaxValue)] public decimal PrecioVenta { get; set; }
     [Range(0, double.MaxValue)] public decimal PrecioCosto { get; set; }
     public int StockNoSerial { get; set; }
+    public int StockMinimo { get; set; }
     public bool Activo { get; set; } = true;
 }
 
@@ -74,6 +76,7 @@ public class VarianteDto
     public decimal PrecioVenta { get; set; }
     public decimal PrecioCosto { get; set; }
     public int StockNoSerial { get; set; }
+    public int StockMinimo { get; set; }
     public bool Activo { get; set; }
 }
 

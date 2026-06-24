@@ -80,6 +80,7 @@ export class Catalogo {
     precioVenta: [0, [Validators.required, Validators.min(0)]],
     precioCosto: [0, [Validators.required, Validators.min(0)]],
     stockNoSerial: [0, [Validators.min(0)]],
+    stockMinimo: [0, [Validators.min(0)]],
     activo: [true]
   });
 
@@ -162,7 +163,7 @@ export class Catalogo {
     this.productoVariante.set(p);
     this.editandoVariante.set(null);
     this.errorVariante.set(null);
-    this.formVariante.reset({ color: '', almacenamiento: '', condicion: 'Nuevo', codigoBarras: '', precioVenta: 0, precioCosto: 0, stockNoSerial: 0, activo: true });
+    this.formVariante.reset({ color: '', almacenamiento: '', condicion: 'Nuevo', codigoBarras: '', precioVenta: 0, precioCosto: 0, stockNoSerial: 0, stockMinimo: 0, activo: true });
     this.modalVariante.set(true);
   }
 
@@ -178,6 +179,7 @@ export class Catalogo {
       precioVenta: vr.precioVenta,
       precioCosto: vr.precioCosto,
       stockNoSerial: vr.stockNoSerial,
+      stockMinimo: vr.stockMinimo,
       activo: vr.activo
     });
     this.modalVariante.set(true);
@@ -198,6 +200,7 @@ export class Catalogo {
       precioVenta: v.precioVenta,
       precioCosto: v.precioCosto,
       stockNoSerial: serializado ? 0 : v.stockNoSerial,
+      stockMinimo: v.stockMinimo,
       activo: v.activo
     };
 

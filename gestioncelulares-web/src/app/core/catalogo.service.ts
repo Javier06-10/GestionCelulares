@@ -12,6 +12,7 @@ export interface Variante {
   precioVenta: number;
   precioCosto: number;
   stockNoSerial: number;
+  stockMinimo: number;
   activo: boolean;
 }
 
@@ -40,6 +41,7 @@ export interface VarianteGuardar {
   precioVenta: number;
   precioCosto: number;
   stockNoSerial: number;
+  stockMinimo: number;
   activo?: boolean;
 }
 

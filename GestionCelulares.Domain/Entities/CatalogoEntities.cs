@@ -41,6 +41,7 @@ public class ProductoVariante
     public decimal PrecioVenta { get; set; }
     public decimal PrecioCosto { get; set; }
     public int StockNoSerial { get; set; }
+    public int StockMinimo { get; set; }   // umbral de alerta "próximo a agotar"
     public bool Activo { get; set; }
 
     public Producto Producto { get; set; } = null!;

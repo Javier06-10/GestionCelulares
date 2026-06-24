@@ -155,6 +155,7 @@ public class CatalogoService : ICatalogoService
         variante.PrecioVenta = dto.PrecioVenta;
         variante.PrecioCosto = dto.PrecioCosto;
         variante.StockNoSerial = dto.StockNoSerial;
+        variante.StockMinimo = dto.StockMinimo;
         variante.Activo = dto.Activo;
         await _db.SaveChangesAsync();
 
@@ -179,6 +180,7 @@ public class CatalogoService : ICatalogoService
         PrecioVenta = v.PrecioVenta,
         PrecioCosto = v.PrecioCosto,
         StockNoSerial = v.StockNoSerial,
+        StockMinimo = v.StockMinimo,
         Activo = true
     };
 
@@ -211,6 +213,7 @@ public class CatalogoService : ICatalogoService
                 PrecioVenta = v.PrecioVenta,
                 PrecioCosto = v.PrecioCosto,
                 StockNoSerial = v.StockNoSerial,
+                StockMinimo = v.StockMinimo,
                 Activo = v.Activo
             })
             .ToList()
@@ -227,6 +230,7 @@ public class CatalogoService : ICatalogoService
         PrecioVenta = v.PrecioVenta,
         PrecioCosto = v.PrecioCosto,
         StockNoSerial = v.StockNoSerial,
+        StockMinimo = v.StockMinimo,
         Activo = v.Activo
     };
 }
