@@ -1,250 +1,289 @@
-<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-  <div>
-    <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Dashboard</h2>
-    <p class="text-sm text-tech-steel mt-0.5">Resumen del negocio en tiempo real</p>
-  </div>
-  <div class="flex items-center gap-3">
-    <span class="flex items-center gap-1.5 text-xs text-tech-steel">
-      <span class="w-1.5 h-1.5 rounded-full bg-tech-accent" [class.animate-pulse]="refrescando()"></span>
-      Actualizado {{ ultima() | date:'HH:mm:ss' }}
-    </span>
-    <button (click)="cargar()" [disabled]="refrescando()" title="Refrescar ahora" class="w-10 h-10 grid place-items-center rounded-xl border border-tech-pastel/60 text-tech-steel hover:bg-tech-bg-light hover:text-tech-charcoal active:scale-90 transition-all disabled:opacity-50">
-      <lucide-icon name="refresh-cw" [size]="18" [class.animate-spin]="refrescando()"></lucide-icon>
-    </button>
+<div class="cmd p-5 sm:p-7">
+  <div class="scanline"></div>
+
+  <div class="relative z-10">
+    <!-- ===== Encabezado ===== -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+      <div>
+        <nav class="flex items-center gap-1.5 mb-1 text-[0.62rem] font-mono uppercase tracking-[0.15em]">
+          <span class="text-white/35">Sistema</span>
+          <lucide-icon name="chevron-right" [size]="11" class="text-white/30"></lucide-icon>
+          <span class="text-tech-accent/80">Panel · Analítica</span>
+        </nav>
+        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Inteligencia &amp; Analítica</h2>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="hidden sm:flex items-center gap-1.5 text-[0.7rem] text-white/45 font-mono">
+          <span class="w-1.5 h-1.5 rounded-full bg-tech-accent" [class.status-pulse]="refrescando()"></span>
+          {{ ultima() | date:'HH:mm:ss' }}
+        </span>
+        <div class="glass px-3.5 py-2 flex items-center gap-2">
+          <lucide-icon name="calendar" [size]="14" class="text-tech-accent"></lucide-icon>
+          <span class="text-xs text-white/80 font-mono capitalize">{{ ultima() | date:'MMM y' }}</span>
+        </div>
+        <button (click)="cargar()" [disabled]="refrescando()" title="Refrescar" class="w-9 h-9 grid place-items-center rounded-lg glass text-white/70 hover:text-tech-accent active:scale-90 transition-all disabled:opacity-50">
+          <lucide-icon name="refresh-cw" [size]="16" [class.animate-spin]="refrescando()"></lucide-icon>
+        </button>
+        <a routerLink="/reportes" class="bg-tech-accent text-tech-bg-dark px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:scale-[1.03] active:scale-95 transition-all glow">
+          <lucide-icon name="download" [size]="16"></lucide-icon> Exportar
+        </a>
+      </div>
+    </div>
+
+    @if (error()) {
+      <div class="px-4 py-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300">{{ error() }}</div>
+    }
+
+    @if (datos(); as d) {
+      <!-- ===== KPIs ===== -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+        <!-- Ingresos del mes -->
+        <div class="glass p-5">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="text-[0.62rem] font-mono uppercase tracking-wider text-white/45 mb-1">Ingresos del mes</p>
+              <h3 class="text-2xl font-bold text-white tracking-tight" [gcCountUp]="d.ventasMes.total" countPrefix="RD$ " [countDecimals]="0"></h3>
+            </div>
+            <span class="w-9 h-9 grid place-items-center rounded-lg bg-tech-accent/15 text-tech-accent"><lucide-icon name="trending-up" [size]="18"></lucide-icon></span>
+          </div>
+          <div class="h-10 w-full">
+            @if (sparklineVentas()) {
+              <svg viewBox="0 0 120 40" class="w-full h-full" preserveAspectRatio="none"><path [attr.d]="sparklineVentas()" fill="none" stroke="#00E676" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            }
+          </div>
+          <div class="flex items-center gap-1.5 mt-2 text-[0.65rem] font-mono">
+            <span class="text-tech-accent">+{{ margenMes() }}% margen</span>
+            <span class="text-white/35">· {{ d.ventasMes.cantidad }} ventas</span>
+          </div>
+        </div>
+
+        <!-- Ticket promedio -->
+        <div class="glass p-5">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="text-[0.62rem] font-mono uppercase tracking-wider text-white/45 mb-1">Ticket promedio</p>
+              <h3 class="text-2xl font-bold text-white tracking-tight" [gcCountUp]="avgTicket()" countPrefix="RD$ " [countDecimals]="0"></h3>
+            </div>
+            <span class="w-9 h-9 grid place-items-center rounded-lg bg-tech-purple/15 text-tech-purple"><lucide-icon name="receipt" [size]="18"></lucide-icon></span>
+          </div>
+          <div class="w-full bg-white/5 h-1.5 rounded-full mt-5 overflow-hidden">
+            <div class="bg-tech-accent h-full glow transition-all duration-700" [style.width.%]="margenMes()"></div>
+          </div>
+          <div class="flex items-center justify-between mt-2 text-[0.65rem] font-mono">
+            <span class="text-white/40">MARGEN</span>
+            <span class="text-tech-accent">{{ margenMes() }}%</span>
+          </div>
+        </div>
+
+        <!-- Inventario -->
+        <div class="glass p-5">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="text-[0.62rem] font-mono uppercase tracking-wider text-white/45 mb-1">Inventario</p>
+              <h3 class="text-2xl font-bold text-white tracking-tight" [gcCountUp]="inventarioTotal()"></h3>
+            </div>
+            <span class="w-9 h-9 grid place-items-center rounded-lg bg-cyan-400/15 text-cyan-300"><lucide-icon name="boxes" [size]="18"></lucide-icon></span>
+          </div>
+          <div class="flex items-center gap-2 mt-4 text-[0.65rem] font-mono text-white/45">
+            <span class="px-1.5 py-0.5 rounded bg-white/5">{{ d.inventario.equiposDisponibles | number }} equipos</span>
+            <span class="px-1.5 py-0.5 rounded bg-white/5">{{ d.inventario.accesoriosDisponibles | number }} acc.</span>
+          </div>
+          <div class="mt-2 text-[0.65rem] font-mono text-white/35">costo {{ d.inventario.valorCosto | currency: 'DOP':'RD$':'1.0-0' }}</div>
+        </div>
+
+        <!-- Caja (en vivo) -->
+        <div class="glass p-5" [class.glow]="d.caja.sesionAbierta">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="text-[0.62rem] font-mono uppercase tracking-wider text-white/45 mb-1">Caja</p>
+              @if (d.caja.sesionAbierta) {
+                <h3 class="text-2xl font-bold text-white tracking-tight" [gcCountUp]="d.caja.montoApertura + d.caja.ingresos - d.caja.egresos" countPrefix="RD$ " [countDecimals]="0"></h3>
+              } @else {
+                <h3 class="text-2xl font-bold text-white/40 tracking-tight">—</h3>
+              }
+            </div>
+            <span class="w-9 h-9 grid place-items-center rounded-lg" [class]="d.caja.sesionAbierta ? 'bg-tech-accent/15 text-tech-accent' : 'bg-white/5 text-white/40'"><lucide-icon name="wallet" [size]="18"></lucide-icon></span>
+          </div>
+          <div class="flex items-center gap-1.5 mt-5 text-[0.65rem] font-mono uppercase tracking-wider">
+            <span class="w-2 h-2 rounded-full" [class]="d.caja.sesionAbierta ? 'bg-tech-accent status-pulse' : 'bg-white/30'"></span>
+            <span [class]="d.caja.sesionAbierta ? 'text-tech-accent' : 'text-white/40'">{{ d.caja.sesionAbierta ? 'Caja abierta · en vivo' : 'Caja cerrada' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Gráficas ===== -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
+        <!-- Área: tendencia -->
+        <div class="lg:col-span-2 glass p-5 flex flex-col">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h4 class="font-semibold text-white">{{ metrica() === 'ganancia' ? 'Ganancia' : 'Ventas' }} · últimos 14 días</h4>
+              <p class="text-xs text-white/45 font-mono">Total: <span class="text-tech-accent">{{ totalPeriodo() | currency: 'DOP':'RD$':'1.0-0' }}</span></p>
+            </div>
+            <div class="flex items-center gap-1 p-1 rounded-lg bg-white/5 border border-white/10">
+              <button (click)="cambiarMetrica('total')" class="px-2.5 py-1 rounded-md text-xs font-medium transition-all" [class]="metrica() === 'total' ? 'bg-tech-accent text-tech-bg-dark' : 'text-white/50 hover:text-white'">Ventas</button>
+              <button (click)="cambiarMetrica('ganancia')" class="px-2.5 py-1 rounded-md text-xs font-medium transition-all" [class]="metrica() === 'ganancia' ? 'bg-tech-purple text-white' : 'text-white/50 hover:text-white'">Ganancia</button>
+            </div>
+          </div>
+          @if (puntos().length > 0) {
+            <div class="relative flex-1 min-h-[200px]">
+              <svg [attr.viewBox]="'0 0 ' + ancho + ' ' + alto" class="w-full drop-shadow-[0_0_10px_rgba(0,230,118,0.35)]" preserveAspectRatio="none" style="height: 220px;" (mousemove)="onMover($event)" (mouseleave)="salirHover()">
+                <defs>
+                  <linearGradient id="gradVentas" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" [attr.stop-color]="metrica() === 'ganancia' ? '#6C5CE7' : '#00E676'" stop-opacity="0.28" />
+                    <stop offset="100%" [attr.stop-color]="metrica() === 'ganancia' ? '#6C5CE7' : '#00E676'" stop-opacity="0" />
+                  </linearGradient>
+                </defs>
+                <path [attr.d]="area()" fill="url(#gradVentas)" class="chart-area" />
+                <path [attr.d]="linea()" fill="none" [attr.stroke]="metrica() === 'ganancia' ? '#6C5CE7' : '#00E676'" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" class="chart-line" />
+                @if (hoverPunto(); as hp) {
+                  <line [attr.x1]="hp.x" [attr.x2]="hp.x" y1="12" [attr.y2]="alto - 24" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="3 3" />
+                  <circle [attr.cx]="hp.x" [attr.cy]="hp.y" r="5" [attr.fill]="metrica() === 'ganancia' ? '#6C5CE7' : '#00E676'" stroke="#0e1216" stroke-width="2" />
+                }
+                @for (p of puntos(); track p.fecha) {
+                  <text [attr.x]="p.x" [attr.y]="alto - 8" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.35)">{{ diaCorto(p.fecha) }}</text>
+                }
+              </svg>
+              @if (hoverPunto(); as hp) {
+                <div class="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full px-3 py-2 rounded-xl bg-black/80 border border-white/15 text-white shadow-lg whitespace-nowrap" [style.left.%]="hoverRatio() * 100" [style.top.px]="hp.y - 10">
+                  <div class="text-[0.6rem] text-white/50 uppercase font-mono">{{ diaCorto(hp.fecha) }}</div>
+                  <div class="text-sm font-bold">{{ hp.total | currency: 'DOP':'RD$':'1.2-2' }}</div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-sm text-white/40 py-10 text-center">Sin datos en el período.</p>
+          }
+        </div>
+
+        <!-- Donut: ventas por producto -->
+        <div class="glass p-5 flex flex-col">
+          <h4 class="font-semibold text-white mb-4">Ventas por producto</h4>
+          @if (donut().length > 0) {
+            <div class="flex-1 grid place-items-center">
+              <div class="relative w-44 h-44">
+                <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" fill="transparent" stroke="rgba(255,255,255,0.06)" stroke-width="12" />
+                  @for (seg of donut(); track seg.label) {
+                    <circle cx="50" cy="50" r="40" fill="transparent" [attr.stroke]="seg.color" stroke-width="12" [attr.stroke-dasharray]="seg.dash" [attr.stroke-dashoffset]="seg.offset" />
+                  }
+                </svg>
+                @if (donutPrincipal(); as dp) {
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span class="text-2xl font-bold text-white">{{ dp.pct }}%</span>
+                    <span class="text-[0.6rem] font-mono uppercase text-white/45 max-w-[5rem] text-center truncate">{{ dp.label }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="mt-4 space-y-2">
+              @for (seg of donut(); track seg.label) {
+                <div class="flex justify-between items-center text-xs">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="w-2 h-2 rounded-full shrink-0" [style.background]="seg.color"></span>
+                    <span class="text-white/80 truncate">{{ seg.label }}</span>
+                  </div>
+                  <span class="text-white/45 font-mono shrink-0">{{ seg.pct }}%</span>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="flex-1 grid place-items-center text-sm text-white/40">Sin ventas este mes.</div>
+          }
+        </div>
+      </div>
+
+      <!-- ===== Tablas ===== -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <!-- Top vendedores -->
+        <div class="glass overflow-hidden flex flex-col">
+          <div class="p-5 border-b border-white/10 flex items-center gap-2.5">
+            <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-purple/15 text-tech-purple"><lucide-icon name="medal" [size]="16"></lucide-icon></span>
+            <div>
+              <h4 class="font-semibold text-white">Top vendedores del mes</h4>
+              <p class="text-xs text-white/45">Rendimiento por monto vendido</p>
+            </div>
+          </div>
+          @if (d.topVendedoresMes.length === 0) {
+            <p class="text-sm text-white/40 py-8 text-center">Sin ventas este mes.</p>
+          } @else {
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm min-w-[420px]">
+                <thead>
+                  <tr class="bg-white/[0.03] border-b border-white/10 text-[0.6rem] font-mono uppercase tracking-widest text-white/45">
+                    <th class="px-5 py-3">Vendedor</th>
+                    <th class="px-5 py-3">Rendimiento</th>
+                    <th class="px-5 py-3 text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (v of d.topVendedoresMes; track v.usuarioId) {
+                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                      <td class="px-5 py-3">
+                        <div class="flex items-center gap-2.5">
+                          <div class="w-8 h-8 rounded-lg bg-white/5 grid place-items-center text-xs font-bold text-tech-accent">{{ v.vendedor.charAt(0) }}</div>
+                          <div>
+                            <p class="text-white">{{ v.vendedor }}</p>
+                            <p class="text-[0.6rem] text-white/40 font-mono">{{ v.ventas }} ventas</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-5 py-3">
+                        <div class="flex items-center gap-2">
+                          <div class="w-16 bg-white/5 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-tech-accent h-full rounded-full transition-all duration-700" [style.width.%]="pct(v.total, maxVendedor())"></div>
+                          </div>
+                          <span class="text-white/70 font-mono text-xs">{{ pct(v.total, maxVendedor()) }}%</span>
+                        </div>
+                      </td>
+                      <td class="px-5 py-3 text-right text-white font-medium">{{ v.total | currency: 'DOP':'RD$':'1.0-0' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+
+        <!-- Inteligencia / alertas -->
+        <div class="glass overflow-hidden flex flex-col">
+          <div class="p-5 border-b border-white/10 flex items-center gap-2.5">
+            <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-accent/15 text-tech-accent"><lucide-icon name="wand-sparkles" [size]="16"></lucide-icon></span>
+            <div>
+              <h4 class="font-semibold text-white">Inteligencia operativa</h4>
+              <p class="text-xs text-white/45">Alertas y recomendaciones en tiempo real</p>
+            </div>
+          </div>
+          <div class="p-5 space-y-3 flex-1">
+            @for (a of alertas(); track a.titulo) {
+              <div class="bg-white/[0.04] border border-white/10 rounded-lg p-4 flex items-start gap-4"
+                   [class.opacity-70]="a.tipo === 'ok'">
+                <div class="w-11 h-11 rounded-lg grid place-items-center shrink-0"
+                     [class]="a.tipo === 'critico' ? 'bg-red-500/15 text-red-300' : a.tipo === 'info' ? 'bg-amber-500/15 text-amber-300' : 'bg-tech-accent/15 text-tech-accent'">
+                  <lucide-icon [name]="a.icono" [size]="20"></lucide-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between items-start gap-2">
+                    <h5 class="text-sm font-bold text-white">{{ a.titulo }}</h5>
+                    <span class="text-[0.55rem] font-mono uppercase font-bold px-2 py-0.5 rounded shrink-0"
+                          [class]="a.tipo === 'critico' ? 'bg-red-500/15 text-red-300' : a.tipo === 'info' ? 'bg-amber-500/15 text-amber-300' : 'bg-tech-accent/15 text-tech-accent'">
+                      {{ a.tipo === 'critico' ? 'Crítico' : a.tipo === 'info' ? 'Atención' : 'OK' }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-white/60 mt-1">{{ a.texto }}</p>
+                </div>
+              </div>
+            }
+          </div>
+          <a routerLink="/reportes" class="p-3.5 bg-tech-accent/5 border-t border-tech-accent/15 text-center text-[0.65rem] font-mono uppercase tracking-widest text-tech-accent font-bold hover:bg-tech-accent/10 transition-colors">
+            Ver reportes completos
+          </a>
+        </div>
+      </div>
+    } @else if (!error()) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        @for (i of [1,2,3,4]; track i) { <div class="glass h-[130px] animate-pulse"></div> }
+      </div>
+    }
   </div>
 </div>
-
-@if (error()) {
-  <div class="px-4 py-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500">{{ error() }}</div>
-}
-
-@if (datos(); as d) {
-  <!-- KPIs -->
-  <section class="gc-stagger grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-5">
-    <!-- Ventas hoy -->
-    <div class="kpi group flex items-center justify-between">
-      <div class="flex-1 min-w-0">
-        <div class="flex items-start justify-between mb-3">
-          <div class="icon-chip bg-tech-accent/10 text-tech-accent">
-            <lucide-icon name="trending-up" [size]="20"></lucide-icon>
-          </div>
-          <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Ventas de hoy</span>
-        </div>
-        <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.ventasHoy.total" countPrefix="RD$" [countDecimals]="2"></div>
-        <div class="text-xs text-tech-steel mt-2">{{ d.ventasHoy.cantidad }} ventas · ganancia {{ d.ventasHoy.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
-      </div>
-      @if (sparklineVentas()) {
-        <div class="w-[120px] h-[40px] shrink-0 ml-4 hidden sm:block opacity-50 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300">
-          <svg viewBox="0 0 120 40" class="w-full h-full">
-            <path [attr.d]="sparklineVentas()" fill="none" stroke="#00E676" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </div>
-      }
-    </div>
-
-    <!-- Ventas mes -->
-    <div class="kpi group flex items-center justify-between">
-      <div class="flex-1 min-w-0">
-        <div class="flex items-start justify-between mb-3">
-          <div class="icon-chip bg-tech-accent/10 text-tech-accent">
-            <lucide-icon name="bar-chart-3" [size]="20"></lucide-icon>
-          </div>
-          <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Ventas del mes</span>
-        </div>
-        <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.ventasMes.total" countPrefix="RD$" [countDecimals]="2"></div>
-        <div class="text-xs text-tech-steel mt-2">{{ d.ventasMes.cantidad }} ventas · ganancia {{ d.ventasMes.ganancia | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
-      </div>
-      @if (sparklineGanancias()) {
-        <div class="w-[120px] h-[40px] shrink-0 ml-4 hidden sm:block opacity-50 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300">
-          <svg viewBox="0 0 120 40" class="w-full h-full">
-            <path [attr.d]="sparklineGanancias()" fill="none" stroke="#6C5CE7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </div>
-      }
-    </div>
-
-    <!-- Inventario -->
-    <div class="kpi group">
-      <div class="flex items-start justify-between mb-3">
-        <div class="icon-chip bg-slate-500/10 text-slate-500">
-          <lucide-icon name="boxes" [size]="20"></lucide-icon>
-        </div>
-        <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Inventario</span>
-      </div>
-      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.inventario.equiposDisponibles + d.inventario.accesoriosDisponibles"></div>
-      <div class="text-xs text-tech-steel mt-2">{{ d.inventario.equiposDisponibles | number }} equipos · {{ d.inventario.accesoriosDisponibles | number }} accesorios · costo {{ d.inventario.valorCosto | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
-    </div>
-
-    <!-- Caja -->
-    <div class="kpi group" [ngClass]="d.caja.sesionAbierta ? 'ring-1 ring-tech-accent/40 shadow-[0_0_25px_-8px_rgba(0,230,118,0.4)]' : ''">
-      <div class="flex items-start justify-between mb-3">
-        <div class="icon-chip" [ngClass]="d.caja.sesionAbierta ? 'bg-tech-accent/10 text-tech-accent' : 'bg-slate-400/10 text-slate-400'">
-          <lucide-icon name="wallet" [size]="20"></lucide-icon>
-        </div>
-        <span class="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider"
-              [ngClass]="d.caja.sesionAbierta ? 'text-tech-accent' : 'text-tech-steel'">
-          <span class="w-1.5 h-1.5 rounded-full" [ngClass]="d.caja.sesionAbierta ? 'bg-tech-accent animate-pulse' : 'bg-tech-steel'"></span>
-          Caja {{ d.caja.sesionAbierta ? 'abierta' : 'cerrada' }}
-        </span>
-      </div>
-      @if (d.caja.sesionAbierta) {
-        <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.caja.montoApertura + d.caja.ingresos - d.caja.egresos" countPrefix="RD$"></div>
-        <div class="text-xs text-tech-steel mt-2">fondo {{ d.caja.montoApertura | currency: 'DOP' : 'RD$' : '1.0-0' }} · +{{ d.caja.ingresos | currency: 'DOP' : 'RD$' : '1.0-0' }} / -{{ d.caja.egresos | currency: 'DOP' : 'RD$' : '1.0-0' }}</div>
-      } @else {
-        <div class="text-[1.7rem] font-bold text-tech-steel/50 leading-none">—</div>
-        <div class="text-xs text-tech-steel mt-2">abre caja para vender</div>
-      }
-    </div>
-
-    <!-- Taller -->
-    <div class="kpi group">
-      <div class="flex items-start justify-between mb-3">
-        <div class="icon-chip bg-tech-purple/10 text-tech-purple">
-          <lucide-icon name="wrench" [size]="20"></lucide-icon>
-        </div>
-        <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Taller pendiente</span>
-      </div>
-      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.taller.recibidos + d.taller.enReparacion + d.taller.reparados"></div>
-      <div class="text-xs text-tech-steel mt-2">{{ d.taller.recibidos }} recibidos · {{ d.taller.enReparacion }} en reparación · {{ d.taller.reparados }} listos</div>
-    </div>
-
-    <!-- Créditos -->
-    <div class="kpi group" [ngClass]="d.creditos.cuotasVencidas > 0 ? 'ring-1 ring-red-400/40' : ''">
-      <div class="flex items-start justify-between mb-3">
-        <div class="icon-chip" [ngClass]="d.creditos.cuotasVencidas > 0 ? 'bg-red-500/10 text-red-500' : 'bg-tech-purple/10 text-tech-purple'">
-          <lucide-icon name="credit-card" [size]="20"></lucide-icon>
-        </div>
-        <span class="text-[0.7rem] font-semibold uppercase tracking-wider text-tech-steel">Créditos</span>
-      </div>
-      <div class="text-[1.7rem] font-bold text-tech-charcoal leading-none" [gcCountUp]="d.creditos.saldoPendiente" countPrefix="RD$"></div>
-      <div class="text-xs text-tech-steel mt-2">{{ d.creditos.activos }} activos · {{ d.creditos.enMora }} en mora · {{ d.creditos.cuotasVencidas }} cuotas vencidas ({{ d.creditos.montoVencido | currency: 'DOP' : 'RD$' : '1.0-0' }})</div>
-    </div>
-  </section>
-
-  <!-- Gráfica de tendencia (últimos 14 días) -->
-  <section class="panel mb-4">
-    <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-      <div class="flex items-center gap-2.5">
-        <lucide-icon name="trending-up" [size]="18" [class]="metrica() === 'ganancia' ? 'text-tech-purple' : 'text-tech-accent'"></lucide-icon>
-        <h3 class="text-base font-semibold text-tech-charcoal">{{ metrica() === 'ganancia' ? 'Ganancia' : 'Ventas' }} · últimos 14 días</h3>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="text-sm text-tech-steel">Total: <span class="font-semibold text-tech-charcoal">{{ totalPeriodo() | currency: 'DOP' : 'RD$' : '1.0-0' }}</span></span>
-        <div class="flex items-center gap-1 p-1 bg-tech-bg-light border border-tech-pastel/40 rounded-lg">
-          <button (click)="cambiarMetrica('total')" class="px-2.5 py-1 rounded-md text-xs font-medium transition-all" [class]="metrica() === 'total' ? 'bg-tech-accent text-tech-bg-dark' : 'text-tech-steel hover:text-tech-charcoal'">Ventas</button>
-          <button (click)="cambiarMetrica('ganancia')" class="px-2.5 py-1 rounded-md text-xs font-medium transition-all" [class]="metrica() === 'ganancia' ? 'bg-tech-purple text-white' : 'text-tech-steel hover:text-tech-charcoal'">Ganancia</button>
-        </div>
-      </div>
-    </div>
-
-    @if (puntos().length > 0) {
-      <div class="relative">
-        <svg [attr.viewBox]="'0 0 ' + ancho + ' ' + alto" class="w-full" preserveAspectRatio="none" style="height: 200px;" (mousemove)="onMover($event)" (mouseleave)="salirHover()">
-          <defs>
-            <linearGradient id="gradVentas" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" [attr.stop-color]="metrica() === 'ganancia' ? '#6C5CE7' : '#00E676'" stop-opacity="0.35" />
-              <stop offset="100%" [attr.stop-color]="metrica() === 'ganancia' ? '#6C5CE7' : '#00E676'" stop-opacity="0" />
-            </linearGradient>
-          </defs>
-          <!-- Área -->
-          <path [attr.d]="area()" fill="url(#gradVentas)" class="chart-area" />
-          <!-- Línea -->
-          <path [attr.d]="linea()" fill="none" [attr.stroke]="metrica() === 'ganancia' ? '#6C5CE7' : '#00E676'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" class="chart-line" />
-          <!-- Crosshair + punto activo -->
-          @if (hoverPunto(); as hp) {
-            <line [attr.x1]="hp.x" [attr.x2]="hp.x" y1="12" [attr.y2]="alto - 24" stroke="#8D9097" stroke-width="1" stroke-dasharray="3 3" />
-            <circle [attr.cx]="hp.x" [attr.cy]="hp.y" r="5" [attr.fill]="metrica() === 'ganancia' ? '#6C5CE7' : '#00E676'" stroke="white" stroke-width="2" />
-          }
-          <!-- Etiquetas de día -->
-          @for (p of puntos(); track p.fecha) {
-            <text [attr.x]="p.x" [attr.y]="alto - 8" text-anchor="middle" font-size="10" fill="#8D9097">{{ diaCorto(p.fecha) }}</text>
-          }
-        </svg>
-
-        <!-- Tooltip flotante -->
-        @if (hoverPunto(); as hp) {
-          <div class="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full px-3 py-2 rounded-xl bg-tech-bg-dark text-white shadow-lg whitespace-nowrap"
-               [style.left.%]="hoverRatio() * 100" [style.top.px]="hp.y - 10">
-            <div class="text-[0.65rem] text-white/60 uppercase tracking-wide">{{ diaCorto(hp.fecha) }}</div>
-            <div class="text-sm font-bold">{{ hp.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</div>
-          </div>
-        }
-      </div>
-    } @else {
-      <p class="text-sm text-tech-steel py-8 text-center">Sin datos en el período.</p>
-    }
-  </section>
-
-  <!-- Rankings -->
-  <section class="gc-stagger grid grid-cols-[repeat(auto-fit,minmax(330px,1fr))] gap-4">
-    <div class="panel">
-      <div class="flex items-center gap-2.5 mb-4">
-        <lucide-icon name="trophy" [size]="18" class="text-tech-accent"></lucide-icon>
-        <h3 class="text-base font-semibold text-tech-charcoal">Top productos del mes</h3>
-      </div>
-      @if (d.topProductosMes.length === 0) {
-        <p class="text-sm text-tech-steel py-4 text-center">Sin ventas este mes.</p>
-      } @else {
-        <table class="w-full text-sm border-collapse">
-          <thead>
-            <tr class="text-left text-tech-steel">
-              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Producto</th>
-              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40 text-right">Unid.</th>
-              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40 text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (p of d.topProductosMes; track p.producto) {
-              <tr class="transition-colors duration-200 hover:bg-tech-bg-light/70">
-                <td class="py-2.5 px-2 border-b border-tech-pastel/20">
-                  <div class="text-tech-charcoal font-medium">{{ p.producto }}</div>
-                  <div class="mt-1 h-1.5 rounded-full bg-tech-bg-light overflow-hidden"><div class="h-full rounded-full bg-tech-accent transition-all duration-700" [style.width.%]="pct(p.total, maxProducto())"></div></div>
-                </td>
-                <td class="py-2.5 px-2 border-b border-tech-pastel/20 text-tech-charcoal text-right align-top">{{ p.unidades | number }}</td>
-                <td class="py-2.5 px-2 border-b border-tech-pastel/20 text-tech-charcoal text-right align-top font-medium">{{ p.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </div>
-
-    <div class="panel">
-      <div class="flex items-center gap-2.5 mb-4">
-        <lucide-icon name="medal" [size]="18" class="text-tech-purple"></lucide-icon>
-        <h3 class="text-base font-semibold text-tech-charcoal">Top vendedores del mes</h3>
-      </div>
-      @if (d.topVendedoresMes.length === 0) {
-        <p class="text-sm text-tech-steel py-4 text-center">Sin ventas este mes.</p>
-      } @else {
-        <table class="w-full text-sm border-collapse">
-          <thead>
-            <tr class="text-left text-tech-steel">
-              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40">Vendedor</th>
-              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40 text-right">Ventas</th>
-              <th class="font-semibold py-2 px-2 border-b border-tech-pastel/40 text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (v of d.topVendedoresMes; track v.usuarioId) {
-              <tr class="transition-colors duration-200 hover:bg-tech-bg-light/70">
-                <td class="py-2.5 px-2 border-b border-tech-pastel/20">
-                  <div class="text-tech-charcoal font-medium">{{ v.vendedor }}</div>
-                  <div class="mt-1 h-1.5 rounded-full bg-tech-bg-light overflow-hidden"><div class="h-full rounded-full bg-tech-purple transition-all duration-700" [style.width.%]="pct(v.total, maxVendedor())"></div></div>
-                </td>
-                <td class="py-2.5 px-2 border-b border-tech-pastel/20 text-tech-charcoal text-right align-top">{{ v.ventas | number }}</td>
-                <td class="py-2.5 px-2 border-b border-tech-pastel/20 text-tech-charcoal text-right align-top font-medium">{{ v.total | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </div>
-  </section>
-} @else if (!error()) {
-  <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
-    @for (i of [1,2,3,4,5,6]; track i) {
-      <div class="kpi animate-pulse h-[120px]"></div>
-    }
-  </div>
-}
