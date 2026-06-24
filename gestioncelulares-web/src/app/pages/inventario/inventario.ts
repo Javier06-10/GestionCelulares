@@ -6,6 +6,7 @@ import { AuthService } from '../../core/auth.service';
 import { CatalogoService, Producto, Variante } from '../../core/catalogo.service';
 import { Agotado, FaltanteManual, FaltanteService } from '../../core/faltante.service';
 import { Imei, InventarioService, StockDisponible } from '../../core/inventario.service';
+import { exportarCsv } from '../../core/reporte.service';
 import { CountUpDirective } from '../../shared/count-up.directive';
 
 interface OpcionSerializada { varianteId: number; etiqueta: string; }
@@ -63,6 +64,37 @@ export class Inventario {
 
   totalEquipos = computed(() => this.stock().reduce((a, s) => a + s.disponibles, 0));
   valorVenta = computed(() => this.stock().reduce((a, s) => a + s.precioVenta * s.disponibles, 0));
+
+  // ----- Nivel de stock (barra relativa al máximo + color por umbral) -----
+  private maxDisp = computed(() => Math.max(1, ...this.stock().map(s => s.disponibles)));
+  private maxAcc = computed(() => Math.max(1, ...this.accesorios().map(a => a.variante.stockNoSerial)));
+
+  nivelDisp(n: number): number { return Math.max(6, Math.round((n / this.maxDisp()) * 100)); }
+  nivelAcc(n: number): number { return Math.max(n > 0 ? 6 : 0, Math.round((n / this.maxAcc()) * 100)); }
+
+  claseDisp(n: number): string {
+    if (n <= 2) return 'bg-red-500';
+    if (n <= 5) return 'bg-amber-500';
+    return 'bg-tech-accent';
+  }
+  claseAcc(n: number): string {
+    if (n <= 0) return 'bg-red-500';
+    if (n <= 3) return 'bg-amber-500';
+    return 'bg-tech-purple';
+  }
+
+  exportar(): void {
+    const filas: (string | number)[][] = [];
+    this.stock().forEach(s => filas.push([
+      'Dispositivo', s.producto, s.marca ?? '',
+      [s.color, s.almacenamiento, s.condicion].filter(Boolean).join(' '),
+      s.precioVenta, s.disponibles
+    ]));
+    this.accesorios().forEach(a => filas.push([
+      'Accesorio', a.nombre, '', a.detalle, a.variante.precioVenta, a.variante.stockNoSerial
+    ]));
+    exportarCsv('inventario', ['Tipo', 'Producto', 'Marca', 'Variante', 'Precio venta', 'Stock'], filas);
+  }
 
   // Búsqueda por IMEI
   imeiBuscado = signal<Imei | null>(null);
