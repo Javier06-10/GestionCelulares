@@ -61,10 +61,12 @@ export class VentaService {
     return this.http.post<Venta>(this.base, dto);
   }
 
-  buscar(desde?: string, hasta?: string) {
+  buscar(desde?: string, hasta?: string, sucursalId?: number, clienteId?: number) {
     let p = new HttpParams();
     if (desde) p = p.set('desde', desde);
     if (hasta) p = p.set('hasta', hasta);
+    if (sucursalId) p = p.set('sucursalId', sucursalId);
+    if (clienteId) p = p.set('clienteId', clienteId);
     return this.http.get<VentaResumen[]>(this.base, { params: p });
   }
 

@@ -59,10 +59,11 @@
   <span class="text-xs text-tech-steel">{{ clientesVista().length }} mostrado(s)</span>
 </div>
 
-<!-- Tabla -->
-<div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
+<!-- Tabla + panel de detalle -->
+<div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-start">
+<div class="flex-1 min-w-0 bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
   <div class="overflow-x-auto">
-    <table class="w-full text-sm border-collapse min-w-[720px]">
+    <table class="w-full text-sm border-collapse min-w-[680px]">
       <thead class="sticky top-0">
         <tr class="bg-tech-bg-light/80 backdrop-blur text-tech-steel text-left">
           <th class="font-semibold py-3 px-4">Cliente</th>
@@ -89,7 +90,8 @@
           </tr>
         } @else {
           @for (c of clientesVista(); track c.clienteId) {
-            <tr class="border-t border-tech-pastel/20 transition-colors duration-200 hover:bg-tech-bg-light/60">
+            <tr (click)="verPerfil(c)" class="border-t border-tech-pastel/20 cursor-pointer transition-colors duration-200 hover:bg-tech-bg-light/60 border-l-2"
+                [class]="clienteSel()?.clienteId === c.clienteId ? 'bg-tech-bg-light/70 border-l-tech-accent' : 'border-l-transparent'">
               <td class="py-3 px-4">
                 <div class="flex items-center gap-3">
                   <div class="w-9 h-9 rounded-full bg-gradient-to-br from-tech-accent/20 to-tech-purple/20 grid place-items-center text-tech-charcoal text-xs font-bold ring-1 ring-tech-pastel/40">
@@ -126,14 +128,19 @@
               <td class="py-3 px-4">
                 <div class="flex items-center justify-end gap-1.5">
                   <button
-                    (click)="abrirEditar(c)"
+                    (click)="verPerfil(c); $event.stopPropagation()"
+                    title="Ver perfil"
+                    class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel transition-all duration-200 hover:bg-tech-accent/10 hover:text-tech-accent active:scale-90"
+                  ><lucide-icon name="eye" [size]="16"></lucide-icon></button>
+                  <button
+                    (click)="abrirEditar(c); $event.stopPropagation()"
                     title="Editar"
                     class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel transition-all duration-200 hover:bg-tech-bg-light hover:text-tech-charcoal active:scale-90"
                   ><lucide-icon name="pencil" [size]="16"></lucide-icon></button>
 
                   @if (auth.esAdmin()) {
                     <button
-                      (click)="alternarBloqueo(c)"
+                      (click)="alternarBloqueo(c); $event.stopPropagation()"
                       [title]="c.bloqueado ? 'Desbloquear' : 'Bloquear'"
                       class="w-8 h-8 grid place-items-center rounded-lg transition-all duration-200 active:scale-90"
                       [class]="c.bloqueado ? 'text-tech-accent hover:bg-tech-accent/10' : 'text-tech-steel hover:bg-red-500/10 hover:text-red-500'"
@@ -149,6 +156,106 @@
       </tbody>
     </table>
   </div>
+</div>
+
+<!-- Panel de detalle (flyout) -->
+@if (clienteSel(); as c) {
+  <aside class="w-full lg:w-[360px] shrink-0 bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)] flex flex-col lg:sticky lg:top-4 max-h-[calc(100vh-7rem)]">
+    <!-- Cabecera -->
+    <div class="relative p-5 border-b border-tech-pastel/30 bg-gradient-to-br from-tech-accent/5 to-tech-purple/5">
+      <button (click)="cerrarPerfil()" class="absolute top-3 right-3 w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      <div class="flex flex-col items-center text-center gap-2">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-tech-accent/25 to-tech-purple/25 grid place-items-center text-tech-charcoal text-xl font-bold ring-2 ring-white">{{ c.nombre.charAt(0).toUpperCase() }}</div>
+        <div>
+          <h3 class="font-bold text-tech-charcoal">{{ c.nombre }}</h3>
+          <p class="text-xs text-tech-steel font-mono">#C-{{ c.clienteId }}</p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-1.5">
+          @if (c.bloqueado) { <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/10 text-red-500">Bloqueado</span> }
+          @else if (c.esMoroso) { <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-tech-sand/30 text-amber-700">Moroso</span> }
+          @else { <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-tech-accent/10 text-tech-accent">Al día</span> }
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold {{ nivel().clase }}"><lucide-icon [name]="nivel().icono" [size]="12"></lucide-icon> {{ nivel().label }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
+      <!-- Contacto -->
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div class="col-span-2 flex items-center gap-2 text-tech-charcoal"><lucide-icon name="phone" [size]="14" class="text-tech-steel"></lucide-icon> {{ c.telefono || '—' }}</div>
+        @if (c.cedula) { <div class="col-span-2 flex items-center gap-2 text-tech-charcoal"><lucide-icon name="hash" [size]="14" class="text-tech-steel"></lucide-icon> {{ c.cedula }}</div> }
+        @if (c.email) { <div class="col-span-2 flex items-center gap-2 text-tech-charcoal truncate"><lucide-icon name="mail" [size]="14" class="text-tech-steel"></lucide-icon> {{ c.email }}</div> }
+      </div>
+
+      <!-- Métricas reales -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="rounded-xl bg-tech-bg-light/60 p-3">
+          <div class="text-[0.62rem] font-mono uppercase tracking-wide text-tech-steel">Total comprado</div>
+          <div class="text-lg font-bold text-tech-charcoal">{{ totalComprado() | currency:'DOP':'RD$':'1.0-0' }}</div>
+        </div>
+        <div class="rounded-xl bg-tech-bg-light/60 p-3">
+          <div class="text-[0.62rem] font-mono uppercase tracking-wide text-tech-steel">Saldo crédito</div>
+          <div class="text-lg font-bold" [class]="saldoCredito() > 0 ? 'text-tech-purple' : 'text-tech-charcoal'">{{ saldoCredito() | currency:'DOP':'RD$':'1.0-0' }}</div>
+        </div>
+      </div>
+
+      @if (cargandoPerfil()) {
+        <div class="h-20 rounded-xl bg-tech-bg-light animate-pulse"></div>
+      }
+
+      <!-- Créditos activos -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="text-[0.7rem] font-bold uppercase tracking-widest text-tech-charcoal">Créditos activos</h4>
+          <lucide-icon name="credit-card" [size]="15" class="text-tech-purple"></lucide-icon>
+        </div>
+        @if (creditosActivos().length === 0) {
+          <p class="text-xs text-tech-steel">Sin créditos activos.</p>
+        } @else {
+          <div class="flex flex-col gap-2">
+            @for (cr of creditosActivos(); track cr.creditoId) {
+              <div class="p-3 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/30">
+                <div class="flex justify-between text-xs"><span class="text-tech-charcoal font-medium">{{ cr.numeroCuotas }} cuotas</span><span class="font-semibold" [class]="cr.estado === 'EnMora' ? 'text-red-500' : 'text-tech-charcoal'">{{ cr.saldo | currency:'DOP':'RD$':'1.0-0' }}</span></div>
+                <div class="h-1.5 bg-tech-bg-light rounded-full overflow-hidden mt-1.5"><div class="h-full rounded-full transition-all duration-700" [class]="cr.estado === 'EnMora' ? 'bg-red-500' : 'bg-tech-accent'" [style.width.%]="progreso(cr.montoTotal, cr.saldo)"></div></div>
+                <div class="flex justify-between text-[0.6rem] text-tech-steel mt-1"><span>{{ progreso(cr.montoTotal, cr.saldo) }}% pagado</span><span>de {{ cr.montoTotal | currency:'DOP':'RD$':'1.0-0' }}</span></div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Compras recientes -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="text-[0.7rem] font-bold uppercase tracking-widest text-tech-charcoal">Compras recientes</h4>
+          <lucide-icon name="shopping-cart" [size]="15" class="text-tech-accent"></lucide-icon>
+        </div>
+        @if (comprasCli().length === 0) {
+          <p class="text-xs text-tech-steel">Sin compras registradas.</p>
+        } @else {
+          <div class="flex flex-col gap-1.5">
+            @for (v of comprasCli().slice(0, 6); track v.ventaId) {
+              <div class="flex items-center justify-between px-3 py-2 rounded-lg bg-tech-bg-light/60" [class.opacity-50]="v.estado === 'Anulada'">
+                <div class="min-w-0">
+                  <div class="text-sm text-tech-charcoal font-mono truncate">{{ v.numeroFactura || '#' + v.ventaId }}</div>
+                  <div class="text-[0.6rem] text-tech-steel">{{ v.fecha | date:'dd/MM/yy' }}{{ v.esCredito ? ' · crédito' : '' }}</div>
+                </div>
+                <span class="text-sm font-semibold text-tech-charcoal whitespace-nowrap">{{ v.total | currency:'DOP':'RD$':'1.0-0' }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-tech-pastel/30 bg-tech-bg-light/40 flex gap-2">
+      <button (click)="abrirEditar(c)" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all"><lucide-icon name="pencil" [size]="15"></lucide-icon> Editar</button>
+      @if (saldoCredito() > 0) {
+        <a routerLink="/creditos" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-tech-purple text-white font-semibold text-sm hover:bg-tech-purple/90 active:scale-95 transition-all"><lucide-icon name="credit-card" [size]="15"></lucide-icon> Créditos</a>
+      }
+    </div>
+  </aside>
+}
 </div>
 
 <!-- Modal de formulario -->

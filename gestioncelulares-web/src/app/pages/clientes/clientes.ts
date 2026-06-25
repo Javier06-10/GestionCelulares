@@ -1,21 +1,28 @@
-import { DatePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { Cliente, ClienteService } from '../../core/cliente.service';
+import { CreditoResumen, CreditoService } from '../../core/credito.service';
+import { VentaResumen, VentaService } from '../../core/venta.service';
 import { CountUpDirective } from '../../shared/count-up.directive';
 
 type Filtro = 'todos' | 'aldia' | 'morosos' | 'bloqueados';
 
+interface Nivel { label: string; clase: string; icono: string; }
+
 @Component({
   selector: 'app-clientes',
-  imports: [ReactiveFormsModule, LucideAngularModule, DatePipe, CountUpDirective],
+  imports: [ReactiveFormsModule, LucideAngularModule, DatePipe, CurrencyPipe, RouterLink, CountUpDirective],
   templateUrl: './clientes.html'
 })
 export class Clientes {
   private fb = inject(FormBuilder);
   private servicio = inject(ClienteService);
+  private creditoSrv = inject(CreditoService);
+  private ventaSrv = inject(VentaService);
   auth = inject(AuthService);
 
   clientes = signal<Cliente[]>([]);
@@ -57,6 +64,43 @@ export class Clientes {
   });
 
   tituloModal = computed(() => (this.editando() ? 'Editar cliente' : 'Nuevo cliente'));
+
+  // ----- Perfil (panel lateral) -----
+  clienteSel = signal<Cliente | null>(null);
+  cargandoPerfil = signal(false);
+  creditosCli = signal<CreditoResumen[]>([]);
+  comprasCli = signal<VentaResumen[]>([]);
+
+  // Métricas derivadas del cliente seleccionado (datos reales)
+  totalComprado = computed(() => this.comprasCli().filter(v => v.estado !== 'Anulada').reduce((a, v) => a + v.total, 0));
+  saldoCredito = computed(() => this.creditosCli().filter(c => c.estado !== 'Saldado').reduce((a, c) => a + c.saldo, 0));
+  creditosActivos = computed(() => this.creditosCli().filter(c => c.estado !== 'Saldado'));
+
+  // Nivel del cliente derivado del total comprado (no es un programa de lealtad real)
+  nivel = computed<Nivel>(() => {
+    const t = this.totalComprado();
+    if (t >= 100000) return { label: 'Oro', clase: 'bg-amber-500/10 text-amber-600', icono: 'medal' };
+    if (t >= 25000) return { label: 'Plata', clase: 'bg-slate-400/15 text-slate-500', icono: 'medal' };
+    return { label: 'Bronce', clase: 'bg-orange-500/10 text-orange-600', icono: 'medal' };
+  });
+
+  verPerfil(c: Cliente): void {
+    this.clienteSel.set(c);
+    this.cargandoPerfil.set(true);
+    this.creditosCli.set([]);
+    this.comprasCli.set([]);
+    this.creditoSrv.buscar(c.clienteId).subscribe({ next: d => this.creditosCli.set(d) });
+    this.ventaSrv.buscar(undefined, undefined, undefined, c.clienteId).subscribe({
+      next: v => { this.comprasCli.set(v); this.cargandoPerfil.set(false); },
+      error: () => this.cargandoPerfil.set(false)
+    });
+  }
+  cerrarPerfil(): void { this.clienteSel.set(null); }
+
+  progreso(montoTotal: number, saldo: number): number {
+    if (montoTotal <= 0) return 0;
+    return Math.min(100, Math.max(0, Math.round(((montoTotal - saldo) / montoTotal) * 100)));
+  }
 
   constructor() {
     this.cargar();
