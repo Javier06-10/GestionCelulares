@@ -76,10 +76,21 @@ export class Inventario {
   nivelDisp(n: number): number { return Math.max(6, Math.round((n / this.maxDisp()) * 100)); }
   nivelAcc(n: number): number { return Math.max(n > 0 ? 6 : 0, Math.round((n / this.maxAcc()) * 100)); }
 
-  claseDisp(n: number): string {
-    if (n <= 2) return 'bg-red-500';
-    if (n <= 5) return 'bg-amber-500';
-    return 'bg-tech-accent';
+  // Estado de un dispositivo serializado según su stock mínimo configurado.
+  // En la vista vw_InventarioDisponible 'disponibles' siempre es >= 1
+  // (los que llegan a 0 caen en "agotados"), así que aquí interesa "bajo".
+  estadoDisp(disponibles: number, minimo: number): 'agotado' | 'bajo' | 'ok' {
+    if (disponibles <= 0) return 'agotado';
+    if (minimo > 0 && disponibles <= minimo) return 'bajo';
+    return 'ok';
+  }
+  claseDisp(disponibles: number, minimo: number): string {
+    const e = this.estadoDisp(disponibles, minimo);
+    return e === 'agotado' ? 'bg-red-500' : e === 'bajo' ? 'bg-amber-500' : 'bg-tech-accent';
+  }
+  textoDisp(disponibles: number, minimo: number): string {
+    const e = this.estadoDisp(disponibles, minimo);
+    return e === 'agotado' ? 'agotado' : e === 'bajo' ? 'por agotar' : '';
   }
 
   // Estado de un accesorio según su stock mínimo configurado
@@ -101,7 +112,11 @@ export class Inventario {
   porAgotar = computed<AccesorioFila[]>(() =>
     this.accesorios().filter(a => this.estadoAcc(a.variante.stockNoSerial, a.variante.stockMinimo) === 'bajo')
   );
-  porAgotarCount = computed(() => this.porAgotar().length);
+  // Dispositivos serializados próximos a agotar (unidades disponibles <= stock mínimo)
+  dispPorAgotar = computed<StockDisponible[]>(() =>
+    this.stock().filter(s => this.estadoDisp(s.disponibles, s.stockMinimo) === 'bajo')
+  );
+  porAgotarCount = computed(() => this.porAgotar().length + this.dispPorAgotar().length);
 
   exportar(): void {
     const filas: (string | number)[][] = [];

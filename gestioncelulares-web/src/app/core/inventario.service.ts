@@ -12,6 +12,7 @@ export interface StockDisponible {
   almacenamiento: string | null;
   condicion: string | null;
   precioVenta: number;
+  stockMinimo: number;
   sucursalId: number;
   disponibles: number;
 }

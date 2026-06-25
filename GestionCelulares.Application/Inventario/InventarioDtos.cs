@@ -65,6 +65,7 @@ public class InventarioDisponibleDto
     public string? Almacenamiento { get; set; }
     public string? Condicion { get; set; }
     public decimal PrecioVenta { get; set; }
+    public int StockMinimo { get; set; }
     public int SucursalId { get; set; }
     public int Disponibles { get; set; }
 }
