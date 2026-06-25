@@ -274,6 +274,7 @@ export class Inventario {
   guardandoStock = signal(false);
   errorStock = signal<string | null>(null);
   nuevoStock = signal(0);
+  nuevoMinimo = signal(0);
 
   // Modal faltante manual
   modalFalt = signal(false);
@@ -414,6 +415,7 @@ export class Inventario {
   abrirAjuste(a: AccesorioFila): void {
     this.accesorioSel.set(a);
     this.nuevoStock.set(a.variante.stockNoSerial);
+    this.nuevoMinimo.set(a.variante.stockMinimo);
     this.errorStock.set(null);
     this.modalStock.set(true);
   }
@@ -433,7 +435,7 @@ export class Inventario {
       precioVenta: v.precioVenta,
       precioCosto: v.precioCosto,
       stockNoSerial: Math.max(0, this.nuevoStock()),
-      stockMinimo: v.stockMinimo,
+      stockMinimo: Math.max(0, this.nuevoMinimo()),
       activo: v.activo
     }).subscribe({
       next: () => { this.guardandoStock.set(false); this.modalStock.set(false); this.cargarCatalogo(); this.cargarFaltantes(); },
