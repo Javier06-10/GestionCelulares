@@ -224,6 +224,32 @@
         }
       </div>
 
+      <!-- Reparaciones -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="text-[0.7rem] font-bold uppercase tracking-widest text-tech-charcoal">Reparaciones</h4>
+          <lucide-icon name="wrench" [size]="15" class="text-tech-purple"></lucide-icon>
+        </div>
+        @if (reparacionesCli().length === 0) {
+          <p class="text-xs text-tech-steel">Sin órdenes de taller.</p>
+        } @else {
+          <div class="flex flex-col gap-1.5">
+            @for (r of reparacionesCli().slice(0, 5); track r.ordenTallerId) {
+              <div class="flex items-start gap-2.5 px-3 py-2 rounded-lg bg-tech-bg-light/60">
+                <lucide-icon name="wrench" [size]="14" class="mt-0.5 shrink-0" [class]="estadoTallerClase(r.estado)"></lucide-icon>
+                <div class="min-w-0 flex-1">
+                  <div class="text-sm text-tech-charcoal truncate">{{ r.equipo || 'Equipo' }}</div>
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[0.6rem] font-semibold" [class]="estadoTallerClase(r.estado)">{{ r.estado }}</span>
+                    <span class="text-[0.6rem] text-tech-steel">{{ r.fechaRecepcion | date:'dd/MM/yy' }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
       <!-- Compras recientes -->
       <div>
         <div class="flex items-center justify-between mb-2">

@@ -6,6 +6,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { Cliente, ClienteService } from '../../core/cliente.service';
 import { CreditoResumen, CreditoService } from '../../core/credito.service';
+import { OrdenResumen, TallerService } from '../../core/taller.service';
 import { VentaResumen, VentaService } from '../../core/venta.service';
 import { CountUpDirective } from '../../shared/count-up.directive';
 
@@ -23,6 +24,7 @@ export class Clientes {
   private servicio = inject(ClienteService);
   private creditoSrv = inject(CreditoService);
   private ventaSrv = inject(VentaService);
+  private tallerSrv = inject(TallerService);
   auth = inject(AuthService);
 
   clientes = signal<Cliente[]>([]);
@@ -70,6 +72,17 @@ export class Clientes {
   cargandoPerfil = signal(false);
   creditosCli = signal<CreditoResumen[]>([]);
   comprasCli = signal<VentaResumen[]>([]);
+  reparacionesCli = signal<OrdenResumen[]>([]);
+
+  estadoTallerClase(e: string): string {
+    switch (e) {
+      case 'EnReparacion': return 'text-tech-purple';
+      case 'Reparado': return 'text-tech-accent';
+      case 'Cancelado': return 'text-red-500';
+      case 'Entregado': return 'text-tech-steel';
+      default: return 'text-amber-600';
+    }
+  }
 
   // Métricas derivadas del cliente seleccionado (datos reales)
   totalComprado = computed(() => this.comprasCli().filter(v => v.estado !== 'Anulada').reduce((a, v) => a + v.total, 0));
@@ -89,7 +102,9 @@ export class Clientes {
     this.cargandoPerfil.set(true);
     this.creditosCli.set([]);
     this.comprasCli.set([]);
+    this.reparacionesCli.set([]);
     this.creditoSrv.buscar(c.clienteId).subscribe({ next: d => this.creditosCli.set(d) });
+    this.tallerSrv.buscar(undefined, undefined, undefined, c.clienteId).subscribe({ next: r => this.reparacionesCli.set(r) });
     this.ventaSrv.buscar(undefined, undefined, undefined, c.clienteId).subscribe({
       next: v => { this.comprasCli.set(v); this.cargandoPerfil.set(false); },
       error: () => this.cargandoPerfil.set(false)
