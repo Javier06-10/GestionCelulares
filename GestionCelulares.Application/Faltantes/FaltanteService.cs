@@ -18,36 +18,62 @@ public class FaltanteService : IFaltanteService
 
     public FaltanteService(IApplicationDbContext db) => _db = db;
 
+    /// <summary>Une los rasgos no vacíos de una variante con " · " (en memoria).</summary>
+    private static string Unir(params string?[] partes)
+        => string.Join(" · ", partes.Where(p => !string.IsNullOrWhiteSpace(p)));
+
     public async Task<FaltantesResumenDto> ListarAsync()
     {
-        // Accesorios agotados (no serializados, activos, stock <= 0)
-        var accesorios = await _db.ProductoVariantes.AsNoTracking()
+        // Accesorios agotados (no serializados, activos, stock <= 0).
+        // Se proyectan los campos crudos y el texto de la variante se arma en
+        // memoria, porque EF no puede traducir string.Join dentro del Select.
+        var accesorios = (await _db.ProductoVariantes.AsNoTracking()
             .Where(v => v.Activo && v.Producto.Activo && !v.Producto.Serializado && v.StockNoSerial <= 0)
+            .Select(v => new
+            {
+                v.VarianteId,
+                Producto = v.Producto.Nombre,
+                Marca = v.Producto.Marca!.Nombre,
+                v.Color,
+                v.Almacenamiento,
+                v.StockNoSerial
+            })
+            .ToListAsync())
             .Select(v => new AgotadoDto
             {
                 Tipo = "Accesorio",
                 VarianteId = v.VarianteId,
-                Producto = v.Producto.Nombre,
-                Marca = v.Producto.Marca!.Nombre,
-                Variante = string.Join(" · ", new[] { v.Color, v.Almacenamiento }.Where(x => x != null)),
+                Producto = v.Producto,
+                Marca = v.Marca,
+                Variante = Unir(v.Color, v.Almacenamiento),
                 Stock = v.StockNoSerial
             })
-            .ToListAsync();
+            .ToList();
 
         // Dispositivos agotados (serializados, activos, sin IMEI disponible)
-        var dispositivos = await _db.ProductoVariantes.AsNoTracking()
+        var dispositivos = (await _db.ProductoVariantes.AsNoTracking()
             .Where(v => v.Activo && v.Producto.Activo && v.Producto.Serializado
                 && !_db.InventarioImeis.Any(i => i.VarianteId == v.VarianteId && i.Estado == "Disponible"))
+            .Select(v => new
+            {
+                v.VarianteId,
+                Producto = v.Producto.Nombre,
+                Marca = v.Producto.Marca!.Nombre,
+                v.Color,
+                v.Almacenamiento,
+                v.Condicion
+            })
+            .ToListAsync())
             .Select(v => new AgotadoDto
             {
                 Tipo = "Dispositivo",
                 VarianteId = v.VarianteId,
-                Producto = v.Producto.Nombre,
-                Marca = v.Producto.Marca!.Nombre,
-                Variante = string.Join(" · ", new[] { v.Color, v.Almacenamiento, v.Condicion }.Where(x => x != null)),
+                Producto = v.Producto,
+                Marca = v.Marca,
+                Variante = Unir(v.Color, v.Almacenamiento, v.Condicion),
                 Stock = 0
             })
-            .ToListAsync();
+            .ToList();
 
         var manuales = await _db.Faltantes.AsNoTracking()
             .Where(f => !f.Resuelto)
