@@ -19,6 +19,7 @@ interface FacturaData {
   ncf: string | null;
   fecha: Date;
   cliente: string | null;
+  clienteDoc: string | null;   // RNC/cédula — obligatorio en Crédito Fiscal (01)
   vendedor: string;
   esCredito: boolean;
   metodoPago: string | null;
@@ -341,6 +342,7 @@ export class Pos {
           ncf: v.ncf ?? null,
           fecha: new Date(),
           cliente: this.clienteSel()?.nombre ?? null,
+          clienteDoc: this.clienteSel()?.cedula ?? null,
           vendedor: this.auth.usuario()?.nombreCompleto ?? '',
           esCredito: this.esCredito(),
           metodoPago: this.esCredito() ? null : (metodo?.nombre ?? null),

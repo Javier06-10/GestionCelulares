@@ -12,6 +12,8 @@ public class Reporte607Dto
     public string ContenidoTxt { get; set; } = null!;      // archivo completo (cabecera + detalle)
     /// <summary>Comprobantes sin NCF válido (mientras no exista e-CF formal).</summary>
     public int SinComprobante { get; set; }
+    /// <summary>Notas de crédito (04) incluidas en el período.</summary>
+    public int NotasCredito { get; set; }
 }
 
 /// <summary>Reporte 606 (Compras de Bienes y Servicios) en formato TXT de la DGII.</summary>

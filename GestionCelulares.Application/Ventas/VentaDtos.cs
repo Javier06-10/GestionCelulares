@@ -95,4 +95,9 @@ public class AnularVentaDto
     /// <summary>Código de tipo de anulación DGII (01-09).</summary>
     [Required, StringLength(2)] public string TipoAnulacion { get; set; } = null!;
     [StringLength(200)] public string? Motivo { get; set; }
+
+    /// <summary>Si es true y la factura tiene NCF fiscal, en vez de anular el NCF
+    /// (608) se emite una Nota de Crédito (04) que referencia el original y se
+    /// reporta en el 607. Recomendado cuando el comprobante ya fue declarado.</summary>
+    public bool EmitirNotaCredito { get; set; }
 }

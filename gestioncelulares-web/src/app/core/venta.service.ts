@@ -70,7 +70,7 @@ export class VentaService {
     return this.http.get<VentaResumen[]>(this.base, { params: p });
   }
 
-  anular(id: number, dto: { tipoAnulacion: string; motivo?: string | null }) {
+  anular(id: number, dto: { tipoAnulacion: string; motivo?: string | null; emitirNotaCredito?: boolean }) {
     return this.http.post<Venta>(`${this.base}/${id}/anular`, dto);
   }
 

@@ -69,6 +69,19 @@ public class VentaService : IVentaService
         if (dto.TipoComprobante == "01" && SoloDigitos(clienteVenta?.Cedula).Length == 0)
             throw new VentaException("La Factura de Crédito Fiscal requiere un cliente con RNC o cédula.");
 
+        // Norma DGII: una Factura de Consumo (02) por RD$250,000 o más debe identificar
+        // al comprador con su RNC/Cédula. Estimamos el total (base + ITBIS) desde el detalle.
+        if (clienteVenta is null || SoloDigitos(clienteVenta.Cedula).Length == 0)
+        {
+            var baseImponible = dto.Detalles.Sum(d => d.PrecioUnitario * d.Cantidad - d.Descuento);
+            var tasaItbis = await _db.Empresas.OrderBy(e => e.EmpresaId)
+                .Select(e => e.PorcentajeItbis).FirstOrDefaultAsync();
+            var totalEstimado = baseImponible * (1 + tasaItbis / 100m);
+            if (totalEstimado >= 250000m)
+                throw new VentaException(
+                    "Las facturas por RD$250,000 o más deben identificar al cliente con RNC o cédula (Norma DGII).");
+        }
+
         // Stock suficiente para accesorios no serializados (el SP descuenta sin validar)
         foreach (var linea in dto.Detalles.Where(d => d.ImeiId is null))
         {
@@ -162,15 +175,39 @@ public class VentaService : IVentaService
 
         venta.Estado = "Anulada";
 
-        // Si tenía NCF, queda registrado como comprobante anulado (alimenta el 608)
-        if (!string.IsNullOrWhiteSpace(venta.Ncf))
+        var motivo = string.IsNullOrWhiteSpace(dto.Motivo) ? null : dto.Motivo.Trim();
+
+        if (!string.IsNullOrWhiteSpace(venta.Ncf) && dto.EmitirNotaCredito)
         {
+            // Emite una Nota de Crédito (04) que referencia el NCF original.
+            // El NCF original permanece válido (ya declarado en su 607); la NC se
+            // reporta en el 607 del período en que se emite.
+            string? ncfNota = null;
+            try { ncfNota = await _ncf.SiguienteNcfAsync("04"); } catch { /* sin rango 04: queda sin NCF */ }
+
+            _db.NotasCredito.Add(new NotaCredito
+            {
+                VentaId = venta.VentaId,
+                Ncf = ncfNota,
+                NcfModificado = venta.Ncf,
+                Fecha = venta.Fecha,
+                Monto = venta.Subtotal - venta.Descuento,
+                Itbis = venta.Impuesto,
+                Total = venta.Total,
+                Motivo = motivo,
+                UsuarioId = usuarioId,
+                FechaRegistro = DateTime.Now
+            });
+        }
+        else if (!string.IsNullOrWhiteSpace(venta.Ncf))
+        {
+            // Anulación del NCF: queda registrado como comprobante anulado (alimenta el 608)
             _db.ComprobantesAnulados.Add(new ComprobanteAnulado
             {
                 Ncf = venta.Ncf,
                 FechaComprobante = venta.Fecha,
                 TipoAnulacion = dto.TipoAnulacion,
-                Motivo = string.IsNullOrWhiteSpace(dto.Motivo) ? null : dto.Motivo.Trim(),
+                Motivo = motivo,
                 VentaId = venta.VentaId,
                 UsuarioId = usuarioId,
                 FechaRegistro = DateTime.Now

@@ -32,6 +32,7 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
     public DbSet<AbonoApartado> AbonosApartado => Set<AbonoApartado>();
     public DbSet<SecuenciaNcf> SecuenciasNcf => Set<SecuenciaNcf>();
     public DbSet<ComprobanteAnulado> ComprobantesAnulados => Set<ComprobanteAnulado>();
+    public DbSet<NotaCredito> NotasCredito => Set<NotaCredito>();
     public DbSet<PadronRnc> PadronRnc => Set<PadronRnc>();
     public DbSet<CuentaContable> CuentasContables => Set<CuentaContable>();
     public DbSet<AsientoContable> Asientos => Set<AsientoContable>();
@@ -80,6 +81,7 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<AbonoApartado>().ToTable("AbonoApartado").HasKey(e => e.AbonoApartadoId);
         mb.Entity<SecuenciaNcf>().ToTable("SecuenciaNcf").HasKey(e => e.SecuenciaNcfId);
         mb.Entity<ComprobanteAnulado>().ToTable("ComprobanteAnulado").HasKey(e => e.ComprobanteAnuladoId);
+        mb.Entity<NotaCredito>().ToTable("NotaCredito").HasKey(e => e.NotaCreditoId);
         mb.Entity<PadronRnc>().ToTable("PadronRnc").HasKey(e => e.Rnc);
         mb.Entity<CuentaContable>().ToTable("CuentaContable").HasKey(e => e.CuentaContableId);
         mb.Entity<CuentaContable>().HasOne(c => c.CuentaPadre).WithMany(c => c.Hijas).HasForeignKey(c => c.CuentaPadreId);
@@ -88,6 +90,7 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<AsientoDetalle>().HasOne(d => d.Asiento).WithMany(a => a.Detalles).HasForeignKey(d => d.AsientoContableId);
         mb.Entity<AsientoDetalle>().HasOne(d => d.Cuenta).WithMany().HasForeignKey(d => d.CuentaContableId);
         mb.Entity<ComprobanteAnulado>().HasOne(e => e.Venta).WithMany().HasForeignKey(e => e.VentaId);
+        mb.Entity<NotaCredito>().HasOne(e => e.Venta).WithMany().HasForeignKey(e => e.VentaId);
         mb.Entity<InventarioImei>().ToTable("InventarioImei").HasKey(e => e.ImeiId);
         mb.Entity<MovimientoInventario>().ToTable("MovimientoInventario").HasKey(e => e.MovimientoId);
         mb.Entity<SesionCaja>().ToTable("SesionCaja").HasKey(e => e.SesionCajaId);

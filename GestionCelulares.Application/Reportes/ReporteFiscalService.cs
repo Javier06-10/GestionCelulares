@@ -48,8 +48,24 @@ public class ReporteFiscalService : IReporteFiscalService
             })
             .ToListAsync();
 
+        // Notas de crédito (04) emitidas en el período: se reportan en el 607 con su
+        // propio NCF y el NCF modificado (el original). Se incluyen como líneas aparte.
+        var notas = await _db.NotasCredito.AsNoTracking()
+            .Where(n => n.FechaRegistro >= desde && n.FechaRegistro < hasta && n.Ncf != null)
+            .OrderBy(n => n.FechaRegistro)
+            .Select(n => new NotaLinea
+            {
+                Ncf = n.Ncf!,
+                NcfModificado = n.NcfModificado,
+                Fecha = n.FechaRegistro,
+                Monto = n.Monto,
+                Itbis = n.Itbis,
+                Cedula = n.Venta != null && n.Venta.Cliente != null ? n.Venta.Cliente.Cedula : null
+            })
+            .ToListAsync();
+
         var sb = new StringBuilder();
-        sb.Append("607|").Append(rnc).Append('|').Append(periodo).Append('|').Append(ventas.Count).Append('\n');
+        sb.Append("607|").Append(rnc).Append('|').Append(periodo).Append('|').Append(ventas.Count + notas.Count).Append('\n');
 
         decimal totalBase = 0, totalItbis = 0;
         int sinComprobante = 0;
@@ -112,14 +128,40 @@ public class ReporteFiscalService : IReporteFiscalService
               .Append('\n');
         }
 
+        foreach (var n in notas)
+        {
+            var ced = SoloDigitos(n.Cedula);
+            var tipoId = ced.Length == 9 ? "1" : ced.Length == 11 ? "2" : "";
+            // Una NC reduce el neto declarado del período
+            totalBase -= n.Monto;
+            totalItbis -= n.Itbis;
+
+            // 23 columnas: la NC lleva su NCF (04) y el NCF modificado (original)
+            sb.Append(ced).Append('|')                          // 1 RNC/Cédula
+              .Append(tipoId).Append('|')                       // 2 Tipo identificación
+              .Append(n.Ncf.Trim()).Append('|')                 // 3 NCF (04)
+              .Append((n.NcfModificado ?? "").Trim()).Append('|')// 4 NCF modificado (original)
+              .Append("01").Append('|')                         // 5 Tipo de ingreso
+              .Append(n.Fecha.ToString("yyyyMMdd")).Append('|') // 6 Fecha comprobante
+              .Append('|')                                      // 7 Fecha de retención
+              .Append(M(n.Monto)).Append('|')                   // 8 Monto facturado
+              .Append(M(n.Itbis)).Append('|')                   // 9 ITBIS facturado
+              .Append('|').Append('|').Append('|').Append('|')  // 10-13
+              .Append('|').Append('|').Append('|')              // 14-16
+              .Append('|').Append('|').Append('|').Append('|')  // 17-20 formas de pago (N/A en NC)
+              .Append('|').Append('|').Append('|')              // 21-23
+              .Append('\n');
+        }
+
         return new Reporte607Dto
         {
             Periodo = periodo,
             Rnc = rnc,
-            Cantidad = ventas.Count,
+            Cantidad = ventas.Count + notas.Count,
             TotalMontoFacturado = totalBase,
             TotalItbis = totalItbis,
             SinComprobante = sinComprobante,
+            NotasCredito = notas.Count,
             NombreArchivo = $"607{rnc}{periodo}.txt",
             ContenidoTxt = sb.ToString()
         };
@@ -274,6 +316,16 @@ public class ReporteFiscalService : IReporteFiscalService
     {
         public string Metodo { get; set; } = null!;
         public decimal Monto { get; set; }
+    }
+
+    private sealed class NotaLinea
+    {
+        public string Ncf { get; set; } = null!;
+        public string? NcfModificado { get; set; }
+        public DateTime Fecha { get; set; }
+        public decimal Monto { get; set; }
+        public decimal Itbis { get; set; }
+        public string? Cedula { get; set; }
     }
 
     private sealed class CompraLinea
