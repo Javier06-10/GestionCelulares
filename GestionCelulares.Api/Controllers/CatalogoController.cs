@@ -133,4 +133,25 @@ public class CatalogoController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    /// <summary>Genera y asigna un código de barras EAN-13 único a una variante sin código.</summary>
+    [Authorize(Roles = Roles.Admin)]
+    [HttpPost("variantes/{id:int}/generar-codigo")]
+    public async Task<IActionResult> GenerarCodigo(int id)
+    {
+        try
+        {
+            return Ok(await _catalogo.GenerarCodigoBarrasAsync(id));
+        }
+        catch (CatalogoException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>Genera código de barras para todas las variantes que no tengan uno.</summary>
+    [Authorize(Roles = Roles.Admin)]
+    [HttpPost("variantes/generar-codigos")]
+    public async Task<IActionResult> GenerarCodigosFaltantes()
+        => Ok(await _catalogo.GenerarCodigosFaltantesAsync());
 }

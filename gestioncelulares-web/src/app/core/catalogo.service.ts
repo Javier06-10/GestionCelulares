@@ -102,6 +102,16 @@ export class CatalogoService {
     return this.http.put<Variante>(`${this.base}/variantes/${varianteId}`, dto);
   }
 
+  /** Genera y asigna un código de barras EAN-13 único a una variante sin código. */
+  generarCodigo(varianteId: number) {
+    return this.http.post<Variante>(`${this.base}/variantes/${varianteId}/generar-codigo`, {});
+  }
+
+  /** Genera código de barras para todas las variantes que no tengan uno. */
+  generarCodigosFaltantes() {
+    return this.http.post<{ generados: number }>(`${this.base}/variantes/generar-codigos`, {});
+  }
+
   /** Aplana todas las variantes activas en opciones para un <select>. */
   variantesOpciones(productos: Producto[]): VarianteOpcion[] {
     const ops: VarianteOpcion[] = [];

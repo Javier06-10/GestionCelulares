@@ -88,6 +88,13 @@ public class TallerService : ITallerService
         _db.OrdenesTaller.Add(orden);
         await _db.SaveChangesAsync();
 
+        // Si la recepción no trae número, se asigna uno legible y único a partir del Id.
+        if (string.IsNullOrWhiteSpace(orden.NumeroOrden))
+        {
+            orden.NumeroOrden = "OT-" + orden.OrdenTallerId.ToString().PadLeft(6, '0');
+            await _db.SaveChangesAsync();
+        }
+
         return (await PorIdAsync(orden.OrdenTallerId))!;
     }
 

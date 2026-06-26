@@ -20,6 +20,12 @@ public interface ICatalogoService
     Task<ProductoDto> ActualizarProductoAsync(int id, ProductoActualizarDto dto);
     Task<VarianteDto> AgregarVarianteAsync(int productoId, VarianteCrearDto dto);
     Task<VarianteDto> ActualizarVarianteAsync(int varianteId, VarianteActualizarDto dto);
+
+    /// <summary>Genera y asigna un código de barras EAN-13 único a una variante que no tenga uno.</summary>
+    Task<VarianteDto> GenerarCodigoBarrasAsync(int varianteId);
+
+    /// <summary>Genera un código de barras EAN-13 para todas las variantes que no tengan uno. Devuelve cuántas se actualizaron.</summary>
+    Task<GeneracionCodigosDto> GenerarCodigosFaltantesAsync();
 }
 
 public class CatalogoService : ICatalogoService
@@ -160,6 +166,74 @@ public class CatalogoService : ICatalogoService
         await _db.SaveChangesAsync();
 
         return ProyectarVariante(variante);
+    }
+
+    public async Task<VarianteDto> GenerarCodigoBarrasAsync(int varianteId)
+    {
+        var variante = await _db.ProductoVariantes.Include(v => v.Producto)
+            .FirstOrDefaultAsync(v => v.VarianteId == varianteId)
+            ?? throw new CatalogoException("La variante no existe.");
+
+        if (variante.Producto != null && variante.Producto.Serializado)
+            throw new CatalogoException("Los dispositivos se controlan por IMEI, no por código de barras.");
+
+        if (!string.IsNullOrWhiteSpace(variante.CodigoBarras))
+            return ProyectarVariante(variante);   // ya tiene; no se sobreescribe
+
+        variante.CodigoBarras = await CodigoUnicoAsync(variante.VarianteId);
+        await _db.SaveChangesAsync();
+        return ProyectarVariante(variante);
+    }
+
+    public async Task<GeneracionCodigosDto> GenerarCodigosFaltantesAsync()
+    {
+        // Solo accesorios (no serializados): los dispositivos se rastrean por IMEI.
+        var sinCodigo = await _db.ProductoVariantes
+            .Where(v => (v.CodigoBarras == null || v.CodigoBarras == "")
+                        && v.Producto != null && !v.Producto.Serializado)
+            .ToListAsync();
+
+        foreach (var v in sinCodigo)
+            v.CodigoBarras = await CodigoUnicoAsync(v.VarianteId);
+
+        if (sinCodigo.Count > 0)
+            await _db.SaveChangesAsync();
+
+        return new GeneracionCodigosDto { Generados = sinCodigo.Count };
+    }
+
+    // Construye un EAN-13 determinístico a partir del VarianteId (prefijo "2" de uso
+    // interno). Si por algún motivo colisiona, avanza con un sufijo hasta hallar uno libre.
+    private async Task<string> CodigoUnicoAsync(int varianteId)
+    {
+        long semilla = varianteId;
+        for (int intento = 0; intento < 1000; intento++)
+        {
+            var codigo = Ean13DesdeSemilla(semilla + intento * 100000L);
+            if (!await _db.ProductoVariantes.AnyAsync(v => v.CodigoBarras == codigo))
+                return codigo;
+        }
+        throw new CatalogoException("No se pudo generar un código de barras único.");
+    }
+
+    // EAN-13: 12 dígitos de datos + 1 dígito verificador. Prefijo "2" (rango reservado
+    // a numeración interna del comercio) seguido del relleno de la semilla.
+    private static string Ean13DesdeSemilla(long semilla)
+    {
+        var base12 = "2" + (semilla % 100000000000L).ToString().PadLeft(11, '0');
+        return base12 + DigitoVerificadorEan13(base12);
+    }
+
+    private static char DigitoVerificadorEan13(string base12)
+    {
+        int suma = 0;
+        for (int i = 0; i < 12; i++)
+        {
+            int d = base12[i] - '0';
+            suma += (i % 2 == 0) ? d : d * 3;   // posiciones impares (1-based) ×1, pares ×3
+        }
+        int verificador = (10 - (suma % 10)) % 10;
+        return (char)('0' + verificador);
     }
 
     private async Task ValidarReferenciasAsync(int? marcaId, int? categoriaId)

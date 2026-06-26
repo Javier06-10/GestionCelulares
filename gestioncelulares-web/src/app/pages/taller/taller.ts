@@ -4,10 +4,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { Cliente } from '../../core/cliente.service';
+import { FacturaConfigService } from '../../core/factura-config.service';
 import { SoundService } from '../../core/sound.service';
 import { ComisionTecnico, Orden, OrdenResumen, TallerService } from '../../core/taller.service';
 import { Usuario, UsuarioService } from '../../core/usuario.service';
 import { MetodoPago, VentaService } from '../../core/venta.service';
+import { BarcodeComponent } from '../../shared/barcode.component';
 import { ClienteSelector } from '../../shared/cliente-selector/cliente-selector';
 import { CountUpDirective } from '../../shared/count-up.directive';
 
@@ -15,7 +17,7 @@ interface Columna { estado: string; titulo: string; color: string; }
 
 @Component({
   selector: 'app-taller',
-  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe, ClienteSelector, CountUpDirective],
+  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe, ClienteSelector, CountUpDirective, BarcodeComponent],
   templateUrl: './taller.html'
 })
 export class Taller {
@@ -24,7 +26,20 @@ export class Taller {
   private usuarios = inject(UsuarioService);
   private ventas = inject(VentaService);
   private sound = inject(SoundService);
+  private facturaCfg = inject(FacturaConfigService);
   auth = inject(AuthService);
+
+  // Datos del negocio para el encabezado del ticket
+  cfg = this.facturaCfg.config;
+
+  // Imprime el ticket de recepción de la orden en el detalle abierto
+  imprimirTicket(): void {
+    setTimeout(() => window.print(), 50);
+  }
+
+  numeroTicket(o: Orden): string {
+    return o.numeroOrden || ('OT-' + String(o.ordenTallerId).padStart(6, '0'));
+  }
 
   ordenes = signal<OrdenResumen[]>([]);
   cargando = signal(false);

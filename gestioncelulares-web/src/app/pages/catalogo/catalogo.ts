@@ -5,13 +5,14 @@ import { LucideAngularModule } from 'lucide-angular';
 import {
   CatalogoService, Categoria, Marca, Producto, Variante
 } from '../../core/catalogo.service';
+import { BarcodeComponent } from '../../shared/barcode.component';
 import { CountUpDirective } from '../../shared/count-up.directive';
 
 type FiltroTipo = 'todos' | 'dispositivo' | 'accesorio';
 
 @Component({
   selector: 'app-catalogo',
-  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, CountUpDirective],
+  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, CountUpDirective, BarcodeComponent],
   templateUrl: './catalogo.html'
 })
 export class Catalogo {
@@ -88,6 +89,44 @@ export class Catalogo {
   modalCatalogos = signal(false);
   nuevaMarca = signal('');
   nuevaCategoria = signal('');
+
+  // Generación de códigos de barras
+  generandoCodigos = signal(false);
+  generandoVarianteId = signal<number | null>(null);
+  mensajeCodigos = signal<string | null>(null);
+
+  // Accesorios sin código de barras (solo no serializados)
+  accesoriosSinCodigo = computed(() =>
+    this.productos().filter(p => !p.serializado)
+      .reduce((a, p) => a + p.variantes.filter(v => !v.codigoBarras).length, 0)
+  );
+
+  /** Genera el código que falta en todo el catálogo (accesorios). */
+  generarCodigosFaltantes(): void {
+    if (this.generandoCodigos()) return;
+    this.generandoCodigos.set(true);
+    this.mensajeCodigos.set(null);
+    this.servicio.generarCodigosFaltantes().subscribe({
+      next: r => {
+        this.generandoCodigos.set(false);
+        this.mensajeCodigos.set(r.generados > 0
+          ? `Se generaron ${r.generados} código(s) de barras.`
+          : 'Todos los accesorios ya tienen código.');
+        if (r.generados > 0) this.cargar();
+      },
+      error: () => { this.generandoCodigos.set(false); this.mensajeCodigos.set('No se pudieron generar los códigos.'); }
+    });
+  }
+
+  /** Genera el código de una variante (accesorio) puntual. */
+  generarCodigoVariante(p: Producto, vr: Variante): void {
+    if (this.generandoVarianteId()) return;
+    this.generandoVarianteId.set(vr.varianteId);
+    this.servicio.generarCodigo(vr.varianteId).subscribe({
+      next: () => { this.generandoVarianteId.set(null); const pid = p.productoId; this.cargar(); this.expandido.set(pid); },
+      error: () => this.generandoVarianteId.set(null)
+    });
+  }
 
   constructor() {
     this.cargar();

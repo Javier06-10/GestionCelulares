@@ -185,15 +185,18 @@ tbody tr:nth-child(n+8) { animation-delay: 0.22s; }
   }
 }
 
-/* ===== Factura imprimible ===== */
-.factura-print {
+/* ===== Factura / Ticket imprimibles ===== */
+.factura-print,
+.ticket-print {
   display: none;
 }
-.factura-print .sep {
+.factura-print .sep,
+.ticket-print .sep {
   border-top: 1px dashed #000;
   margin: 4px 0;
 }
-.factura-print .fila {
+.factura-print .fila,
+.ticket-print .fila {
   display: flex;
   justify-content: space-between;
   gap: 8px;
@@ -205,10 +208,13 @@ tbody tr:nth-child(n+8) { animation-delay: 0.22s; }
     visibility: hidden;
   }
   #factura-print,
-  #factura-print * {
+  #factura-print *,
+  #ticket-print,
+  #ticket-print * {
     visibility: visible;
   }
-  #factura-print {
+  #factura-print,
+  #ticket-print {
     display: block !important;
     position: absolute;
     left: 0;

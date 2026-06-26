@@ -80,6 +80,12 @@ public class VarianteDto
     public bool Activo { get; set; }
 }
 
+/// <summary>Resultado de la generación masiva de códigos de barras.</summary>
+public class GeneracionCodigosDto
+{
+    public int Generados { get; set; }
+}
+
 public class ProductoDto
 {
     public int ProductoId { get; set; }

@@ -89,7 +89,13 @@
           </div>
           <span class="text-xs text-tech-steel">{{ o.numeroOrden || 'Orden #' + o.ordenTallerId }}{{ o.cliente ? ' · ' + o.cliente : '' }}</span>
         </div>
-        <button (click)="cerrarDetalle()" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+        <div class="flex items-center gap-1.5">
+          <button (click)="imprimirTicket()" title="Imprimir ticket de recepción"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-tech-pastel/60 text-tech-charcoal text-sm font-medium hover:bg-tech-bg-light active:scale-95 transition-all">
+            <lucide-icon name="printer" [size]="16"></lucide-icon> Ticket
+          </button>
+          <button (click)="cerrarDetalle()" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+        </div>
       </div>
 
       <div class="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
@@ -181,6 +187,48 @@
         </div>
       }
     </div>
+  </div>
+
+  <!-- ===== Ticket de recepción imprimible (oculto en pantalla) ===== -->
+  <div id="ticket-print" class="ticket-print">
+    <div style="text-align:center;">
+      <div style="font-weight:bold; font-size:14px;">{{ cfg().nombreComercial }}</div>
+      @if (cfg().rnc) { <div>RNC: {{ cfg().rnc }}</div> }
+      @if (cfg().direccion) { <div>{{ cfg().direccion }}</div> }
+      @if (cfg().telefono) { <div>Tel: {{ cfg().telefono }}</div> }
+    </div>
+    <div class="sep"></div>
+    <div style="text-align:center; font-weight:bold;">RECIBO DE EQUIPO EN REPARACIÓN</div>
+    <div style="text-align:center; margin:4px 0;">
+      <app-barcode [value]="numeroTicket(o)" [alto]="42" [modulo]="2"></app-barcode>
+      <div style="font-family:monospace; letter-spacing:2px;">{{ numeroTicket(o) }}</div>
+    </div>
+    <div class="sep"></div>
+    <div class="fila"><span>Fecha</span><span>{{ o.fechaRecepcion | date: 'dd/MM/yy HH:mm' }}</span></div>
+    @if (o.cliente) { <div class="fila"><span>Cliente</span><span>{{ o.cliente }}</span></div> }
+    <div class="fila"><span>Equipo</span><span>{{ o.equipoDescripcion || o.imei || '—' }}</span></div>
+    @if (o.imei) { <div class="fila"><span>IMEI</span><span>{{ o.imei }}</span></div> }
+    @if (o.tecnico) { <div class="fila"><span>Técnico</span><span>{{ o.tecnico }}</span></div> }
+    @if (o.diagnostico) {
+      <div class="sep"></div>
+      <div style="font-weight:bold;">Falla reportada:</div>
+      <div>{{ o.diagnostico }}</div>
+    }
+    <div class="sep"></div>
+    <div class="fila"><span>Costo estimado</span><span>{{ o.costoEstimado | currency: 'DOP' : 'RD$' : '1.2-2' }}</span></div>
+    @if (o.anticipo > 0) {
+      <div class="fila"><span>Anticipo</span><span>{{ o.anticipo | currency: 'DOP' : 'RD$' : '1.2-2' }}</span></div>
+      <div class="fila" style="font-weight:bold;"><span>Saldo estimado</span><span>{{ (o.costoEstimado - o.anticipo) | currency: 'DOP' : 'RD$' : '1.2-2' }}</span></div>
+    }
+    @if (o.recibidoPor) { <div class="fila"><span>Recibió</span><span>{{ o.recibidoPor }}</span></div> }
+    <div class="sep"></div>
+    <div style="font-size:9px; line-height:1.3;">
+      Presente este ticket para retirar su equipo. El costo estimado puede variar según el
+      diagnóstico final. Pasados 30 días sin retirar el equipo, el establecimiento no se hace
+      responsable por su almacenamiento.
+    </div>
+    <div style="margin-top:18px; text-align:center;">_______________________<br/>Firma del cliente</div>
+    @if (cfg().mensajePie) { <div style="text-align:center; margin-top:8px;">{{ cfg().mensajePie }}</div> }
   </div>
 }
 

@@ -5,6 +5,14 @@
     <p class="text-sm text-tech-steel mt-0.5">{{ productos().length }} producto(s)</p>
   </div>
   <div class="flex items-center gap-2">
+    <button (click)="generarCodigosFaltantes()" [disabled]="generandoCodigos()"
+      title="Genera un código de barras EAN-13 a los accesorios que no tienen"
+      class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm transition-all hover:bg-tech-bg-light active:scale-95 disabled:opacity-50">
+      @if (generandoCodigos()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> }
+      @else { <lucide-icon name="scan-line" [size]="16"></lucide-icon> }
+      Generar códigos
+      @if (accesoriosSinCodigo() > 0) { <span class="px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-600 text-[0.65rem] font-bold">{{ accesoriosSinCodigo() }}</span> }
+    </button>
     <button (click)="modalCatalogos.set(true)"
       class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm transition-all hover:bg-tech-bg-light active:scale-95">
       <lucide-icon name="bookmark" [size]="16"></lucide-icon> Marcas y categorías
@@ -15,6 +23,14 @@
     </button>
   </div>
 </div>
+
+@if (mensajeCodigos(); as msg) {
+  <div class="mb-4 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-tech-accent/10 border border-tech-accent/30 text-emerald-700 text-sm">
+    <lucide-icon name="circle-check" [size]="16"></lucide-icon>
+    <span>{{ msg }}</span>
+    <button (click)="mensajeCodigos.set(null)" class="ml-auto w-6 h-6 grid place-items-center rounded-lg hover:bg-tech-accent/10 active:scale-90 transition-all"><lucide-icon name="x" [size]="14"></lucide-icon></button>
+  </div>
+}
 
 <!-- KPIs -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
@@ -172,6 +188,22 @@
                               <span class="text-[0.6rem] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-slate-200 text-slate-500">Inactiva</span>
                             }
                           </div>
+                          <!-- Código de barras (solo accesorios) -->
+                          @if (!p.serializado) {
+                            @if (vr.codigoBarras) {
+                              <div class="mt-2 inline-flex flex-col items-start gap-0.5">
+                                <app-barcode [value]="vr.codigoBarras" [alto]="34" [modulo]="1.6"></app-barcode>
+                                <span class="font-mono text-[0.65rem] tracking-[0.2em] text-tech-steel">{{ vr.codigoBarras }}</span>
+                              </div>
+                            } @else {
+                              <button (click)="generarCodigoVariante(p, vr)" [disabled]="generandoVarianteId() === vr.varianteId"
+                                class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-dashed border-tech-pastel/60 text-tech-steel text-xs font-medium hover:border-tech-accent/60 hover:text-tech-accent active:scale-95 transition-all disabled:opacity-50">
+                                @if (generandoVarianteId() === vr.varianteId) { <lucide-icon name="loader" [size]="13" class="animate-spin"></lucide-icon> }
+                                @else { <lucide-icon name="scan-line" [size]="13"></lucide-icon> }
+                                Generar código
+                              </button>
+                            }
+                          }
                         </td>
                         <td class="py-2 px-2 text-right text-tech-steel">{{ vr.precioCosto | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
                         <td class="py-2 px-2 text-right font-semibold text-tech-charcoal">{{ vr.precioVenta | currency: 'DOP' : 'RD$' : '1.2-2' }}</td>
