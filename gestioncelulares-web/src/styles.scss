@@ -203,7 +203,19 @@ tbody tr:nth-child(n+8) { animation-delay: 0.22s; }
 }
 
 @media print {
-  /* Ocultar todo y mostrar solo la factura */
+  /* Rollo térmico de 80mm: ancho fijo y alto automático = corta justo donde
+     termina el contenido, sin expulsar papel en blanco. */
+  @page gc-rollo {
+    size: 80mm auto;
+    margin: 0;
+  }
+  /* Documentos contables en hoja carta. */
+  @page gc-carta {
+    size: letter;
+    margin: 12mm;
+  }
+
+  /* Ocultar todo y mostrar solo el documento imprimible */
   body * {
     visibility: hidden;
   }
@@ -215,16 +227,19 @@ tbody tr:nth-child(n+8) { animation-delay: 0.22s; }
   }
   #factura-print,
   #ticket-print {
+    page: gc-rollo;
     display: block !important;
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
-    padding: 6px;
+    width: 80mm;
+    box-sizing: border-box;
+    padding: 2mm 3mm 4mm;
+    margin: 0;
     color: #000;
     font-family: 'Courier New', monospace;
     font-size: 11px;
-    line-height: 1.35;
+    line-height: 1.25;
   }
   .no-print {
     display: none !important;
@@ -236,11 +251,12 @@ tbody tr:nth-child(n+8) { animation-delay: 0.22s; }
     visibility: visible;
   }
   #estado-print {
+    page: gc-carta;
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
-    padding: 8px 16px;
+    padding: 0;
     color: #000;
   }
 }

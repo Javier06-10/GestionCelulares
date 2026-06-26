@@ -11,7 +11,8 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   template: `
     @if (barras().length) {
       <svg [attr.viewBox]="'0 0 ' + ancho() + ' ' + alto()" preserveAspectRatio="none"
-           [style.width.px]="ancho()" [style.height.px]="alto()" shape-rendering="crispEdges"
+           [style.width]="fit() ? '100%' : ancho() + 'px'" [style.height.px]="alto()" [style.display]="'block'"
+           [style.maxWidth.px]="ancho()" shape-rendering="crispEdges"
            xmlns="http://www.w3.org/2000/svg" role="img" [attr.aria-label]="'Código ' + value()">
         <rect [attr.width]="ancho()" [attr.height]="alto()" fill="#ffffff"></rect>
         @for (b of barras(); track $index) {
@@ -28,6 +29,8 @@ export class BarcodeComponent {
   modulo = input<number>(2);
   /** Alto del código en px. */
   alto = input<number>(56);
+  /** Si es true, el SVG ocupa el ancho del contenedor (sin exceder su ancho natural). */
+  fit = input<boolean>(false);
 
   // Patrón Code39: 9 elementos por carácter (barra/espacio alternados), n=angosto w=ancho
   private static readonly TABLA: Record<string, string> = {

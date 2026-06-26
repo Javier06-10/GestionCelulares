@@ -199,8 +199,8 @@
     </div>
     <div class="sep"></div>
     <div style="text-align:center; font-weight:bold;">RECIBO DE EQUIPO EN REPARACIÓN</div>
-    <div style="text-align:center; margin:4px 0;">
-      <app-barcode [value]="numeroTicket(o)" [alto]="42" [modulo]="2"></app-barcode>
+    <div style="text-align:center; margin:3px 0;">
+      <app-barcode [value]="numeroTicket(o)" [alto]="40" [modulo]="2" [fit]="true"></app-barcode>
       <div style="font-family:monospace; letter-spacing:2px;">{{ numeroTicket(o) }}</div>
     </div>
     <div class="sep"></div>
@@ -227,8 +227,8 @@
       diagnóstico final. Pasados 30 días sin retirar el equipo, el establecimiento no se hace
       responsable por su almacenamiento.
     </div>
-    <div style="margin-top:18px; text-align:center;">_______________________<br/>Firma del cliente</div>
-    @if (cfg().mensajePie) { <div style="text-align:center; margin-top:8px;">{{ cfg().mensajePie }}</div> }
+    <div style="margin-top:12px; text-align:center;">_______________________<br/>Firma del cliente</div>
+    @if (cfg().mensajePie) { <div style="text-align:center; margin-top:6px;">{{ cfg().mensajePie }}</div> }
   </div>
 }
 
