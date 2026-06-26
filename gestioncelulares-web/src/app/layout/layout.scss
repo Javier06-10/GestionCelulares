@@ -8,6 +8,11 @@
   grid-template-columns: 76px 1fr;
 }
 
+/* Modo kiosko: una sola columna, el contenido ocupa todo el monitor */
+.shell.kiosko {
+  grid-template-columns: 1fr;
+}
+
 .sidebar {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

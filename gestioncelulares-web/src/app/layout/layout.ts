@@ -5,6 +5,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../core/auth.service';
 import { SoundService } from '../core/sound.service';
+import { UiService } from '../core/ui.service';
 import { routeFade } from '../shared/animations';
 
 interface ItemMenu {
@@ -33,6 +34,7 @@ const CLAVE_EXPANDIDOS = 'gc_sidebar_expandidos';
 export class Layout {
   auth = inject(AuthService);
   sound = inject(SoundService);
+  ui = inject(UiService);
   private router = inject(Router);
 
   colapsado = signal(localStorage.getItem(CLAVE_COLAPSADO) === '1');

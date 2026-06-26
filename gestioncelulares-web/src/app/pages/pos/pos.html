@@ -22,12 +22,20 @@
           <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Punto de venta</h2>
           <p class="text-sm text-tech-steel mt-0.5">Escanea un IMEI o elige un accesorio</p>
         </div>
-        @if (auth.esAdmin()) {
-          <button (click)="abrirConfig()" title="Configurar factura"
-            class="flex items-center gap-2 px-3 py-2 rounded-xl border border-tech-pastel/60 text-tech-charcoal text-sm font-medium transition-all hover:bg-tech-bg-light active:scale-95">
-            <lucide-icon name="sliders-horizontal" [size]="16"></lucide-icon> Factura
+        <div class="flex items-center gap-2">
+          <button (click)="ui.alternar()" [title]="ui.kiosko() ? 'Salir de pantalla completa' : 'Pantalla completa'"
+            class="flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all active:scale-95"
+            [class]="ui.kiosko() ? 'border-tech-accent/50 bg-tech-accent/10 text-emerald-700' : 'border-tech-pastel/60 text-tech-charcoal hover:bg-tech-bg-light'">
+            <lucide-icon [name]="ui.kiosko() ? 'minimize' : 'maximize'" [size]="16"></lucide-icon>
+            {{ ui.kiosko() ? 'Salir' : 'Pantalla completa' }}
           </button>
-        }
+          @if (auth.esAdmin()) {
+            <button (click)="abrirConfig()" title="Configurar factura"
+              class="flex items-center gap-2 px-3 py-2 rounded-xl border border-tech-pastel/60 text-tech-charcoal text-sm font-medium transition-all hover:bg-tech-bg-light active:scale-95">
+              <lucide-icon name="sliders-horizontal" [size]="16"></lucide-icon> Factura
+            </button>
+          }
+        </div>
       </div>
 
       <!-- Escaneo IMEI -->

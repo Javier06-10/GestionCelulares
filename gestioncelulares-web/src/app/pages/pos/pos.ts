@@ -1,5 +1,5 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, computed, inject, signal, HostListener } from '@angular/core';
+import { Component, computed, inject, signal, HostListener, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -11,6 +11,7 @@ import { CatalogoService, Producto } from '../../core/catalogo.service';
 import { Cliente } from '../../core/cliente.service';
 import { FacturaConfig, FacturaConfigService } from '../../core/factura-config.service';
 import { InventarioService, StockDisponible } from '../../core/inventario.service';
+import { UiService } from '../../core/ui.service';
 import { MetodoPago, SecuenciaFactura, VentaService } from '../../core/venta.service';
 import { ClienteSelector } from '../../shared/cliente-selector/cliente-selector';
 
@@ -49,14 +50,20 @@ const ITBIS = 0.18; // 18% — coincide con Empresa.PorcentajeItbis; el total fi
   imports: [FormsModule, RouterLink, LucideAngularModule, CurrencyPipe, DatePipe, ClienteSelector],
   templateUrl: './pos.html'
 })
-export class Pos {
+export class Pos implements OnDestroy {
   private inventario = inject(InventarioService);
   private catalogo = inject(CatalogoService);
   private caja = inject(CajaService);
   private ventas = inject(VentaService);
   private sound = inject(SoundService);
   private fly = inject(FlyToCartService);
+  ui = inject(UiService);
   auth = inject(AuthService);
+
+  /** Al salir del POS se abandona el modo kiosko para no dejar la app sin menú. */
+  ngOnDestroy(): void {
+    if (this.ui.kiosko()) this.ui.salir();
+  }
 
   /** Dispara la animación "volar al carrito" desde el botón clicado. */
   volar(ev: Event): void {

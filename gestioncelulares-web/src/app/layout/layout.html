@@ -1,5 +1,6 @@
-<div class="shell h-screen overflow-hidden bg-tech-bg-light" [class.colapsado]="colapsado()">
-  <!-- Sidebar -->
+<div class="shell h-screen overflow-hidden bg-tech-bg-light" [class.colapsado]="colapsado()" [class.kiosko]="ui.kiosko()">
+  <!-- Sidebar (oculto en modo kiosko) -->
+  @if (!ui.kiosko()) {
   <aside class="sidebar relative bg-tech-bg-dark text-tech-pastel flex flex-col py-5 overflow-hidden">
     <!-- Glow ambiental -->
     <div class="pointer-events-none absolute -top-24 -left-16 w-64 h-64 rounded-full bg-tech-accent/10 blur-[90px]"></div>
@@ -111,9 +112,11 @@
       }
     </div>
   </aside>
+  }
 
   <!-- Contenido -->
   <div class="flex flex-col min-w-0 min-h-0">
+    @if (!ui.kiosko()) {
     <header class="shrink-0 z-10 bg-tech-card-light/80 backdrop-blur-md border-b border-tech-pastel/40 px-7 py-3.5 flex justify-between items-center">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 grid place-items-center rounded-xl bg-gradient-to-br from-tech-accent/15 to-tech-purple/15">
@@ -144,8 +147,9 @@
         </button>
       </div>
     </header>
+    }
 
-    <main class="flex-1 min-h-0 overflow-y-auto p-7">
+    <main class="flex-1 min-h-0 overflow-y-auto" [class.p-7]="!ui.kiosko()" [class.p-4]="ui.kiosko()">
       <div [@routeFade]="seccionActual().etiqueta">
         <router-outlet />
       </div>
