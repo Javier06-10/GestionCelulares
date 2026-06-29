@@ -9,6 +9,8 @@ public interface ICajaService
 {
     Task<SesionCajaDto> AbrirAsync(AperturaCajaDto dto, int usuarioId);
     Task<SesionCajaDto?> SesionActualAsync(int sucursalId);
+    /// <summary>Sesión de caja abierta del propio usuario (para impedir cerrar sesión con caja abierta).</summary>
+    Task<SesionCajaDto?> MiSesionAbiertaAsync(int usuarioId);
     Task<SesionCajaDto?> PorIdAsync(int id);
     Task<IReadOnlyList<MovimientoCajaDto>> MovimientosAsync(int sesionCajaId);
     Task<MovimientoCajaDto> RegistrarMovimientoAsync(int sesionCajaId, MovimientoCajaRegistroDto dto);
@@ -59,6 +61,16 @@ public class CajaService : ICajaService
     {
         var id = await _db.SesionesCaja
             .Where(s => s.SucursalId == sucursalId && s.Estado == "Abierta")
+            .Select(s => (int?)s.SesionCajaId)
+            .FirstOrDefaultAsync();
+
+        return id is null ? null : await PorIdAsync(id.Value);
+    }
+
+    public async Task<SesionCajaDto?> MiSesionAbiertaAsync(int usuarioId)
+    {
+        var id = await _db.SesionesCaja
+            .Where(s => s.UsuarioApertura == usuarioId && s.Estado == "Abierta")
             .Select(s => (int?)s.SesionCajaId)
             .FirstOrDefaultAsync();
 

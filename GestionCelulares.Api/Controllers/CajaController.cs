@@ -46,6 +46,15 @@ public class CajaController : ControllerBase
             : Ok(sesion);
     }
 
+    /// <summary>Caja abierta del usuario autenticado (null si no tiene). Se usa para
+    /// impedir cerrar sesión con la caja abierta.</summary>
+    [HttpGet("mia")]
+    public async Task<IActionResult> Mia()
+    {
+        if (UsuarioId is null) return Unauthorized();
+        return Ok(await _caja.MiSesionAbiertaAsync(UsuarioId.Value));
+    }
+
     /// <summary>Consulta una sesión de caja con sus totales de ingresos y egresos.</summary>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> PorId(int id)

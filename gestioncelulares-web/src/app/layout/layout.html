@@ -139,10 +139,15 @@
         </button>
 
         <button
-          (click)="auth.logout()"
-          class="group flex items-center gap-2 border border-tech-pastel/60 bg-tech-card-light rounded-xl px-4 py-2 text-sm font-medium text-tech-charcoal transition-all duration-300 ease-out hover:bg-tech-bg-light hover:border-tech-steel/50 active:scale-95"
+          (click)="intentarCerrarSesion()"
+          [disabled]="verificandoCaja()"
+          class="group flex items-center gap-2 border border-tech-pastel/60 bg-tech-card-light rounded-xl px-4 py-2 text-sm font-medium text-tech-charcoal transition-all duration-300 ease-out hover:bg-tech-bg-light hover:border-tech-steel/50 active:scale-95 disabled:opacity-60"
         >
-          <lucide-icon name="log-out" [size]="16" class="text-tech-steel transition-colors group-hover:text-red-500"></lucide-icon>
+          @if (verificandoCaja()) {
+            <lucide-icon name="loader" [size]="16" class="text-tech-steel animate-spin"></lucide-icon>
+          } @else {
+            <lucide-icon name="log-out" [size]="16" class="text-tech-steel transition-colors group-hover:text-red-500"></lucide-icon>
+          }
           Salir
         </button>
       </div>
@@ -156,3 +161,30 @@
     </main>
   </div>
 </div>
+
+<!-- Aviso: no se puede cerrar sesión con la caja abierta -->
+@if (cajaAbiertaBloqueo(); as sesion) {
+  <div class="fixed inset-0 z-[60] grid place-items-center p-4 bg-tech-bg-dark/55 backdrop-blur-sm" (click)="cajaAbiertaBloqueo.set(null)">
+    <div (click)="$event.stopPropagation()" class="w-[min(420px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="px-6 pt-6 pb-4 text-center">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/15 grid place-items-center mb-3">
+          <lucide-icon name="lock-keyhole" [size]="28" class="text-amber-600"></lucide-icon>
+        </div>
+        <h3 class="font-bold text-tech-charcoal text-lg">Tienes una caja abierta</h3>
+        <p class="text-sm text-tech-steel mt-1.5">
+          Debes cerrar tu caja (turno) antes de cerrar sesión. El cuadre se hace en la pantalla de Caja.
+        </p>
+      </div>
+      <div class="px-6 pb-6 flex flex-col gap-2">
+        <button (click)="irACerrarCaja()"
+          class="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-tech-charcoal text-white font-semibold text-sm hover:bg-tech-charcoal/90 active:scale-95 transition-all">
+          <lucide-icon name="wallet" [size]="16"></lucide-icon> Ir a cerrar caja
+        </button>
+        <button (click)="cajaAbiertaBloqueo.set(null)"
+          class="w-full py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+}

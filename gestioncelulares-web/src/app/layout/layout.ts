@@ -5,6 +5,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { filter, map } from 'rxjs';
 import { puedeAcceder } from '../core/acceso';
 import { AuthService } from '../core/auth.service';
+import { CajaService, SesionCaja } from '../core/caja.service';
 import { SoundService } from '../core/sound.service';
 import { UiService } from '../core/ui.service';
 import { routeFade } from '../shared/animations';
@@ -36,9 +37,35 @@ export class Layout {
   auth = inject(AuthService);
   sound = inject(SoundService);
   ui = inject(UiService);
+  private caja = inject(CajaService);
   private router = inject(Router);
 
   colapsado = signal(localStorage.getItem(CLAVE_COLAPSADO) === '1');
+
+  // Bloqueo de cierre de sesión por caja abierta
+  cajaAbiertaBloqueo = signal<SesionCaja | null>(null);
+  verificandoCaja = signal(false);
+
+  /** Antes de salir, valida que el usuario no tenga una caja abierta. */
+  intentarCerrarSesion(): void {
+    if (this.verificandoCaja()) return;
+    this.verificandoCaja.set(true);
+    this.caja.miCajaAbierta().subscribe({
+      next: sesion => {
+        this.verificandoCaja.set(false);
+        if (sesion) this.cajaAbiertaBloqueo.set(sesion);   // tiene caja abierta → bloquear
+        else this.auth.logout();
+      },
+      // Si la consulta falla, no dejamos al usuario atrapado: permitimos salir.
+      error: () => { this.verificandoCaja.set(false); this.auth.logout(); }
+    });
+  }
+
+  /** Cierra el aviso y lleva a la pantalla de Caja para cerrarla. */
+  irACerrarCaja(): void {
+    this.cajaAbiertaBloqueo.set(null);
+    this.router.navigate(['/caja']);
+  }
 
   // URL actual, reactiva ante cada navegación
   private urlActual = toSignal(

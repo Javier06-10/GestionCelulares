@@ -77,6 +77,11 @@ export class CajaService {
     return this.http.get<SesionCaja>(`${this.base}/actual`, { params });
   }
 
+  /** Caja abierta del usuario autenticado (null si no tiene ninguna). */
+  miCajaAbierta() {
+    return this.http.get<SesionCaja | null>(`${this.base}/mia`);
+  }
+
   abrir(sucursalId: number, montoApertura: number) {
     return this.http.post<SesionCaja>(`${this.base}/abrir`, { sucursalId, montoApertura });
   }
