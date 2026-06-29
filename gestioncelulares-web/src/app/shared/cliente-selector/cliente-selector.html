@@ -13,11 +13,13 @@
   <!-- Búsqueda + crear -->
   <div class="flex items-center gap-2">
     <div class="relative flex-1">
-      <lucide-icon name="search" [size]="15" class="absolute left-3 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
-      <input [value]="busqueda()" (input)="buscar($any($event.target).value)" type="text"
-        [placeholder]="requerido() ? 'Buscar cliente (requerido)…' : 'Buscar cliente…'"
-        class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-tech-bg-light/60 border text-tech-charcoal text-sm outline-none transition-all focus:bg-white"
-        [class]="requerido() ? 'border-tech-purple/40 focus:border-tech-purple/60' : 'border-tech-pastel/40 focus:border-tech-accent/60'" />
+      <div class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border transition-all focus-within:bg-white"
+        [class]="requerido() ? 'border-tech-purple/40 focus-within:border-tech-purple/60' : 'border-tech-pastel/40 focus-within:border-tech-accent/60'">
+        <lucide-icon name="search" [size]="15" class="shrink-0 text-tech-steel"></lucide-icon>
+        <input [value]="busqueda()" (input)="buscar($any($event.target).value)" type="text"
+          [placeholder]="requerido() ? 'Buscar cliente (requerido)…' : 'Buscar cliente…'"
+          class="flex-1 min-w-0 bg-transparent text-tech-charcoal text-sm outline-none placeholder:text-tech-steel/60" />
+      </div>
       @if (resultados().length > 0) {
         <div class="absolute z-30 left-0 right-0 mt-1 bg-tech-card-light border border-tech-pastel/40 rounded-xl shadow-xl overflow-hidden">
           @for (c of resultados(); track c.clienteId) {

@@ -23,28 +23,28 @@
     </div>
 
     <label class="block text-xs font-semibold text-tech-pastel mb-1.5 ml-1" for="usuario">USUARIO</label>
-    <div class="relative mb-4">
-      <lucide-icon name="user" [size]="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
+    <div class="flex items-center gap-2.5 mb-4 px-3.5 py-3 rounded-xl bg-white/[0.04] border border-white/10 transition-all duration-300 focus-within:border-tech-accent/60 focus-within:bg-white/[0.07] focus-within:shadow-[0_0_0_4px_rgba(0,230,118,0.1)]">
+      <lucide-icon name="user" [size]="18" class="shrink-0 text-tech-steel"></lucide-icon>
       <input
         id="usuario"
         type="text"
         formControlName="nombreUsuario"
         placeholder="admin"
         autocomplete="username"
-        class="w-full pl-11 pr-3.5 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder:text-tech-steel/50 outline-none transition-all duration-300 focus:border-tech-accent/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_4px_rgba(0,230,118,0.1)]"
+        class="flex-1 min-w-0 bg-transparent text-white placeholder:text-tech-steel/50 outline-none"
       />
     </div>
 
     <label class="block text-xs font-semibold text-tech-pastel mb-1.5 ml-1" for="contrasena">CONTRASEÑA</label>
-    <div class="relative mb-6">
-      <lucide-icon name="lock" [size]="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
+    <div class="flex items-center gap-2.5 mb-6 px-3.5 py-3 rounded-xl bg-white/[0.04] border border-white/10 transition-all duration-300 focus-within:border-tech-accent/60 focus-within:bg-white/[0.07] focus-within:shadow-[0_0_0_4px_rgba(0,230,118,0.1)]">
+      <lucide-icon name="lock" [size]="18" class="shrink-0 text-tech-steel"></lucide-icon>
       <input
         id="contrasena"
         type="password"
         formControlName="contrasena"
         placeholder="••••••••"
         autocomplete="current-password"
-        class="w-full pl-11 pr-3.5 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder:text-tech-steel/50 outline-none transition-all duration-300 focus:border-tech-accent/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_4px_rgba(0,230,118,0.1)]"
+        class="flex-1 min-w-0 bg-transparent text-white placeholder:text-tech-steel/50 outline-none"
       />
     </div>
 

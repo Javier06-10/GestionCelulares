@@ -36,9 +36,9 @@
 
 <!-- Consulta por IMEI -->
 <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-4 mb-4">
-  <div class="relative">
-    <lucide-icon name="scan-line" [size]="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-accent"></lucide-icon>
-    <input type="text" placeholder="Consulta la garantía por IMEI…" (input)="buscarImei($any($event.target).value)" class="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal placeholder:text-tech-steel/60 outline-none transition-all focus:border-tech-accent/60 focus:bg-white focus:shadow-[0_0_15px_rgba(0,230,118,0.2)]" />
+  <div class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 transition-all focus-within:border-tech-accent/60 focus-within:bg-white focus-within:shadow-[0_0_15px_rgba(0,230,118,0.2)]">
+    <lucide-icon name="scan-line" [size]="18" class="shrink-0 text-tech-accent"></lucide-icon>
+    <input type="text" placeholder="Consulta la garantía por IMEI…" (input)="buscarImei($any($event.target).value)" class="flex-1 min-w-0 bg-transparent text-tech-charcoal placeholder:text-tech-steel/60 outline-none" />
   </div>
   @if (imeiBuscado(); as g) {
     <div class="mt-3 flex flex-wrap items-center gap-4 px-4 py-3 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/30">

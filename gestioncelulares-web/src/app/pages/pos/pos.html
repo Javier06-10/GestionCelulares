@@ -41,13 +41,13 @@
       <!-- Escaneo IMEI -->
       <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-4">
         <form (ngSubmit)="agregarPorImei()">
-          <div class="relative">
-            <lucide-icon name="scan-line" [size]="20" class="absolute left-4 top-1/2 -translate-y-1/2 text-tech-accent"></lucide-icon>
+          <div class="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 transition-all duration-300 focus-within:border-tech-accent focus-within:bg-white focus-within:shadow-[0_0_20px_rgba(0,230,118,0.25)]">
+            <lucide-icon name="scan-line" [size]="20" class="shrink-0 text-tech-accent"></lucide-icon>
             <input
               [ngModel]="imeiInput()" (ngModelChange)="imeiInput.set($event)" name="imei"
               autofocus
               placeholder="Escanea o escribe el IMEI y presiona Enter…"
-              class="w-full pl-12 pr-3.5 py-3.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-lg font-mono outline-none transition-all duration-300 focus:border-tech-accent focus:bg-white focus:shadow-[0_0_20px_rgba(0,230,118,0.25)]" />
+              class="flex-1 min-w-0 bg-transparent text-tech-charcoal text-lg font-mono outline-none placeholder:text-tech-steel/60" />
           </div>
         </form>
         <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[0.7rem] text-tech-steel">
@@ -65,10 +65,10 @@
 
       <!-- Filtro rápido de productos -->
       @if (dispositivos().length > 0 || accesorios().length > 0) {
-        <div class="relative">
-          <lucide-icon name="search" [size]="16" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
+        <div class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-tech-card-light border border-tech-pastel/40 transition-all focus-within:border-tech-accent/60 focus-within:shadow-[0_0_0_4px_rgba(0,230,118,0.08)]">
+          <lucide-icon name="search" [size]="16" class="shrink-0 text-tech-steel"></lucide-icon>
           <input [ngModel]="filtroProd()" (ngModelChange)="filtroProd.set($event)" name="filtroProd" type="text" placeholder="Filtrar productos por nombre, color, marca…"
-            class="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal text-sm outline-none transition-all focus:border-tech-accent/60 focus:shadow-[0_0_0_4px_rgba(0,230,118,0.08)]" />
+            class="flex-1 min-w-0 bg-transparent text-tech-charcoal text-sm outline-none placeholder:text-tech-steel/60" />
         </div>
       }
 

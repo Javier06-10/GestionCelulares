@@ -5,10 +5,10 @@
     <p class="text-sm text-tech-steel mt-0.5">Plan contable: las 6 familias principales y las cuentas que tú agregues.</p>
   </div>
   <div class="flex items-center gap-2">
-    <div class="relative">
-      <lucide-icon name="search" [size]="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
+    <div class="flex items-center gap-2 w-56 px-3 py-2.5 rounded-xl bg-tech-card-light border border-tech-pastel/40 transition-all focus-within:border-tech-accent/60 focus-within:w-64">
+      <lucide-icon name="search" [size]="16" class="shrink-0 text-tech-steel"></lucide-icon>
       <input [value]="buscar()" (input)="buscar.set($any($event.target).value)" type="text" placeholder="Buscar cuenta o código…"
-        class="w-56 pl-9 pr-3 py-2.5 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal text-sm outline-none transition-all focus:border-tech-accent/60 focus:w-64" />
+        class="flex-1 min-w-0 bg-transparent text-tech-charcoal text-sm outline-none placeholder:text-tech-steel/60" />
     </div>
     <button (click)="abrirNueva()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all duration-300 ease-out hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95">
       <lucide-icon name="plus" [size]="18"></lucide-icon> Nueva cuenta

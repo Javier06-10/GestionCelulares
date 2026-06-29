@@ -30,9 +30,9 @@
 </div>
 
 <!-- Búsqueda -->
-<div class="relative mb-4 max-w-md">
-  <lucide-icon name="search" [size]="18" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tech-steel"></lucide-icon>
-  <input type="text" placeholder="Buscar por nombre, RNC o teléfono…" (input)="buscar($any($event.target).value)" class="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-tech-card-light border border-tech-pastel/40 text-tech-charcoal placeholder:text-tech-steel/60 outline-none transition-all focus:border-tech-accent/60 focus:shadow-[0_0_0_4px_rgba(0,230,118,0.08)]" />
+<div class="flex items-center gap-2.5 mb-4 max-w-md px-3.5 py-2.5 rounded-xl bg-tech-card-light border border-tech-pastel/40 transition-all focus-within:border-tech-accent/60 focus-within:shadow-[0_0_0_4px_rgba(0,230,118,0.08)]">
+  <lucide-icon name="search" [size]="18" class="shrink-0 text-tech-steel"></lucide-icon>
+  <input type="text" placeholder="Buscar por nombre, RNC o teléfono…" (input)="buscar($any($event.target).value)" class="flex-1 min-w-0 bg-transparent text-tech-charcoal placeholder:text-tech-steel/60 outline-none" />
 </div>
 
 <!-- Tabla -->
