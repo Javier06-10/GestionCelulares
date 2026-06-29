@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { filter, map } from 'rxjs';
+import { puedeAcceder } from '../core/acceso';
 import { AuthService } from '../core/auth.service';
 import { SoundService } from '../core/sound.service';
 import { UiService } from '../core/ui.service';
@@ -150,15 +151,19 @@ export class Layout {
     return this.grupos.flatMap(g => g.items.flatMap(i => i.hijos ? i.hijos : [i]));
   }
 
-  // Grupos con sus ítems (e hijos) ya filtrados por permiso; se omiten los vacíos
+  // Grupos con sus ítems (e hijos) filtrados por el rol del usuario (ver acceso.ts);
+  // un grupo desplegable es visible si al menos uno de sus hijos lo es.
   get gruposVisibles(): GrupoMenu[] {
+    const rol = this.auth.usuario()?.rol;
+    const visible = (i: ItemMenu): boolean =>
+      i.hijos ? i.hijos.some(visible) : (!i.ruta || puedeAcceder(rol, i.ruta));
+
     return this.grupos
       .map(g => ({
         titulo: g.titulo,
         items: g.items
-          .filter(i => !i.soloAdmin || this.auth.esAdmin())
-          .map(i => i.hijos ? { ...i, hijos: i.hijos.filter(h => !h.soloAdmin || this.auth.esAdmin()) } : i)
-          .filter(i => !i.hijos || i.hijos.length > 0)
+          .filter(visible)
+          .map(i => i.hijos ? { ...i, hijos: i.hijos.filter(visible) } : i)
       }))
       .filter(g => g.items.length > 0);
   }

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth-guard';
+import { rolGuard } from './core/rol-guard';
 import { Layout } from './layout/layout';
 import { Apartados } from './pages/apartados/apartados';
 import { Asientos } from './pages/asientos/asientos';
@@ -28,6 +29,7 @@ export const routes: Routes = [
     path: '',
     component: Layout,
     canActivate: [authGuard],
+    canActivateChild: [rolGuard],
     children: [
       { path: '', component: Dashboard },
       { path: 'pos', component: Pos },
