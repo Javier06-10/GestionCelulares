@@ -1,106 +1,59 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 /**
- * Mascotas decorativas de las plataformas: un robot verde (estilo Android) y
- * una fruta simpática (estilo iOS). Son diseños ORIGINALES —no reproducen los
- * logotipos de marca— con animación de reposo (flotan, parpadean, saludan).
+ * Ícono-mascota de plataforma: robot verde (Android) o manzana mordida (iOS).
+ * Son íconos reconocibles de plataforma, dibujados como SVG propios, con una
+ * animación de reposo sutil (flotan/se balancean) para "sentarse" en los KPIs.
  */
 @Component({
   selector: 'app-os-mascots',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mascots" [style.--m-size.px]="size()">
-      <!-- Robot verde (Android-style, original) -->
-      <svg class="bot" viewBox="0 0 90 110" xmlns="http://www.w3.org/2000/svg" fill="none" aria-label="Robot Android">
-        <!-- antenas -->
-        <g class="antenna">
-          <line x1="30" y1="22" x2="24" y2="8" stroke="#00c853" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="24" cy="7" r="3" fill="#00e676"/>
+    @if (tipo() === 'android') {
+      <svg class="m-bot" [attr.width]="size()" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" aria-label="Android">
+        <g class="m-antenna">
+          <line x1="35" y1="24" x2="29" y2="10" stroke="#A4C639" stroke-width="3.2" stroke-linecap="round"/>
+          <line x1="65" y1="24" x2="71" y2="10" stroke="#A4C639" stroke-width="3.2" stroke-linecap="round"/>
         </g>
-        <g class="antenna antenna--r">
-          <line x1="60" y1="22" x2="66" y2="8" stroke="#00c853" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="66" cy="7" r="3" fill="#00e676"/>
-        </g>
-        <!-- brazos -->
-        <rect class="arm arm--wave" x="8" y="46" width="9" height="30" rx="4.5" fill="#00c853"/>
-        <rect x="73" y="46" width="9" height="30" rx="4.5" fill="#00c853"/>
-        <!-- cabeza -->
-        <rect x="22" y="20" width="46" height="40" rx="16" fill="#00e676"/>
-        <!-- ojos -->
-        <g class="eyes">
-          <circle cx="37" cy="38" r="4.2" fill="#0d0d10"/>
-          <circle cx="53" cy="38" r="4.2" fill="#0d0d10"/>
-        </g>
-        <!-- cuerpo -->
-        <rect x="26" y="58" width="38" height="40" rx="12" fill="#00e676"/>
-        <rect x="34" y="96" width="7" height="12" rx="3.5" fill="#00c853"/>
-        <rect x="49" y="96" width="7" height="12" rx="3.5" fill="#00c853"/>
+        <path d="M22 44 a28 28 0 0 1 56 0 Z" fill="#A4C639"/>
+        <circle cx="40" cy="33" r="3.1" fill="#fff"/>
+        <circle cx="60" cy="33" r="3.1" fill="#fff"/>
+        <rect x="22" y="48" width="56" height="40" rx="7" fill="#A4C639"/>
+        <rect class="m-arm" x="9" y="50" width="9.5" height="30" rx="4.75" fill="#A4C639"/>
+        <rect x="81.5" y="50" width="9.5" height="30" rx="4.75" fill="#A4C639"/>
+        <rect x="33" y="84" width="10" height="15" rx="5" fill="#A4C639"/>
+        <rect x="57" y="84" width="10" height="15" rx="5" fill="#A4C639"/>
       </svg>
-
-      <!-- Fruta simpática (iOS-style, original) -->
-      <svg class="fruit" viewBox="0 0 90 110" xmlns="http://www.w3.org/2000/svg" fill="none" aria-label="Fruta iOS">
-        <!-- hoja -->
-        <path class="leaf" d="M48 18 C58 8 72 12 72 12 C72 12 70 26 58 28 C50 29 46 24 48 18 Z" fill="#6C5CE7"/>
-        <!-- tallo -->
-        <path d="M45 20 C45 14 47 12 49 10" stroke="#8a7be8" stroke-width="3" stroke-linecap="round"/>
-        <!-- cuerpo (dos lóbulos tipo manzana) -->
-        <path d="M45 26 C30 24 18 36 18 58 C18 82 32 100 45 100 C58 100 72 82 72 58 C72 36 60 24 45 26 Z"
-              fill="url(#fruit-grad)"/>
-        <path d="M45 30 C40 30 36 32 34 36" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
-        <!-- ojos -->
-        <g class="eyes">
-          <circle cx="38" cy="58" r="4" fill="#2b2b33"/>
-          <circle cx="54" cy="58" r="4" fill="#2b2b33"/>
-        </g>
-        <!-- sonrisa -->
-        <path d="M38 70 Q46 78 54 70" stroke="#2b2b33" stroke-width="3" stroke-linecap="round" fill="none"/>
-        <!-- rubor -->
-        <circle cx="31" cy="66" r="3.5" fill="#ff6b9d" opacity="0.4"/>
-        <circle cx="61" cy="66" r="3.5" fill="#ff6b9d" opacity="0.4"/>
-        <defs>
-          <linearGradient id="fruit-grad" x1="18" y1="26" x2="72" y2="100" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#f4f5f7"/>
-            <stop offset="1" stop-color="#cfd4dc"/>
-          </linearGradient>
-        </defs>
+    } @else {
+      <svg class="m-apple" [attr.width]="size()" viewBox="0 0 100 112" xmlns="http://www.w3.org/2000/svg" fill="none" aria-label="iOS">
+        <path class="m-leaf" d="M53 22 C56 10 66 5 72 4 C72 15 63 23 54 23 C53.4 23 53 22.6 53 22 Z" fill="#141416"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" fill="#141416"
+          d="M50 33 C45 28 37 26 31 30 C22 35 18 47 18 60 C18 79 28 101 40 101 C45 103 48 101 50 100 C52 101 55 103 60 101 C72 101 82 79 82 60 C82 48 78 37 69 33 C64 30.5 55 30 50 33 Z
+             M70 50 a13 13 0 1 0 26 0 a13 13 0 1 0 -26 0 Z"/>
       </svg>
-    </div>
+    }
   `,
   styles: [`
-    .mascots {
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
-    }
-    .bot, .fruit {
-      width: var(--m-size, 84px);
-      height: auto;
-      transform-origin: bottom center;
-    }
-    .bot { animation: m-bob 3.2s ease-in-out infinite; }
-    .fruit { animation: m-bob 3.2s ease-in-out infinite 0.6s; }
+    :host { display: inline-block; line-height: 0; }
+    .m-bot, .m-apple { display: block; transform-box: fill-box; transform-origin: bottom center; }
+    .m-bot { animation: m-bob 3s ease-in-out infinite; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.18)); }
+    .m-apple { animation: m-sway 3.4s ease-in-out infinite; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.22)); }
+    .m-antenna { transform-box: fill-box; transform-origin: bottom center; animation: m-tilt 2.6s ease-in-out infinite; }
+    .m-arm { transform-box: fill-box; transform-origin: top center; animation: m-wave 2s ease-in-out infinite; }
+    .m-leaf { transform-box: fill-box; transform-origin: bottom left; animation: m-tilt 3s ease-in-out infinite; }
 
-    /* Elementos internos: fijamos el origen a su propia caja */
-    .antenna, .arm, .eyes, .leaf { transform-box: fill-box; }
-    .antenna { transform-origin: bottom center; animation: m-antenna 2.4s ease-in-out infinite; }
-    .antenna--r { animation-delay: 0.3s; }
-    .arm--wave { transform-origin: top center; animation: m-wave 1.8s ease-in-out infinite; }
-    .leaf { transform-origin: bottom left; animation: m-antenna 2.8s ease-in-out infinite; }
-    .eyes { transform-box: fill-box; transform-origin: center; animation: m-blink 4s steps(1, end) infinite; }
-
-    @keyframes m-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
-    @keyframes m-antenna { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
-    @keyframes m-wave { 0%,100% { transform: rotate(6deg); } 50% { transform: rotate(-24deg); } }
-    @keyframes m-blink {
-      0%, 92%, 100% { transform: scaleY(1); }
-      95% { transform: scaleY(0.1); }
-    }
+    @keyframes m-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    @keyframes m-sway { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-4px) rotate(3deg); } }
+    @keyframes m-tilt { 0%,100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+    @keyframes m-wave { 0%,100% { transform: rotate(4deg); } 50% { transform: rotate(-20deg); } }
     @media (prefers-reduced-motion: reduce) {
-      .bot, .fruit, .antenna, .arm, .leaf, .eyes { animation: none; }
+      .m-bot, .m-apple, .m-antenna, .m-arm, .m-leaf { animation: none; }
     }
   `]
 })
 export class OsMascotsComponent {
-  /** Ancho de cada mascota en px. */
-  size = input<number>(84);
+  /** Plataforma a dibujar. */
+  tipo = input<'android' | 'apple'>('android');
+  /** Ancho en px. */
+  size = input<number>(48);
 }

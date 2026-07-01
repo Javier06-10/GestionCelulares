@@ -29,7 +29,8 @@
   <!-- ===== KPIs ===== -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
     <!-- Ingresos del mes -->
-    <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-5">
+    <div class="relative rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-5">
+      <app-os-mascots tipo="android" [size]="46" class="absolute right-3 bottom-full -mb-1 z-20 pointer-events-none"></app-os-mascots>
       <div class="flex justify-between items-start mb-2">
         <div>
           <p class="text-[0.62rem] font-mono uppercase tracking-wider text-tech-steel mb-1">Ingresos del mes</p>
@@ -83,7 +84,8 @@
     </div>
 
     <!-- Caja (en vivo) -->
-    <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-5" [class]="d.caja.sesionAbierta ? 'ring-1 ring-tech-accent/40' : ''">
+    <div class="relative rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-5" [class]="d.caja.sesionAbierta ? 'ring-1 ring-tech-accent/40' : ''">
+      <app-os-mascots tipo="apple" [size]="42" class="absolute right-3 bottom-full -mb-1 z-20 pointer-events-none"></app-os-mascots>
       <div class="flex justify-between items-start mb-2">
         <div>
           <p class="text-[0.62rem] font-mono uppercase tracking-wider text-tech-steel mb-1">Caja</p>
@@ -271,16 +273,6 @@
     </div>
   </div>
 
-  <!-- ===== Banner de plataformas con mascotas ===== -->
-  <div class="mt-5 relative overflow-hidden rounded-2xl border border-tech-pastel/40 bg-gradient-to-r from-tech-charcoal to-tech-charcoal/90 px-6 py-4 flex items-center justify-between gap-4">
-    <div class="absolute -top-16 -left-10 w-56 h-56 rounded-full bg-tech-accent/10 blur-[70px] pointer-events-none"></div>
-    <div class="absolute -bottom-20 right-24 w-56 h-56 rounded-full bg-tech-purple/10 blur-[70px] pointer-events-none"></div>
-    <div class="relative min-w-0">
-      <h4 class="text-white font-bold text-base sm:text-lg tracking-tight">Expertos en <span class="text-tech-accent">Android</span> e <span class="text-tech-pastel">iOS</span></h4>
-      <p class="text-tech-steel text-xs sm:text-sm mt-0.5">Venta, reparación y garantía para todos tus equipos.</p>
-    </div>
-    <app-os-mascots class="relative shrink-0" [size]="72"></app-os-mascots>
-  </div>
 } @else if (!error()) {
   <div class="grid place-items-center py-16">
     <app-phone-loader [size]="72" label="Cargando inteligencia…"></app-phone-loader>
