@@ -10,19 +10,18 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (tipo() === 'android') {
-      <svg class="m-float" [attr.width]="size()" viewBox="0 0 120 134" xmlns="http://www.w3.org/2000/svg" fill="none" aria-label="Mascota Android">
+      <svg class="m-float" [attr.width]="size()" viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg" fill="none" aria-label="Mascota Android">
         <defs>
           <linearGradient id="botBody" x1="0" y1="0" x2="0" y2="1">
             <stop stop-color="#63d585"/><stop offset="1" stop-color="#3bb35f"/>
           </linearGradient>
         </defs>
-        <ellipse cx="60" cy="128" rx="34" ry="6" fill="#000" opacity="0.08"/>
-        <!-- piernas colgando (detrás del cuerpo); una se balancea -->
-        <rect x="46" y="94" width="12" height="30" rx="6" fill="#39ac5b"/>
-        <ellipse cx="52" cy="123" rx="7.5" ry="4.5" fill="#39ac5b"/>
+        <!-- piernas largas colgando (detrás del cuerpo); una se balancea -->
+        <rect x="44" y="92" width="13" height="46" rx="6.5" fill="#39ac5b"/>
+        <ellipse cx="50.5" cy="137" rx="9.5" ry="5" fill="#33a052"/>
         <g class="m-leg">
-          <rect x="64" y="94" width="12" height="30" rx="6" fill="#39ac5b"/>
-          <ellipse cx="70" cy="123" rx="7.5" ry="4.5" fill="#39ac5b"/>
+          <rect x="63" y="92" width="13" height="46" rx="6.5" fill="#39ac5b"/>
+          <ellipse cx="69.5" cy="137" rx="9.5" ry="5" fill="#33a052"/>
         </g>
         <!-- brazos en reposo -->
         <rect x="18" y="56" width="12" height="30" rx="6" fill="#4cc06e"/>
