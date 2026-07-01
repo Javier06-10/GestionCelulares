@@ -4,10 +4,11 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { CajaService, CierreResultado, MovimientoCaja, ResumenTurno, SesionCaja } from '../../core/caja.service';
+import { CajaAbreComponent } from '../../shared/caja-abre.component';
 
 @Component({
   selector: 'app-caja',
-  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe],
+  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe, CajaAbreComponent],
   templateUrl: './caja.html'
 })
 export class Caja {
@@ -18,6 +19,7 @@ export class Caja {
   cargando = signal(true);
   sesion = signal<SesionCaja | null>(null);
   movimientos = signal<MovimientoCaja[]>([]);
+  animandoApertura = signal(false);   // escena de "caja abierta"
 
   // Saldo esperado en efectivo por movimientos manuales (las ventas se suman al cerrar)
   saldoMovimientos = computed(() => {
@@ -115,6 +117,9 @@ export class Caja {
         this.modalConfirmar.set(false);
         this.sesion.set(s);
         this.movimientos.set([]);
+        // Celebración: cofre de dinero abriéndose
+        this.animandoApertura.set(true);
+        setTimeout(() => this.animandoApertura.set(false), 2200);
       },
       error: err => {
         this.abriendo.set(false);

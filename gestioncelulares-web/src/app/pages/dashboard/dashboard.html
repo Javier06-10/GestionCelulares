@@ -270,8 +270,19 @@
       </a>
     </div>
   </div>
+
+  <!-- ===== Banner de plataformas con mascotas ===== -->
+  <div class="mt-5 relative overflow-hidden rounded-2xl border border-tech-pastel/40 bg-gradient-to-r from-tech-charcoal to-tech-charcoal/90 px-6 py-4 flex items-center justify-between gap-4">
+    <div class="absolute -top-16 -left-10 w-56 h-56 rounded-full bg-tech-accent/10 blur-[70px] pointer-events-none"></div>
+    <div class="absolute -bottom-20 right-24 w-56 h-56 rounded-full bg-tech-purple/10 blur-[70px] pointer-events-none"></div>
+    <div class="relative min-w-0">
+      <h4 class="text-white font-bold text-base sm:text-lg tracking-tight">Expertos en <span class="text-tech-accent">Android</span> e <span class="text-tech-pastel">iOS</span></h4>
+      <p class="text-tech-steel text-xs sm:text-sm mt-0.5">Venta, reparación y garantía para todos tus equipos.</p>
+    </div>
+    <app-os-mascots class="relative shrink-0" [size]="72"></app-os-mascots>
+  </div>
 } @else if (!error()) {
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    @for (i of [1,2,3,4]; track i) { <div class="rounded-2xl bg-tech-card-light border border-tech-pastel/30 h-[130px] animate-pulse"></div> }
+  <div class="grid place-items-center py-16">
+    <app-phone-loader [size]="72" label="Cargando inteligencia…"></app-phone-loader>
   </div>
 }
