@@ -28,7 +28,9 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
         <rect x="90" y="56" width="12" height="30" rx="6" fill="#4cc06e"/>
         <!-- cuerpo -->
         <rect x="28" y="50" width="64" height="52" rx="24" fill="url(#botBody)" stroke="#2f9e4d" stroke-width="2"/>
+        <ellipse cx="44" cy="64" rx="13" ry="9" fill="#ffffff" opacity="0.18"/>
         <ellipse cx="60" cy="80" rx="17" ry="19" fill="#8ee7a6" opacity="0.55"/>
+        <circle cx="60" cy="80" r="15" fill="#c8ffd8" opacity="0.6"/>
         <circle cx="60" cy="80" r="10" fill="#eafff0" stroke="#2f9e4d" stroke-width="1.5"/>
         <circle cx="60" cy="80" r="3.4" fill="#3bb35f"/>
         <!-- cabeza -->
@@ -40,6 +42,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
             <circle cx="79" cy="12" r="3" fill="#63d585"/>
           </g>
           <rect x="30" y="24" width="60" height="42" rx="21" fill="url(#botBody)" stroke="#2f9e4d" stroke-width="2"/>
+          <ellipse cx="45" cy="37" rx="12" ry="7.5" fill="#ffffff" opacity="0.2"/>
           <ellipse cx="48" cy="44" rx="6.2" ry="7" fill="#fff"/>
           <ellipse cx="72" cy="44" rx="6.2" ry="7" fill="#fff"/>
           <circle cx="49" cy="45" r="3.1" fill="#1e2530"/>
