@@ -7,7 +7,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
  */
 export const routeFade = trigger('routeFade', [
   transition('* => *', [
-    style({ opacity: 0 }),
-    animate('160ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 1 }))
+    style({ opacity: 0, transform: 'translateY(10px) scale(0.995)' }),
+    animate('260ms cubic-bezier(0.22, 1, 0.36, 1)', style({ opacity: 1, transform: 'translateY(0) scale(1)' }))
   ])
 ]);

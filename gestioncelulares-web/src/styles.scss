@@ -122,6 +122,13 @@ input:-webkit-autofill:active {
   box-shadow: 0 14px 30px -18px rgba(15, 23, 42, 0.45), 0 0 0 1px rgba(0, 230, 118, 0.18);
 }
 
+/* ===== Micro-interacción: botones con icono reaccionan al pasar/pulsar ===== */
+button lucide-icon {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+button:hover:not(:disabled) lucide-icon { transform: scale(1.12); }
+button:active:not(:disabled) lucide-icon { transform: scale(0.92); }
+
 /* ===== Sheen: destello que recorre los botones primarios ===== */
 .from-tech-accent,
 .from-tech-purple {

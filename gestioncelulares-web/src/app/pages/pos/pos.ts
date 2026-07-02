@@ -13,6 +13,7 @@ import { FacturaConfig, FacturaConfigService } from '../../core/factura-config.s
 import { InventarioService, StockDisponible } from '../../core/inventario.service';
 import { UiService } from '../../core/ui.service';
 import { MetodoPago, SecuenciaFactura, VentaService } from '../../core/venta.service';
+import { CelebracionComponent } from '../../shared/celebracion.component';
 import { ClienteSelector } from '../../shared/cliente-selector/cliente-selector';
 
 interface FacturaData {
@@ -47,7 +48,7 @@ const ITBIS = 0.18; // 18% — coincide con Empresa.PorcentajeItbis; el total fi
 
 @Component({
   selector: 'app-pos',
-  imports: [FormsModule, RouterLink, LucideAngularModule, CurrencyPipe, DatePipe, ClienteSelector],
+  imports: [FormsModule, RouterLink, LucideAngularModule, CurrencyPipe, DatePipe, ClienteSelector, CelebracionComponent],
   templateUrl: './pos.html'
 })
 export class Pos implements OnDestroy {
@@ -136,6 +137,10 @@ export class Pos implements OnDestroy {
   procesando = signal(false);
   errorVenta = signal<string | null>(null);
   factura = signal<FacturaData | null>(null);
+
+  // Celebración "venta completada"
+  celebrando = signal(false);
+  celebraSub = signal('');
 
   // Configuración de factura
   facturaCfg = inject(FacturaConfigService);
@@ -342,6 +347,9 @@ export class Pos implements OnDestroy {
         this.procesando.set(false);
         this.sound.playSuccess();
         this.lanzarConfeti();
+        this.celebraSub.set('Total RD$ ' + Math.round(v.total).toLocaleString('es-DO'));
+        this.celebrando.set(true);
+        setTimeout(() => this.celebrando.set(false), 2400);
         // Armar la factura con el detalle del carrito antes de vaciarlo
         const metodo = this.metodos().find(m => m.metodoPagoId === this.metodoPagoId());
         this.factura.set({

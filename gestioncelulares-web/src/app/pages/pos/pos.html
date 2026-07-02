@@ -343,6 +343,11 @@
   </div>
 }
 
+<!-- ===== Celebración: venta completada ===== -->
+@if (celebrando()) {
+  <app-celebracion class="no-print" icono="check" mensaje="¡Venta completada!" [submensaje]="celebraSub()" tono="accent" [confeti]="false" />
+}
+
 <!-- ===== Modal configurar factura ===== -->
 @if (modalConfig()) {
   @let c = borradorCfg();

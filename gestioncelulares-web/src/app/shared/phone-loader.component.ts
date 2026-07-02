@@ -23,6 +23,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     </div>
   `,
   styles: [`
+    :host { display: block; }
     .pl-wrap {
       display: flex;
       flex-direction: column;

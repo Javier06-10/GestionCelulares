@@ -37,7 +37,7 @@
       </thead>
       <tbody>
         @if (cargando()) {
-          @for (i of [1,2,3]; track i) { <tr class="border-t border-tech-pastel/20"><td colspan="6" class="py-3 px-4"><div class="h-5 bg-tech-bg-light rounded animate-pulse"></div></td></tr> }
+          <tr><td colspan="6" class="py-6"><app-phone-loader [size]="54" label="Cargando ventas…"></app-phone-loader></td></tr>
         } @else if (ventas().length === 0) {
           <tr><td colspan="6" class="py-12 text-center text-tech-steel"><lucide-icon name="shopping-cart" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon><p>No hay ventas en el período.</p></td></tr>
         } @else {

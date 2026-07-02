@@ -11,12 +11,13 @@ import {
 import { MetodoPago, VentaService } from '../../core/venta.service';
 import { ClienteSelector } from '../../shared/cliente-selector/cliente-selector';
 import { CountUpDirective } from '../../shared/count-up.directive';
+import { PhoneLoaderComponent } from '../../shared/phone-loader.component';
 
 type Vista = 'creditos' | 'vencidas';
 
 @Component({
   selector: 'app-creditos',
-  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe, ClienteSelector, CountUpDirective],
+  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe, ClienteSelector, CountUpDirective, PhoneLoaderComponent],
   templateUrl: './creditos.html'
 })
 export class Creditos {

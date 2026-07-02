@@ -9,6 +9,7 @@ import { CreditoResumen, CreditoService } from '../../core/credito.service';
 import { OrdenResumen, TallerService } from '../../core/taller.service';
 import { VentaResumen, VentaService } from '../../core/venta.service';
 import { CountUpDirective } from '../../shared/count-up.directive';
+import { PhoneLoaderComponent } from '../../shared/phone-loader.component';
 
 type Filtro = 'todos' | 'aldia' | 'morosos' | 'bloqueados';
 
@@ -16,7 +17,7 @@ interface Nivel { label: string; clase: string; icono: string; }
 
 @Component({
   selector: 'app-clientes',
-  imports: [ReactiveFormsModule, LucideAngularModule, DatePipe, CurrencyPipe, RouterLink, CountUpDirective],
+  imports: [ReactiveFormsModule, LucideAngularModule, DatePipe, CurrencyPipe, RouterLink, CountUpDirective, PhoneLoaderComponent],
   templateUrl: './clientes.html'
 })
 export class Clientes {

@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { VentaResumen, VentaService } from '../../core/venta.service';
+import { PhoneLoaderComponent } from '../../shared/phone-loader.component';
 
 const TIPOS_ANULACION = [
   { v: '01', n: 'Deterioro de factura' },
@@ -19,7 +20,7 @@ const TIPOS_ANULACION = [
 
 @Component({
   selector: 'app-ventas',
-  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe],
+  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe, PhoneLoaderComponent],
   templateUrl: './ventas.html'
 })
 export class Ventas {

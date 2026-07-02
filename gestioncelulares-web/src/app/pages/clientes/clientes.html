@@ -76,11 +76,7 @@
       </thead>
       <tbody>
         @if (cargando()) {
-          @for (i of [1,2,3,4,5]; track i) {
-            <tr class="border-t border-tech-pastel/20">
-              <td colspan="6" class="py-3 px-4"><div class="h-5 bg-tech-bg-light rounded animate-pulse"></div></td>
-            </tr>
-          }
+          <tr><td colspan="6" class="py-6"><app-phone-loader [size]="54" label="Cargando clientes…"></app-phone-loader></td></tr>
         } @else if (clientesVista().length === 0) {
           <tr>
             <td colspan="6" class="py-12 text-center text-tech-steel">

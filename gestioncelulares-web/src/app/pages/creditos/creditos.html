@@ -82,7 +82,7 @@
         </thead>
         <tbody>
           @if (cargando()) {
-            @for (i of [1,2,3]; track i) { <tr class="border-t border-tech-pastel/20"><td colspan="5" class="py-3 px-4"><div class="h-5 bg-tech-bg-light rounded animate-pulse"></div></td></tr> }
+            <tr><td colspan="5" class="py-6"><app-phone-loader [size]="54" label="Cargando créditos…"></app-phone-loader></td></tr>
           } @else if (creditosVista().length === 0) {
             <tr><td colspan="5" class="py-12 text-center text-tech-steel"><lucide-icon name="credit-card" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon><p>No hay créditos.</p></td></tr>
           } @else {
@@ -130,7 +130,7 @@
         </thead>
         <tbody>
           @if (cargando()) {
-            @for (i of [1,2,3]; track i) { <tr class="border-t border-tech-pastel/20"><td colspan="6" class="py-3 px-4"><div class="h-5 bg-tech-bg-light rounded animate-pulse"></div></td></tr> }
+            <tr><td colspan="6" class="py-6"><app-phone-loader [size]="54" label="Cargando cuotas…"></app-phone-loader></td></tr>
           } @else if (vencidas().length === 0) {
             <tr><td colspan="6" class="py-12 text-center text-tech-steel"><lucide-icon name="circle-check" [size]="32" class="mx-auto mb-2 text-tech-accent/50"></lucide-icon><p>¡Ninguna cuota vencida!</p></td></tr>
           } @else {

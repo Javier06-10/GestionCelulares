@@ -10,6 +10,7 @@ import { ComisionTecnico, Orden, OrdenResumen, TallerService } from '../../core/
 import { Usuario, UsuarioService } from '../../core/usuario.service';
 import { MetodoPago, VentaService } from '../../core/venta.service';
 import { BarcodeComponent } from '../../shared/barcode.component';
+import { CelebracionComponent } from '../../shared/celebracion.component';
 import { ClienteSelector } from '../../shared/cliente-selector/cliente-selector';
 import { CountUpDirective } from '../../shared/count-up.directive';
 
@@ -17,7 +18,7 @@ interface Columna { estado: string; titulo: string; color: string; }
 
 @Component({
   selector: 'app-taller',
-  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe, ClienteSelector, CountUpDirective, BarcodeComponent],
+  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, DatePipe, ClienteSelector, CountUpDirective, BarcodeComponent, CelebracionComponent],
   templateUrl: './taller.html'
 })
 export class Taller {
@@ -116,6 +117,7 @@ export class Taller {
 
   // Entrega
   modalEntrega = signal(false);
+  celebrandoEntrega = signal(false);   // celebración "equipo entregado"
   formEntrega = this.fb.nonNullable.group({
     costoFinal: [0, [Validators.min(0)]],
     comisionTecnico: [0, [Validators.min(0)]],
@@ -202,6 +204,8 @@ export class Taller {
         this.detalle.set(x);
         this.modalEntrega.set(false);
         this.cargar();
+        this.celebrandoEntrega.set(true);
+        setTimeout(() => this.celebrandoEntrega.set(false), 2400);
       },
       error: e => {
         this.sound.playError();
