@@ -46,8 +46,11 @@ builder.Services.AddAuthorization();
 
 // --- CORS para el frontend Angular ---
 const string CorsPolicy = "Frontend";
+// Orígenes permitidos configurables por entorno (Cors:Origins). Por defecto, el dev de Angular.
+var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+    ?? new[] { "http://localhost:4200" };
 builder.Services.AddCors(o => o.AddPolicy(CorsPolicy, p =>
-    p.WithOrigins("http://localhost:4200")
+    p.WithOrigins(corsOrigins)
      .AllowAnyHeader()
      .AllowAnyMethod()));
 
@@ -107,6 +110,7 @@ else
 {
     // En desarrollo no redirigimos a HTTPS: el front Angular llama por HTTP
     // y el redirect 307 rompería el preflight CORS.
+    app.UseHsts();
     app.UseHttpsRedirection();
 }
 

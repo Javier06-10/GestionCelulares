@@ -81,11 +81,34 @@ public class AuthService : IAuthService
             .Include(t => t.Usuario).ThenInclude(u => u.Rol)
             .FirstOrDefaultAsync(t => t.Token == hash);
 
-        if (token is null || token.Revocado || token.Expira < DateTime.Now)
+        if (token is null)
+            throw new AuthException("Refresh token inválido o expirado.");
+
+        // Detección de reuso: un token ya revocado se está presentando de nuevo
+        // (posible robo). Se revocan TODOS los tokens activos del usuario (familia).
+        if (token.Revocado)
+        {
+            var activos = await _db.RefreshTokens
+                .Where(t => t.UsuarioId == token.UsuarioId && !t.Revocado)
+                .ToListAsync();
+            foreach (var t in activos) t.Revocado = true;
+            await _db.SaveChangesAsync();
+            throw new AuthException("Refresh token inválido o expirado.");
+        }
+
+        if (token.Expira < DateTime.Now)
             throw new AuthException("Refresh token inválido o expirado.");
 
         token.Revocado = true; // rotación
         var resp = Emitir(token.Usuario);
+
+        // Purga de housekeeping: elimina los tokens ya vencidos del usuario
+        // (los revocados no vencidos se conservan para poder detectar reuso).
+        var vencidos = await _db.RefreshTokens
+            .Where(t => t.UsuarioId == token.UsuarioId && t.Expira < DateTime.Now)
+            .ToListAsync();
+        _db.RefreshTokens.RemoveRange(vencidos);
+
         await _db.SaveChangesAsync();
         return resp;
     }
