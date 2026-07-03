@@ -100,6 +100,16 @@ var app = builder.Build();
 // Debe ir primero para envolver todo el pipeline.
 app.UseExceptionHandler();
 
+// --- Cabeceras de seguridad en las respuestas de la API (seguras para Swagger/JSON) ---
+app.Use(async (context, next) =>
+{
+    var h = context.Response.Headers;
+    h["X-Content-Type-Options"] = "nosniff";
+    h["X-Frame-Options"] = "DENY";
+    h["Referrer-Policy"] = "no-referrer";
+    await next();
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
