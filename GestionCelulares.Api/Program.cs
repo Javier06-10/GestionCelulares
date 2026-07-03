@@ -1,10 +1,12 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using GestionCelulares.Api.Services;
 using GestionCelulares.Application;
 using GestionCelulares.Application.Common.Interfaces;
 using GestionCelulares.Infrastructure;
 using GestionCelulares.Infrastructure.Persistence;
 using GestionCelulares.Infrastructure.Settings;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -48,6 +50,21 @@ builder.Services.AddCors(o => o.AddPolicy(CorsPolicy, p =>
      .AllowAnyHeader()
      .AllowAnyMethod()));
 
+// --- Rate limiting: frena la fuerza bruta contra el login (por IP) ---
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("login", ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ctx.Connection.RemoteIpAddress?.ToString() ?? "desconocida",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
+
 // --- Controllers + Swagger con soporte JWT ---
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -86,6 +103,7 @@ else
 }
 
 app.UseCors(CorsPolicy);
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

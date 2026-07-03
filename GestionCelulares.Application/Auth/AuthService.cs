@@ -13,6 +13,13 @@ public interface IAuthService
 
 public class AuthService : IAuthService
 {
+    // Bloqueo por intentos fallidos
+    private const int MaxIntentos = 5;
+    private static readonly TimeSpan Bloqueo = TimeSpan.FromMinutes(15);
+    // Hash válido para igualar el tiempo de respuesta cuando el usuario no existe
+    // (evita enumeración de usuarios por timing). Se calcula una vez y se cachea.
+    private static string? _hashDummy;
+
     private readonly IApplicationDbContext _db;
     private readonly ITokenService _tokens;
     private readonly IPasswordHasher _hasher;
@@ -30,12 +37,37 @@ public class AuthService : IAuthService
             .Include(u => u.Rol)
             .FirstOrDefaultAsync(u => u.NombreUsuario == req.NombreUsuario);
 
-        if (usuario is null || !usuario.Activo)
-            throw new AuthException("Usuario o contraseña inválidos.");
+        // Cuenta bloqueada temporalmente por intentos fallidos
+        if (usuario is not null && usuario.BloqueadoHasta is { } hasta && hasta > DateTime.Now)
+        {
+            var restan = Math.Max(1, (int)Math.Ceiling((hasta - DateTime.Now).TotalMinutes));
+            throw new AuthException($"Cuenta bloqueada por intentos fallidos. Intenta de nuevo en {restan} minuto(s).");
+        }
 
-        if (!_hasher.Verify(req.Contrasena, usuario.HashContrasena))
-            throw new AuthException("Usuario o contraseña inválidos.");
+        // Siempre se ejecuta un Verify (con hash dummy si el usuario no existe) para
+        // que el tiempo de respuesta no delate si el usuario existe o no.
+        var hash = usuario?.HashContrasena ?? (_hashDummy ??= _hasher.Hash("timing-guard"));
+        var passwordOk = _hasher.Verify(req.Contrasena, hash);
 
+        if (usuario is null || !usuario.Activo || !passwordOk)
+        {
+            // Solo cuentan los fallos de contraseña de una cuenta activa existente
+            if (usuario is not null && usuario.Activo)
+            {
+                usuario.IntentosFallidos++;
+                if (usuario.IntentosFallidos >= MaxIntentos)
+                {
+                    usuario.BloqueadoHasta = DateTime.Now.Add(Bloqueo);
+                    usuario.IntentosFallidos = 0;
+                }
+                await _db.SaveChangesAsync();
+            }
+            throw new AuthException("Usuario o contraseña inválidos.");
+        }
+
+        // Éxito: se limpian contadores de bloqueo
+        usuario.IntentosFallidos = 0;
+        usuario.BloqueadoHasta = null;
         usuario.UltimoAcceso = DateTime.Now;
         var resp = Emitir(usuario);
         await _db.SaveChangesAsync();

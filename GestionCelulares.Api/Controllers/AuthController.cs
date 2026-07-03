@@ -2,6 +2,7 @@ using GestionCelulares.Application.Auth;
 using GestionCelulares.Application.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace GestionCelulares.Api.Controllers;
 
@@ -15,6 +16,7 @@ public class AuthController : ControllerBase
 
     /// <summary>Inicia sesión y devuelve el access token + refresh token.</summary>
     [AllowAnonymous]
+    [EnableRateLimiting("login")]
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest req)
     {

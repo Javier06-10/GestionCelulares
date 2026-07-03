@@ -40,6 +40,10 @@ public class Usuario
     public DateTime? UltimoAcceso { get; set; }
     public DateTime FechaCreacion { get; set; }
 
+    // Bloqueo por intentos fallidos de inicio de sesión
+    public int IntentosFallidos { get; set; }
+    public DateTime? BloqueadoHasta { get; set; }
+
     public Rol Rol { get; set; } = null!;
     public Sucursal? Sucursal { get; set; }
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
