@@ -1,5 +1,6 @@
 using System.Text;
 using System.Threading.RateLimiting;
+using GestionCelulares.Api;
 using GestionCelulares.Api.Services;
 using GestionCelulares.Application;
 using GestionCelulares.Application.Common.Interfaces;
@@ -87,7 +88,14 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// --- Manejo global de excepciones (red de seguridad + contrato uniforme) ---
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
+
+// Debe ir primero para envolver todo el pipeline.
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
