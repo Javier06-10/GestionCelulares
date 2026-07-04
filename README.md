@@ -30,7 +30,7 @@ Dependencias:  `Domain ← Application ← Infrastructure`  y  `Api → Applicat
 
 ## Requisitos
 - .NET 8 SDK
-- SQL Server con la base `GestionCelulares` ya creada (scripts `GestionCelulares_v1..v4.sql`).
+- SQL Server 2019+ con la base `GestionCelulares` ya creada (ver [Base de datos](#base-de-datos)).
 
 ## Configuración
 Edita `GestionCelulares.Api/appsettings.json`:
@@ -73,11 +73,20 @@ Pega el `accessToken` en el botón **Authorize** de Swagger para llamar a los en
 - `POST /api/inventario/{id}/transferir` — transfiere a otra sucursal.
 
 ## Base de datos
-Los scripts SQL (fuera de esta carpeta, en el Desktop) se ejecutan en orden en SSMS:
-- `GestionCelulares_v1.sql` — esquema base y datos semilla.
-- `GestionCelulares_v2_garantias_sp.sql` — Garantías/RMA, procedimientos y vistas.
-- `GestionCelulares_v3_pagocredito.sql` — abonos a créditos.
-- `GestionCelulares_v4_mora.sql` — proceso de morosidad y job programado.
+Para un servidor nuevo, ejecuta un único script:
+- `GestionCelulares_setup_completo.sql` — instalación inicial completa (esquema,
+  tipos, vistas, índices, foreign keys, procedimientos y el login/usuario
+  `gc_app` con privilegios mínimos). Es idempotente frente al login/usuario y
+  se autoprotege: si la base `GestionCelulares` ya existe, aborta sin tocar
+  nada. Instrucciones de uso (SSMS o `sqlcmd`) dentro del propio archivo.
+  Reemplaza a la cadena antigua de scripts `v1..v4` (ya no se conservan; este
+  archivo es un volcado completo generado desde SSMS que incluye todo lo que
+  esos scripts y los incrementales `v5..v16` fueron aplicando con el tiempo).
+
+Los scripts `GestionCelulares_v5..v16*.sql` de esta carpeta son el historial
+de cambios incrementales que ya quedaron incorporados en `setup_completo`;
+solo hace falta volver a ellos como referencia de *qué* cambió y *por qué* en
+cada paso, no para instalar desde cero.
 
 ## Regenerar entidades desde la BD (scaffold real, opcional)
 Las entidades y el `DbContext` se escribieron a mano reflejando la BD. Si quieres regenerarlos

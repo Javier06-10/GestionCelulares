@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Config local de herramientas (Claude Code / preview). No versionar.
+.claude/
