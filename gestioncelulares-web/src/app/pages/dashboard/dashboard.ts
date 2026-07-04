@@ -5,7 +5,6 @@ import { LucideAngularModule } from 'lucide-angular';
 import { DashboardService } from '../../core/dashboard.service';
 import { DashboardDto } from '../../core/models';
 import { CountUpDirective } from '../../shared/count-up.directive';
-import { OsMascotsComponent } from '../../shared/os-mascots.component';
 import { PhoneLoaderComponent } from '../../shared/phone-loader.component';
 
 interface DonutSeg { dash: string; offset: string; color: string; label: string; pct: number; }
@@ -22,7 +21,7 @@ const PAD = { top: 16, right: 16, bottom: 28, left: 16 };
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CurrencyPipe, DecimalPipe, DatePipe, RouterLink, LucideAngularModule, CountUpDirective, OsMascotsComponent, PhoneLoaderComponent],
+  imports: [CurrencyPipe, DecimalPipe, DatePipe, RouterLink, LucideAngularModule, CountUpDirective, PhoneLoaderComponent],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
