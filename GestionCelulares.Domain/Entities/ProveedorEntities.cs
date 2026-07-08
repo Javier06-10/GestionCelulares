@@ -12,6 +12,11 @@ public class Proveedor
     public bool Activo { get; set; }
     public DateTime FechaCreacion { get; set; }
 
+    // Condiciones de pago acordadas con el proveedor
+    public string CondicionPago { get; set; } = "Contado";  // Contado | Credito | Acuerdo
+    public int DiasCredito { get; set; }                     // días de crédito (si Credito)
+    public string? NotaCondicion { get; set; }               // detalle del acuerdo (si Acuerdo)
+
     public ICollection<Compra> Compras { get; set; } = new List<Compra>();
     public ICollection<PagoProveedor> Pagos { get; set; } = new List<PagoProveedor>();
 }

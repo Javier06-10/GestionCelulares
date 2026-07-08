@@ -9,6 +9,9 @@ public class ProveedorCrearDto
     [StringLength(30)] public string? Telefono { get; set; }
     [EmailAddress, StringLength(150)] public string? Email { get; set; }
     [StringLength(250)] public string? Direccion { get; set; }
+    [StringLength(20)] public string? CondicionPago { get; set; }
+    [Range(0, 365)] public int DiasCredito { get; set; }
+    [StringLength(300)] public string? NotaCondicion { get; set; }
 }
 
 public class ProveedorActualizarDto
@@ -19,6 +22,9 @@ public class ProveedorActualizarDto
     [EmailAddress, StringLength(150)] public string? Email { get; set; }
     [StringLength(250)] public string? Direccion { get; set; }
     public bool Activo { get; set; } = true;
+    [StringLength(20)] public string? CondicionPago { get; set; }
+    [Range(0, 365)] public int DiasCredito { get; set; }
+    [StringLength(300)] public string? NotaCondicion { get; set; }
 }
 
 public class ProveedorDto
@@ -32,6 +38,9 @@ public class ProveedorDto
     public decimal Balance { get; set; }
     public bool Activo { get; set; }
     public DateTime FechaCreacion { get; set; }
+    public string CondicionPago { get; set; } = "Contado";
+    public int DiasCredito { get; set; }
+    public string? NotaCondicion { get; set; }
 }
 
 public class CompraRegistroDto

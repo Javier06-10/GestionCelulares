@@ -50,6 +50,7 @@ public class ProveedorService : IProveedorService
 
     public async Task<ProveedorDto> CrearAsync(ProveedorCrearDto dto)
     {
+        var condicion = NormalizarCondicion(dto.CondicionPago);
         var proveedor = new Proveedor
         {
             Nombre = dto.Nombre.Trim(),
@@ -59,7 +60,10 @@ public class ProveedorService : IProveedorService
             Direccion = Normalizar(dto.Direccion),
             Balance = 0,
             Activo = true,
-            FechaCreacion = DateTime.Now
+            FechaCreacion = DateTime.Now,
+            CondicionPago = condicion,
+            DiasCredito = condicion == "Credito" ? Math.Max(0, dto.DiasCredito) : 0,
+            NotaCondicion = condicion == "Acuerdo" ? Normalizar(dto.NotaCondicion) : null
         };
         _db.Proveedores.Add(proveedor);
         await _db.SaveChangesAsync();
@@ -72,12 +76,16 @@ public class ProveedorService : IProveedorService
         var proveedor = await _db.Proveedores.FirstOrDefaultAsync(p => p.ProveedorId == id)
             ?? throw new ProveedorException("El proveedor no existe.");
 
+        var condicion = NormalizarCondicion(dto.CondicionPago);
         proveedor.Nombre = dto.Nombre.Trim();
         proveedor.RNC = Normalizar(dto.RNC);
         proveedor.Telefono = Normalizar(dto.Telefono);
         proveedor.Email = Normalizar(dto.Email);
         proveedor.Direccion = Normalizar(dto.Direccion);
         proveedor.Activo = dto.Activo;
+        proveedor.CondicionPago = condicion;
+        proveedor.DiasCredito = condicion == "Credito" ? Math.Max(0, dto.DiasCredito) : 0;
+        proveedor.NotaCondicion = condicion == "Acuerdo" ? Normalizar(dto.NotaCondicion) : null;
         await _db.SaveChangesAsync();
 
         return Proyectar(proveedor);
@@ -237,6 +245,13 @@ public class ProveedorService : IProveedorService
     private static string? Normalizar(string? valor)
         => string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
 
+    private static readonly string[] Condiciones = { "Contado", "Credito", "Acuerdo" };
+    private static string NormalizarCondicion(string? valor)
+    {
+        var v = (valor ?? "").Trim();
+        return Condiciones.Contains(v) ? v : "Contado";
+    }
+
     private static ProveedorDto Proyectar(Proveedor p) => new()
     {
         ProveedorId = p.ProveedorId,
@@ -247,6 +262,9 @@ public class ProveedorService : IProveedorService
         Direccion = p.Direccion,
         Balance = p.Balance,
         Activo = p.Activo,
-        FechaCreacion = p.FechaCreacion
+        FechaCreacion = p.FechaCreacion,
+        CondicionPago = p.CondicionPago,
+        DiasCredito = p.DiasCredito,
+        NotaCondicion = p.NotaCondicion
     };
 }

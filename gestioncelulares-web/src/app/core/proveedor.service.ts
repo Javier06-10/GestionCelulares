@@ -2,6 +2,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
 
+export type CondicionPago = 'Contado' | 'Credito' | 'Acuerdo';
+
 export interface Proveedor {
   proveedorId: number;
   nombre: string;
@@ -12,6 +14,9 @@ export interface Proveedor {
   balance: number;
   activo: boolean;
   fechaCreacion: string;
+  condicionPago: CondicionPago;
+  diasCredito: number;
+  notaCondicion: string | null;
 }
 
 export interface ProveedorGuardar {
@@ -21,6 +26,9 @@ export interface ProveedorGuardar {
   email?: string | null;
   direccion?: string | null;
   activo?: boolean;
+  condicionPago?: CondicionPago;
+  diasCredito?: number;
+  notaCondicion?: string | null;
 }
 
 export interface Compra {

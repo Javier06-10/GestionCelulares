@@ -3,7 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
-import { Compra, Pago, Proveedor, ProveedorService } from '../../core/proveedor.service';
+import { Compra, CondicionPago, Pago, Proveedor, ProveedorService } from '../../core/proveedor.service';
 import { MetodoPago, VentaService } from '../../core/venta.service';
 import { CountUpDirective } from '../../shared/count-up.directive';
 
@@ -38,8 +38,23 @@ export class Proveedores {
     telefono: [''],
     email: ['', Validators.email],
     direccion: [''],
-    activo: [true]
+    activo: [true],
+    condicionPago: ['Contado' as CondicionPago],
+    diasCredito: [0, [Validators.min(0), Validators.max(365)]],
+    notaCondicion: ['']
   });
+
+  /** Etiqueta legible de la condición de pago de un proveedor. */
+  condicionLabel(p: Proveedor): string {
+    if (p.condicionPago === 'Credito') return `Crédito ${p.diasCredito} día(s)`;
+    if (p.condicionPago === 'Acuerdo') return 'Acuerdo de pago';
+    return 'Contado';
+  }
+  condicionClase(c: CondicionPago): string {
+    return c === 'Credito' ? 'bg-tech-purple/10 text-tech-purple'
+      : c === 'Acuerdo' ? 'bg-amber-500/10 text-amber-600'
+      : 'bg-tech-accent/10 text-tech-accent';
+  }
 
   // Detalle: dos apartados — Información (datos) y Cuentas por Pagar (financiero)
   detalle = signal<Proveedor | null>(null);
@@ -100,13 +115,13 @@ export class Proveedores {
   abrirNuevo(): void {
     this.editando.set(null);
     this.errorForm.set(null);
-    this.form.reset({ nombre: '', rnc: '', telefono: '', email: '', direccion: '', activo: true });
+    this.form.reset({ nombre: '', rnc: '', telefono: '', email: '', direccion: '', activo: true, condicionPago: 'Contado', diasCredito: 0, notaCondicion: '' });
     this.modal.set(true);
   }
   abrirEditar(p: Proveedor): void {
     this.editando.set(p);
     this.errorForm.set(null);
-    this.form.reset({ nombre: p.nombre, rnc: p.rnc ?? '', telefono: p.telefono ?? '', email: p.email ?? '', direccion: p.direccion ?? '', activo: p.activo });
+    this.form.reset({ nombre: p.nombre, rnc: p.rnc ?? '', telefono: p.telefono ?? '', email: p.email ?? '', direccion: p.direccion ?? '', activo: p.activo, condicionPago: p.condicionPago, diasCredito: p.diasCredito, notaCondicion: p.notaCondicion ?? '' });
     this.modal.set(true);
   }
   guardar(): void {
@@ -114,7 +129,13 @@ export class Proveedores {
     this.guardando.set(true);
     this.errorForm.set(null);
     const v = this.form.getRawValue();
-    const dto = { nombre: v.nombre.trim(), rnc: v.rnc?.trim() || null, telefono: v.telefono?.trim() || null, email: v.email?.trim() || null, direccion: v.direccion?.trim() || null, activo: v.activo };
+    const dto = {
+      nombre: v.nombre.trim(), rnc: v.rnc?.trim() || null, telefono: v.telefono?.trim() || null,
+      email: v.email?.trim() || null, direccion: v.direccion?.trim() || null, activo: v.activo,
+      condicionPago: v.condicionPago,
+      diasCredito: v.condicionPago === 'Credito' ? v.diasCredito : 0,
+      notaCondicion: v.condicionPago === 'Acuerdo' ? (v.notaCondicion?.trim() || null) : null
+    };
     const accion = this.editando() ? this.servicio.actualizar(this.editando()!.proveedorId, dto) : this.servicio.crear(dto);
     accion.subscribe({
       next: () => { this.guardando.set(false); this.modal.set(false); this.cargar(); },
@@ -133,7 +154,13 @@ export class Proveedores {
   cerrarDetalle(): void { this.detalle.set(null); }
 
   // ----- Compra -----
-  abrirCompra(): void { this.errorCompra.set(null); this.formCompra.reset({ tipo: 'contado', numeroFactura: '', total: 0, itbis: 0, tipoBienServicio: '09', metodoPagoId: null, notas: '' }); this.modalCompra.set(true); }
+  abrirCompra(): void {
+    this.errorCompra.set(null);
+    // Preselecciona el tipo según la condición de pago acordada con el proveedor
+    const tipo: 'contado' | 'credito' = this.detalle()?.condicionPago === 'Contado' ? 'contado' : 'credito';
+    this.formCompra.reset({ tipo, numeroFactura: '', total: 0, itbis: 0, tipoBienServicio: '09', metodoPagoId: null, notas: '' });
+    this.modalCompra.set(true);
+  }
   registrarCompra(): void {
     const p = this.detalle();
     if (this.formCompra.invalid || !p) { this.formCompra.markAllAsTouched(); return; }

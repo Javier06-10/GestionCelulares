@@ -61,7 +61,10 @@
                   <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-tech-accent/15 to-tech-purple/15 grid place-items-center"><lucide-icon name="building-2" [size]="18" class="text-tech-charcoal"></lucide-icon></div>
                   <div>
                     <div class="font-semibold text-tech-charcoal">{{ p.nombre }}{{ !p.activo ? ' (inactivo)' : '' }}</div>
-                    @if (p.email) { <div class="text-xs text-tech-steel">{{ p.email }}</div> }
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="inline-block px-1.5 py-0.5 rounded-md text-[0.6rem] font-semibold" [class]="condicionClase(p.condicionPago)">{{ condicionLabel(p) }}</span>
+                      @if (p.email) { <span class="text-xs text-tech-steel">{{ p.email }}</span> }
+                    </div>
                   </div>
                 </div>
               </td>
@@ -117,6 +120,13 @@
               <div class="p-3.5 rounded-xl bg-tech-bg-light/50 border border-tech-pastel/30">
                 <div class="text-[0.62rem] uppercase font-mono text-tech-steel mb-1">Estado</div>
                 <div class="text-sm font-medium" [class]="p.activo ? 'text-tech-accent' : 'text-tech-steel'">{{ p.activo ? 'Activo' : 'Inactivo' }}</div>
+              </div>
+              <div class="p-3.5 rounded-xl bg-tech-bg-light/50 border border-tech-pastel/30 sm:col-span-2">
+                <div class="text-[0.62rem] uppercase font-mono text-tech-steel mb-1">Condición de pago</div>
+                <div class="flex items-center gap-2">
+                  <span class="inline-block px-2 py-0.5 rounded-lg text-xs font-semibold" [class]="condicionClase(p.condicionPago)">{{ condicionLabel(p) }}</span>
+                  @if (p.condicionPago === 'Acuerdo' && p.notaCondicion) { <span class="text-xs text-tech-steel">· {{ p.notaCondicion }}</span> }
+                </div>
               </div>
               <div class="p-3.5 rounded-xl bg-tech-bg-light/50 border border-tech-pastel/30 sm:col-span-2">
                 <div class="text-[0.62rem] uppercase font-mono text-tech-steel mb-1">Dirección</div>
@@ -202,6 +212,29 @@
           <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Dirección</label>
           <input formControlName="direccion" type="text" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
         </div>
+
+        <!-- Condiciones de pago -->
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Condición de pago</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" (click)="form.controls.condicionPago.setValue('Contado')" class="flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl border text-sm font-semibold transition-all" [class]="form.value.condicionPago === 'Contado' ? 'border-tech-accent bg-tech-accent/10 text-tech-charcoal' : 'border-tech-pastel/50 text-tech-steel hover:bg-tech-bg-light'"><lucide-icon name="banknote" [size]="15"></lucide-icon> Contado</button>
+            <button type="button" (click)="form.controls.condicionPago.setValue('Credito')" class="flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl border text-sm font-semibold transition-all" [class]="form.value.condicionPago === 'Credito' ? 'border-tech-purple bg-tech-purple/10 text-tech-charcoal' : 'border-tech-pastel/50 text-tech-steel hover:bg-tech-bg-light'"><lucide-icon name="credit-card" [size]="15"></lucide-icon> Crédito</button>
+            <button type="button" (click)="form.controls.condicionPago.setValue('Acuerdo')" class="flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl border text-sm font-semibold transition-all" [class]="form.value.condicionPago === 'Acuerdo' ? 'border-amber-500 bg-amber-500/10 text-tech-charcoal' : 'border-tech-pastel/50 text-tech-steel hover:bg-tech-bg-light'"><lucide-icon name="calendar-clock" [size]="15"></lucide-icon> Acuerdo</button>
+          </div>
+          @if (form.value.condicionPago === 'Credito') {
+            <div class="mt-2">
+              <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Días de crédito</label>
+              <input formControlName="diasCredito" type="number" min="0" max="365" placeholder="30" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
+              <p class="text-xs text-tech-steel mt-1">Ej.: 15, 30 o 60 días para pagar la factura.</p>
+            </div>
+          } @else if (form.value.condicionPago === 'Acuerdo') {
+            <div class="mt-2">
+              <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Detalle del acuerdo</label>
+              <input formControlName="notaCondicion" type="text" placeholder="Ej.: 50% al pedir, 50% a 30 días…" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-amber-500/60 focus:bg-white" />
+            </div>
+          }
+        </div>
+
         @if (editando()) {
           <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" formControlName="activo" class="w-4 h-4 accent-[#00E676]" /><span class="text-sm text-tech-charcoal">Proveedor activo</span></label>
         }
