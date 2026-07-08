@@ -41,8 +41,9 @@ export class Proveedores {
     activo: [true]
   });
 
-  // Detalle (compras y pagos)
+  // Detalle: dos apartados — Información (datos) y Cuentas por Pagar (financiero)
   detalle = signal<Proveedor | null>(null);
+  apartado = signal<'info' | 'cuentas'>('cuentas');
   compras = signal<Compra[]>([]);
   pagos = signal<Pago[]>([]);
   tabDetalle = signal<'compras' | 'pagos'>('compras');
@@ -124,6 +125,7 @@ export class Proveedores {
   // ----- Detalle -----
   abrirDetalle(p: Proveedor): void {
     this.detalle.set(p);
+    this.apartado.set('cuentas');
     this.tabDetalle.set('compras');
     this.servicio.compras(p.proveedorId).subscribe(c => this.compras.set(c));
     this.servicio.pagos(p.proveedorId).subscribe(pg => this.pagos.set(pg));
