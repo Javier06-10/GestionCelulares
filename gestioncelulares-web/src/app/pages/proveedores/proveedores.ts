@@ -41,7 +41,11 @@ export class Proveedores {
     activo: [true],
     condicionPago: ['Contado' as CondicionPago],
     diasCredito: [0, [Validators.min(0), Validators.max(365)]],
-    notaCondicion: ['']
+    notaCondicion: [''],
+    contactoNombre: [''],
+    contactoCargo: [''],
+    contactoTelefono: [''],
+    contactoEmail: ['', Validators.email]
   });
 
   /** Etiqueta legible de la condición de pago de un proveedor. */
@@ -115,13 +119,13 @@ export class Proveedores {
   abrirNuevo(): void {
     this.editando.set(null);
     this.errorForm.set(null);
-    this.form.reset({ nombre: '', rnc: '', telefono: '', email: '', direccion: '', activo: true, condicionPago: 'Contado', diasCredito: 0, notaCondicion: '' });
+    this.form.reset({ nombre: '', rnc: '', telefono: '', email: '', direccion: '', activo: true, condicionPago: 'Contado', diasCredito: 0, notaCondicion: '', contactoNombre: '', contactoCargo: '', contactoTelefono: '', contactoEmail: '' });
     this.modal.set(true);
   }
   abrirEditar(p: Proveedor): void {
     this.editando.set(p);
     this.errorForm.set(null);
-    this.form.reset({ nombre: p.nombre, rnc: p.rnc ?? '', telefono: p.telefono ?? '', email: p.email ?? '', direccion: p.direccion ?? '', activo: p.activo, condicionPago: p.condicionPago, diasCredito: p.diasCredito, notaCondicion: p.notaCondicion ?? '' });
+    this.form.reset({ nombre: p.nombre, rnc: p.rnc ?? '', telefono: p.telefono ?? '', email: p.email ?? '', direccion: p.direccion ?? '', activo: p.activo, condicionPago: p.condicionPago, diasCredito: p.diasCredito, notaCondicion: p.notaCondicion ?? '', contactoNombre: p.contactoNombre ?? '', contactoCargo: p.contactoCargo ?? '', contactoTelefono: p.contactoTelefono ?? '', contactoEmail: p.contactoEmail ?? '' });
     this.modal.set(true);
   }
   guardar(): void {
@@ -134,7 +138,11 @@ export class Proveedores {
       email: v.email?.trim() || null, direccion: v.direccion?.trim() || null, activo: v.activo,
       condicionPago: v.condicionPago,
       diasCredito: v.condicionPago === 'Credito' ? v.diasCredito : 0,
-      notaCondicion: v.condicionPago === 'Acuerdo' ? (v.notaCondicion?.trim() || null) : null
+      notaCondicion: v.condicionPago === 'Acuerdo' ? (v.notaCondicion?.trim() || null) : null,
+      contactoNombre: v.contactoNombre?.trim() || null,
+      contactoCargo: v.contactoCargo?.trim() || null,
+      contactoTelefono: v.contactoTelefono?.trim() || null,
+      contactoEmail: v.contactoEmail?.trim() || null
     };
     const accion = this.editando() ? this.servicio.actualizar(this.editando()!.proveedorId, dto) : this.servicio.crear(dto);
     accion.subscribe({

@@ -17,6 +17,10 @@ export interface Proveedor {
   condicionPago: CondicionPago;
   diasCredito: number;
   notaCondicion: string | null;
+  contactoNombre: string | null;
+  contactoCargo: string | null;
+  contactoTelefono: string | null;
+  contactoEmail: string | null;
 }
 
 export interface ProveedorGuardar {
@@ -29,6 +33,10 @@ export interface ProveedorGuardar {
   condicionPago?: CondicionPago;
   diasCredito?: number;
   notaCondicion?: string | null;
+  contactoNombre?: string | null;
+  contactoCargo?: string | null;
+  contactoTelefono?: string | null;
+  contactoEmail?: string | null;
 }
 
 export interface Compra {

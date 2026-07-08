@@ -63,7 +63,11 @@ public class ProveedorService : IProveedorService
             FechaCreacion = DateTime.Now,
             CondicionPago = condicion,
             DiasCredito = condicion == "Credito" ? Math.Max(0, dto.DiasCredito) : 0,
-            NotaCondicion = condicion == "Acuerdo" ? Normalizar(dto.NotaCondicion) : null
+            NotaCondicion = condicion == "Acuerdo" ? Normalizar(dto.NotaCondicion) : null,
+            ContactoNombre = Normalizar(dto.ContactoNombre),
+            ContactoCargo = Normalizar(dto.ContactoCargo),
+            ContactoTelefono = Normalizar(dto.ContactoTelefono),
+            ContactoEmail = Normalizar(dto.ContactoEmail)
         };
         _db.Proveedores.Add(proveedor);
         await _db.SaveChangesAsync();
@@ -86,6 +90,10 @@ public class ProveedorService : IProveedorService
         proveedor.CondicionPago = condicion;
         proveedor.DiasCredito = condicion == "Credito" ? Math.Max(0, dto.DiasCredito) : 0;
         proveedor.NotaCondicion = condicion == "Acuerdo" ? Normalizar(dto.NotaCondicion) : null;
+        proveedor.ContactoNombre = Normalizar(dto.ContactoNombre);
+        proveedor.ContactoCargo = Normalizar(dto.ContactoCargo);
+        proveedor.ContactoTelefono = Normalizar(dto.ContactoTelefono);
+        proveedor.ContactoEmail = Normalizar(dto.ContactoEmail);
         await _db.SaveChangesAsync();
 
         return Proyectar(proveedor);
@@ -265,6 +273,10 @@ public class ProveedorService : IProveedorService
         FechaCreacion = p.FechaCreacion,
         CondicionPago = p.CondicionPago,
         DiasCredito = p.DiasCredito,
-        NotaCondicion = p.NotaCondicion
+        NotaCondicion = p.NotaCondicion,
+        ContactoNombre = p.ContactoNombre,
+        ContactoCargo = p.ContactoCargo,
+        ContactoTelefono = p.ContactoTelefono,
+        ContactoEmail = p.ContactoEmail
     };
 }

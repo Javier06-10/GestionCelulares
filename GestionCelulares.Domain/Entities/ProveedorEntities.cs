@@ -17,6 +17,12 @@ public class Proveedor
     public int DiasCredito { get; set; }                     // días de crédito (si Credito)
     public string? NotaCondicion { get; set; }               // detalle del acuerdo (si Acuerdo)
 
+    // Contacto directo (persona de la empresa proveedora)
+    public string? ContactoNombre { get; set; }
+    public string? ContactoCargo { get; set; }
+    public string? ContactoTelefono { get; set; }
+    public string? ContactoEmail { get; set; }
+
     public ICollection<Compra> Compras { get; set; } = new List<Compra>();
     public ICollection<PagoProveedor> Pagos { get; set; } = new List<PagoProveedor>();
 }
