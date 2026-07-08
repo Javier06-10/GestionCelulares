@@ -11,6 +11,7 @@ export const ACCESO: Record<string, string[]> = {
   '': ['Admin', 'Vendedor', 'Tecnico'],          // Dashboard
   'pos': ['Admin', 'Vendedor'],
   'ventas': ['Admin', 'Vendedor'],               // Historial de ventas
+  'devoluciones': ['Admin'],                     // Notas de crédito (revierten ventas)
   'caja': ['Admin', 'Vendedor'],
   'apartados': ['Admin', 'Vendedor'],
   'inventario': ['Admin', 'Vendedor', 'Tecnico'],// Existencias

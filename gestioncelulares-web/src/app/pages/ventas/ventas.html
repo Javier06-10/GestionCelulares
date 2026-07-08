@@ -84,20 +84,9 @@
       </div>
       <div class="px-6 py-5 flex flex-col gap-4">
         <div class="px-3.5 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 text-sm">
-          @if (form.controls.emitirNotaCredito.value) {
-            Se revertirá el inventario y se emitirá una <span class="font-semibold">Nota de Crédito (04)</span> que referencia al NCF <span class="font-mono font-semibold">{{ objetivo()?.ncf || '—' }}</span> y se reporta en el 607. La devolución del dinero se maneja aparte en caja.
-          } @else {
-            Se revertirá el inventario y el NCF <span class="font-mono font-semibold">{{ objetivo()?.ncf || '—' }}</span> quedará registrado como anulado (608). La devolución del dinero se maneja aparte en caja.
-          }
+          Se revertirá el inventario y el NCF <span class="font-mono font-semibold">{{ objetivo()?.ncf || '—' }}</span> quedará registrado como anulado (608). La devolución del dinero se maneja aparte en caja.
+          <span class="block mt-1 text-xs">Para emitir una <span class="font-semibold">Nota de Crédito (04)</span>, usa la pantalla <span class="font-semibold">Devoluciones</span>.</span>
         </div>
-        @if (objetivo()?.ncf) {
-          <label class="flex items-start gap-2.5 px-3.5 py-2.5 rounded-xl border border-tech-pastel/50 cursor-pointer hover:bg-tech-bg-light/50 transition-colors">
-            <input formControlName="emitirNotaCredito" type="checkbox" class="mt-0.5 w-4 h-4 accent-[#00E676]" />
-            <span class="text-sm text-tech-charcoal">Emitir Nota de Crédito (04)
-              <span class="block text-xs text-tech-steel mt-0.5">Recomendado si la factura ya fue declarada en un 607 cerrado. En vez de anular el NCF, emite un comprobante que lo corrige.</span>
-            </span>
-          </label>
-        }
         <div>
           <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Tipo de anulación *</label>
           <select formControlName="tipoAnulacion" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white">

@@ -1,0 +1,143 @@
+<!-- Encabezado -->
+<div class="flex items-center justify-between gap-3 mb-5">
+  <div>
+    <h2 class="text-2xl font-bold text-tech-charcoal tracking-tight">Devoluciones</h2>
+    <p class="text-sm text-tech-steel mt-0.5">Notas de crédito (04) emitidas por devolución de productos.</p>
+  </div>
+  <button (click)="abrirModal()"
+    class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-purple to-indigo-400 text-white font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(108,92,231,0.6)] active:scale-95">
+    <lucide-icon name="rotate-ccw" [size]="18"></lucide-icon> Nueva devolución
+  </button>
+</div>
+
+<!-- KPIs -->
+<div class="grid grid-cols-2 gap-3 mb-4 max-w-md">
+  <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
+    <p class="text-[0.62rem] font-mono uppercase tracking-wider text-tech-steel mb-1">Notas de crédito</p>
+    <div class="text-2xl font-bold text-tech-charcoal" [gcCountUp]="kpiCantidad()"></div>
+  </div>
+  <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
+    <p class="text-[0.62rem] font-mono uppercase tracking-wider text-tech-steel mb-1">Total devuelto</p>
+    <div class="text-2xl font-bold text-red-500" [gcCountUp]="kpiTotal()" countPrefix="RD$ " [countDecimals]="0"></div>
+  </div>
+</div>
+
+<!-- Tabla de notas de crédito -->
+<div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm border-collapse min-w-[820px]">
+      <thead>
+        <tr class="bg-tech-bg-light/80 text-tech-steel text-left">
+          <th class="font-semibold py-3 px-4">NCF (04)</th>
+          <th class="font-semibold py-3 px-4">Factura / NCF original</th>
+          <th class="font-semibold py-3 px-4">Cliente</th>
+          <th class="font-semibold py-3 px-4 text-right">Monto</th>
+          <th class="font-semibold py-3 px-4 text-right">ITBIS</th>
+          <th class="font-semibold py-3 px-4 text-right">Total</th>
+          <th class="font-semibold py-3 px-4">Fecha</th>
+          <th class="font-semibold py-3 px-4">Motivo</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          <tr><td colspan="8" class="py-6"><app-phone-loader [size]="54" label="Cargando devoluciones…"></app-phone-loader></td></tr>
+        } @else if (notas().length === 0) {
+          <tr><td colspan="8" class="py-12 text-center text-tech-steel">
+            <lucide-icon name="rotate-ccw" [size]="32" class="mx-auto mb-2 opacity-40"></lucide-icon>
+            <p>No hay devoluciones registradas.</p>
+          </td></tr>
+        } @else {
+          @for (n of notas(); track n.notaCreditoId) {
+            <tr class="border-t border-tech-pastel/20 hover:bg-tech-bg-light/60 transition-colors">
+              <td class="py-3 px-4 font-mono font-semibold text-tech-purple">{{ n.ncf || '—' }}</td>
+              <td class="py-3 px-4">
+                <div class="text-tech-charcoal">{{ n.numeroFactura || 'Venta #' + n.ventaId }}</div>
+                <div class="text-xs text-tech-steel font-mono">{{ n.ncfModificado || '—' }}</div>
+              </td>
+              <td class="py-3 px-4 text-tech-charcoal">{{ n.cliente || 'Consumidor final' }}</td>
+              <td class="py-3 px-4 text-right text-tech-steel">{{ n.monto | currency: 'DOP':'RD$':'1.2-2' }}</td>
+              <td class="py-3 px-4 text-right text-tech-steel">{{ n.itbis | currency: 'DOP':'RD$':'1.2-2' }}</td>
+              <td class="py-3 px-4 text-right font-semibold text-red-500">{{ n.total | currency: 'DOP':'RD$':'1.2-2' }}</td>
+              <td class="py-3 px-4 text-tech-steel">{{ n.fechaRegistro | date: 'dd/MM/yy' }}</td>
+              <td class="py-3 px-4 text-tech-steel max-w-[220px] truncate">{{ n.motivo || '—' }}</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Modal nueva devolución ===== -->
+@if (modal()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="cerrarModal()">
+    <div (click)="$event.stopPropagation()" class="w-[min(560px,95vw)] max-h-[92vh] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <h3 class="font-bold text-tech-charcoal">Nueva devolución</h3>
+        <button (click)="cerrarModal()" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
+        <div class="px-3.5 py-2.5 rounded-xl bg-tech-purple/10 border border-tech-purple/30 text-tech-purple text-sm">
+          Se emitirá una <span class="font-semibold">Nota de Crédito (04)</span> que referencia el NCF original, se revierte el inventario y entra al reporte 607. El reintegro del dinero se maneja aparte en caja.
+        </div>
+
+        <!-- Buscar y elegir la venta -->
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Venta a devolver *</label>
+          <div class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 transition-all focus-within:border-tech-purple/60 focus-within:bg-white">
+            <lucide-icon name="search" [size]="16" class="shrink-0 text-tech-steel"></lucide-icon>
+            <input [ngModel]="buscarVenta()" (ngModelChange)="buscarVenta.set($event)" type="text" placeholder="Buscar por factura, NCF o cliente…"
+              class="flex-1 min-w-0 bg-transparent text-tech-charcoal outline-none placeholder:text-tech-steel/60" />
+          </div>
+
+          <div class="mt-2 border border-tech-pastel/40 rounded-xl divide-y divide-tech-pastel/20 max-h-56 overflow-y-auto">
+            @if (cargandoVentas()) {
+              <div class="py-6"><app-phone-loader [size]="44" label="Cargando ventas…"></app-phone-loader></div>
+            } @else if (ventasVista().length === 0) {
+              <div class="py-6 text-center text-xs text-tech-steel">No hay ventas con NCF en los últimos 90 días para ese criterio.</div>
+            } @else {
+              @for (v of ventasVista(); track v.ventaId) {
+                <button (click)="seleccionar(v)"
+                  class="w-full text-left px-3.5 py-2.5 flex items-center justify-between gap-2 transition-colors"
+                  [class]="ventaSel()?.ventaId === v.ventaId ? 'bg-tech-purple/10' : 'hover:bg-tech-bg-light/60'">
+                  <div class="min-w-0">
+                    <div class="text-sm text-tech-charcoal truncate">{{ v.numeroFactura || 'Venta #' + v.ventaId }} · <span class="font-mono text-tech-purple">{{ v.ncf }}</span></div>
+                    <div class="text-xs text-tech-steel">{{ v.cliente || 'Consumidor final' }} · {{ v.fecha | date: 'dd/MM/yy' }}</div>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span class="text-sm font-semibold text-tech-charcoal">{{ v.total | currency: 'DOP':'RD$':'1.0-0' }}</span>
+                    @if (ventaSel()?.ventaId === v.ventaId) { <lucide-icon name="circle-check" [size]="16" class="text-tech-purple"></lucide-icon> }
+                  </div>
+                </button>
+              }
+            }
+          </div>
+        </div>
+
+        <!-- Motivo -->
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Motivo</label>
+          <input [ngModel]="motivo()" (ngModelChange)="motivo.set($event)" type="text" placeholder="Ej.: producto defectuoso, error de facturación…"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-purple/60 focus:bg-white" />
+        </div>
+
+        @if (error()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ error() }}</div> }
+      </div>
+
+      <div class="px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40 flex justify-end gap-2">
+        <button (click)="cerrarModal()" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button (click)="confirmar()" [disabled]="!ventaSel() || guardando()"
+          class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-tech-purple to-indigo-400 text-white font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(108,92,231,0.6)] active:scale-95 disabled:opacity-50">
+          @if (guardando()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Emitiendo… }
+          @else { <lucide-icon name="rotate-ccw" [size]="16"></lucide-icon> Emitir Nota de Crédito }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Celebración -->
+@if (celebrando()) {
+  <app-celebracion icono="circle-check" mensaje="¡Nota de crédito emitida!" submensaje="Devolución registrada" tono="purple"></app-celebracion>
+}

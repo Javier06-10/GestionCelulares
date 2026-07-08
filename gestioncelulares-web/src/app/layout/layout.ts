@@ -103,6 +103,7 @@ export class Layout {
           etiqueta: 'Ventas', icono: 'shopping-cart', hijos: [
             { etiqueta: 'POS', icono: 'scan-line', ruta: '/pos' },
             { etiqueta: 'Historial', icono: 'clipboard-list', ruta: '/ventas' },
+            { etiqueta: 'Devoluciones', icono: 'rotate-ccw', ruta: '/devoluciones' },
             { etiqueta: 'Caja', icono: 'wallet', ruta: '/caja' },
             { etiqueta: 'Apartados', icono: 'bookmark', ruta: '/apartados' }
           ]

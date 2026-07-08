@@ -44,8 +44,7 @@ export class Ventas {
   errorModal = signal<string | null>(null);
   form = this.fb.nonNullable.group({
     tipoAnulacion: ['05', Validators.required],
-    motivo: [''],
-    emitirNotaCredito: [false]
+    motivo: ['']
   });
 
   constructor() { this.cargar(); }
@@ -64,7 +63,7 @@ export class Ventas {
   abrirAnular(v: VentaResumen): void {
     this.objetivo.set(v);
     this.errorModal.set(null);
-    this.form.reset({ tipoAnulacion: '05', motivo: '', emitirNotaCredito: false });
+    this.form.reset({ tipoAnulacion: '05', motivo: '' });
     this.modal.set(true);
   }
 
@@ -74,7 +73,7 @@ export class Ventas {
     this.anulando.set(true);
     this.errorModal.set(null);
     const f = this.form.getRawValue();
-    this.servicio.anular(v.ventaId, { tipoAnulacion: f.tipoAnulacion, motivo: f.motivo?.trim() || null, emitirNotaCredito: f.emitirNotaCredito }).subscribe({
+    this.servicio.anular(v.ventaId, { tipoAnulacion: f.tipoAnulacion, motivo: f.motivo?.trim() || null }).subscribe({
       next: () => { this.anulando.set(false); this.modal.set(false); this.cargar(); },
       error: err => { this.anulando.set(false); this.errorModal.set(err.error?.error ?? 'No se pudo anular la venta.'); }
     });

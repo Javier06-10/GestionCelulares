@@ -10,6 +10,7 @@ import { Clientes } from './pages/clientes/clientes';
 import { Creditos } from './pages/creditos/creditos';
 import { Cuentas } from './pages/cuentas/cuentas';
 import { Dashboard } from './pages/dashboard/dashboard';
+import { Devoluciones } from './pages/devoluciones/devoluciones';
 import { Estados } from './pages/estados/estados';
 import { Garantias } from './pages/garantias/garantias';
 import { Inventario } from './pages/inventario/inventario';
@@ -34,6 +35,7 @@ export const routes: Routes = [
       { path: '', component: Dashboard },
       { path: 'pos', component: Pos },
       { path: 'ventas', component: Ventas },
+      { path: 'devoluciones', component: Devoluciones },
       { path: 'clientes', component: Clientes },
       { path: 'inventario', component: Inventario },
       { path: 'faltantes', redirectTo: 'inventario', pathMatch: 'full' },
