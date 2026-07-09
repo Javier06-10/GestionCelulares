@@ -111,4 +111,38 @@ public class ProveedoresController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    // ----- Contactos -----
+
+    /// <summary>Lista los contactos del proveedor.</summary>
+    [HttpGet("{id:int}/contactos")]
+    public async Task<IActionResult> Contactos(int id)
+    {
+        try { return Ok(await _proveedores.ContactosAsync(id)); }
+        catch (ProveedorException ex) { return NotFound(new { error = ex.Message }); }
+    }
+
+    /// <summary>Agrega un contacto al proveedor.</summary>
+    [HttpPost("{id:int}/contactos")]
+    public async Task<IActionResult> AgregarContacto(int id, [FromBody] ContactoGuardarDto dto)
+    {
+        try { return Ok(await _proveedores.AgregarContactoAsync(id, dto)); }
+        catch (ProveedorException ex) { return BadRequest(new { error = ex.Message }); }
+    }
+
+    /// <summary>Actualiza un contacto.</summary>
+    [HttpPut("contactos/{contactoId:int}")]
+    public async Task<IActionResult> ActualizarContacto(int contactoId, [FromBody] ContactoGuardarDto dto)
+    {
+        try { return Ok(await _proveedores.ActualizarContactoAsync(contactoId, dto)); }
+        catch (ProveedorException ex) { return BadRequest(new { error = ex.Message }); }
+    }
+
+    /// <summary>Elimina un contacto.</summary>
+    [HttpDelete("contactos/{contactoId:int}")]
+    public async Task<IActionResult> EliminarContacto(int contactoId)
+    {
+        try { await _proveedores.EliminarContactoAsync(contactoId); return NoContent(); }
+        catch (ProveedorException ex) { return BadRequest(new { error = ex.Message }); }
+    }
 }

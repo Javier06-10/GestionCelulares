@@ -3,7 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
-import { Compra, CondicionPago, Pago, Proveedor, ProveedorService } from '../../core/proveedor.service';
+import { Compra, CondicionPago, ContactoProveedor, Pago, Proveedor, ProveedorService } from '../../core/proveedor.service';
 import { MetodoPago, VentaService } from '../../core/venta.service';
 import { CountUpDirective } from '../../shared/count-up.directive';
 
@@ -41,12 +41,57 @@ export class Proveedores {
     activo: [true],
     condicionPago: ['Contado' as CondicionPago],
     diasCredito: [0, [Validators.min(0), Validators.max(365)]],
-    notaCondicion: [''],
-    contactoNombre: [''],
-    contactoCargo: [''],
-    contactoTelefono: [''],
-    contactoEmail: ['', Validators.email]
+    notaCondicion: ['']
   });
+
+  // Contactos del proveedor (varios)
+  contactos = signal<ContactoProveedor[]>([]);
+  modalContacto = signal(false);
+  editandoContacto = signal<ContactoProveedor | null>(null);
+  errorContacto = signal<string | null>(null);
+  formContacto = this.fb.nonNullable.group({
+    nombre: ['', [Validators.required, Validators.maxLength(150)]],
+    cargo: [''],
+    telefono: [''],
+    email: ['', Validators.email],
+    esPrincipal: [false]
+  });
+
+  private cargarContactos(proveedorId: number): void {
+    this.servicio.contactos(proveedorId).subscribe(c => this.contactos.set(c));
+  }
+  abrirNuevoContacto(): void {
+    this.editandoContacto.set(null);
+    this.errorContacto.set(null);
+    this.formContacto.reset({ nombre: '', cargo: '', telefono: '', email: '', esPrincipal: this.contactos().length === 0 });
+    this.modalContacto.set(true);
+  }
+  abrirEditarContacto(c: ContactoProveedor): void {
+    this.editandoContacto.set(c);
+    this.errorContacto.set(null);
+    this.formContacto.reset({ nombre: c.nombre, cargo: c.cargo ?? '', telefono: c.telefono ?? '', email: c.email ?? '', esPrincipal: c.esPrincipal });
+    this.modalContacto.set(true);
+  }
+  guardarContacto(): void {
+    const p = this.detalle();
+    if (this.formContacto.invalid || !p) { this.formContacto.markAllAsTouched(); return; }
+    const v = this.formContacto.getRawValue();
+    const dto = { nombre: v.nombre.trim(), cargo: v.cargo?.trim() || null, telefono: v.telefono?.trim() || null, email: v.email?.trim() || null, esPrincipal: v.esPrincipal };
+    const accion = this.editandoContacto()
+      ? this.servicio.actualizarContacto(this.editandoContacto()!.contactoProveedorId, dto)
+      : this.servicio.agregarContacto(p.proveedorId, dto);
+    accion.subscribe({
+      next: () => { this.modalContacto.set(false); this.cargarContactos(p.proveedorId); },
+      error: err => this.errorContacto.set(err.error?.error ?? 'No se pudo guardar el contacto.')
+    });
+  }
+  eliminarContacto(c: ContactoProveedor): void {
+    const p = this.detalle();
+    if (!p) return;
+    this.servicio.eliminarContacto(c.contactoProveedorId).subscribe({
+      next: () => this.cargarContactos(p.proveedorId)
+    });
+  }
 
   /** Etiqueta legible de la condición de pago de un proveedor. */
   condicionLabel(p: Proveedor): string {
@@ -119,13 +164,13 @@ export class Proveedores {
   abrirNuevo(): void {
     this.editando.set(null);
     this.errorForm.set(null);
-    this.form.reset({ nombre: '', rnc: '', telefono: '', email: '', direccion: '', activo: true, condicionPago: 'Contado', diasCredito: 0, notaCondicion: '', contactoNombre: '', contactoCargo: '', contactoTelefono: '', contactoEmail: '' });
+    this.form.reset({ nombre: '', rnc: '', telefono: '', email: '', direccion: '', activo: true, condicionPago: 'Contado', diasCredito: 0, notaCondicion: '' });
     this.modal.set(true);
   }
   abrirEditar(p: Proveedor): void {
     this.editando.set(p);
     this.errorForm.set(null);
-    this.form.reset({ nombre: p.nombre, rnc: p.rnc ?? '', telefono: p.telefono ?? '', email: p.email ?? '', direccion: p.direccion ?? '', activo: p.activo, condicionPago: p.condicionPago, diasCredito: p.diasCredito, notaCondicion: p.notaCondicion ?? '', contactoNombre: p.contactoNombre ?? '', contactoCargo: p.contactoCargo ?? '', contactoTelefono: p.contactoTelefono ?? '', contactoEmail: p.contactoEmail ?? '' });
+    this.form.reset({ nombre: p.nombre, rnc: p.rnc ?? '', telefono: p.telefono ?? '', email: p.email ?? '', direccion: p.direccion ?? '', activo: p.activo, condicionPago: p.condicionPago, diasCredito: p.diasCredito, notaCondicion: p.notaCondicion ?? '' });
     this.modal.set(true);
   }
   guardar(): void {
@@ -138,11 +183,7 @@ export class Proveedores {
       email: v.email?.trim() || null, direccion: v.direccion?.trim() || null, activo: v.activo,
       condicionPago: v.condicionPago,
       diasCredito: v.condicionPago === 'Credito' ? v.diasCredito : 0,
-      notaCondicion: v.condicionPago === 'Acuerdo' ? (v.notaCondicion?.trim() || null) : null,
-      contactoNombre: v.contactoNombre?.trim() || null,
-      contactoCargo: v.contactoCargo?.trim() || null,
-      contactoTelefono: v.contactoTelefono?.trim() || null,
-      contactoEmail: v.contactoEmail?.trim() || null
+      notaCondicion: v.condicionPago === 'Acuerdo' ? (v.notaCondicion?.trim() || null) : null
     };
     const accion = this.editando() ? this.servicio.actualizar(this.editando()!.proveedorId, dto) : this.servicio.crear(dto);
     accion.subscribe({
@@ -158,6 +199,7 @@ export class Proveedores {
     this.tabDetalle.set('compras');
     this.servicio.compras(p.proveedorId).subscribe(c => this.compras.set(c));
     this.servicio.pagos(p.proveedorId).subscribe(pg => this.pagos.set(pg));
+    this.cargarContactos(p.proveedorId);
   }
   cerrarDetalle(): void { this.detalle.set(null); }
 

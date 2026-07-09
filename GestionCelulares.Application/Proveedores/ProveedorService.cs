@@ -15,6 +15,12 @@ public interface IProveedorService
     Task<CompraDto> RegistrarCompraAsync(int proveedorId, CompraRegistroDto dto);
     Task<IReadOnlyList<PagoProveedorDto>> PagosAsync(int proveedorId);
     Task<PagoProveedorDto> RegistrarPagoAsync(int proveedorId, PagoProveedorRegistroDto dto);
+
+    // Contactos (varios por proveedor)
+    Task<IReadOnlyList<ContactoProveedorDto>> ContactosAsync(int proveedorId);
+    Task<ContactoProveedorDto> AgregarContactoAsync(int proveedorId, ContactoGuardarDto dto);
+    Task<ContactoProveedorDto> ActualizarContactoAsync(int contactoId, ContactoGuardarDto dto);
+    Task EliminarContactoAsync(int contactoId);
 }
 
 public class ProveedorService : IProveedorService
@@ -63,11 +69,7 @@ public class ProveedorService : IProveedorService
             FechaCreacion = DateTime.Now,
             CondicionPago = condicion,
             DiasCredito = condicion == "Credito" ? Math.Max(0, dto.DiasCredito) : 0,
-            NotaCondicion = condicion == "Acuerdo" ? Normalizar(dto.NotaCondicion) : null,
-            ContactoNombre = Normalizar(dto.ContactoNombre),
-            ContactoCargo = Normalizar(dto.ContactoCargo),
-            ContactoTelefono = Normalizar(dto.ContactoTelefono),
-            ContactoEmail = Normalizar(dto.ContactoEmail)
+            NotaCondicion = condicion == "Acuerdo" ? Normalizar(dto.NotaCondicion) : null
         };
         _db.Proveedores.Add(proveedor);
         await _db.SaveChangesAsync();
@@ -90,10 +92,6 @@ public class ProveedorService : IProveedorService
         proveedor.CondicionPago = condicion;
         proveedor.DiasCredito = condicion == "Credito" ? Math.Max(0, dto.DiasCredito) : 0;
         proveedor.NotaCondicion = condicion == "Acuerdo" ? Normalizar(dto.NotaCondicion) : null;
-        proveedor.ContactoNombre = Normalizar(dto.ContactoNombre);
-        proveedor.ContactoCargo = Normalizar(dto.ContactoCargo);
-        proveedor.ContactoTelefono = Normalizar(dto.ContactoTelefono);
-        proveedor.ContactoEmail = Normalizar(dto.ContactoEmail);
         await _db.SaveChangesAsync();
 
         return Proyectar(proveedor);
@@ -244,6 +242,82 @@ public class ProveedorService : IProveedorService
         };
     }
 
+    // ----- Contactos -----
+    public async Task<IReadOnlyList<ContactoProveedorDto>> ContactosAsync(int proveedorId)
+    {
+        await ExigirProveedorAsync(proveedorId);
+        return await _db.ContactosProveedor.AsNoTracking()
+            .Where(c => c.ProveedorId == proveedorId)
+            .OrderByDescending(c => c.EsPrincipal).ThenBy(c => c.Nombre)
+            .Select(c => ProyectarContacto(c))
+            .ToListAsync();
+    }
+
+    public async Task<ContactoProveedorDto> AgregarContactoAsync(int proveedorId, ContactoGuardarDto dto)
+    {
+        await ExigirProveedorAsync(proveedorId);
+        if (dto.EsPrincipal) await QuitarPrincipalAsync(proveedorId, null);
+
+        var contacto = new ContactoProveedor
+        {
+            ProveedorId = proveedorId,
+            Nombre = dto.Nombre.Trim(),
+            Cargo = Normalizar(dto.Cargo),
+            Telefono = Normalizar(dto.Telefono),
+            Email = Normalizar(dto.Email),
+            EsPrincipal = dto.EsPrincipal,
+            FechaCreacion = DateTime.Now
+        };
+        _db.ContactosProveedor.Add(contacto);
+        await _db.SaveChangesAsync();
+        return ProyectarContacto(contacto);
+    }
+
+    public async Task<ContactoProveedorDto> ActualizarContactoAsync(int contactoId, ContactoGuardarDto dto)
+    {
+        var contacto = await _db.ContactosProveedor.FirstOrDefaultAsync(c => c.ContactoProveedorId == contactoId)
+            ?? throw new ProveedorException("El contacto no existe.");
+
+        if (dto.EsPrincipal && !contacto.EsPrincipal)
+            await QuitarPrincipalAsync(contacto.ProveedorId, contactoId);
+
+        contacto.Nombre = dto.Nombre.Trim();
+        contacto.Cargo = Normalizar(dto.Cargo);
+        contacto.Telefono = Normalizar(dto.Telefono);
+        contacto.Email = Normalizar(dto.Email);
+        contacto.EsPrincipal = dto.EsPrincipal;
+        await _db.SaveChangesAsync();
+        return ProyectarContacto(contacto);
+    }
+
+    public async Task EliminarContactoAsync(int contactoId)
+    {
+        var contacto = await _db.ContactosProveedor.FirstOrDefaultAsync(c => c.ContactoProveedorId == contactoId)
+            ?? throw new ProveedorException("El contacto no existe.");
+        _db.ContactosProveedor.Remove(contacto);
+        await _db.SaveChangesAsync();
+    }
+
+    // Deja un único contacto principal por proveedor
+    private async Task QuitarPrincipalAsync(int proveedorId, int? exceptoId)
+    {
+        var otros = await _db.ContactosProveedor
+            .Where(c => c.ProveedorId == proveedorId && c.EsPrincipal && (exceptoId == null || c.ContactoProveedorId != exceptoId))
+            .ToListAsync();
+        foreach (var o in otros) o.EsPrincipal = false;
+    }
+
+    private static ContactoProveedorDto ProyectarContacto(ContactoProveedor c) => new()
+    {
+        ContactoProveedorId = c.ContactoProveedorId,
+        ProveedorId = c.ProveedorId,
+        Nombre = c.Nombre,
+        Cargo = c.Cargo,
+        Telefono = c.Telefono,
+        Email = c.Email,
+        EsPrincipal = c.EsPrincipal
+    };
+
     private async Task ExigirProveedorAsync(int proveedorId)
     {
         if (!await _db.Proveedores.AnyAsync(p => p.ProveedorId == proveedorId))
@@ -273,10 +347,6 @@ public class ProveedorService : IProveedorService
         FechaCreacion = p.FechaCreacion,
         CondicionPago = p.CondicionPago,
         DiasCredito = p.DiasCredito,
-        NotaCondicion = p.NotaCondicion,
-        ContactoNombre = p.ContactoNombre,
-        ContactoCargo = p.ContactoCargo,
-        ContactoTelefono = p.ContactoTelefono,
-        ContactoEmail = p.ContactoEmail
+        NotaCondicion = p.NotaCondicion
     };
 }

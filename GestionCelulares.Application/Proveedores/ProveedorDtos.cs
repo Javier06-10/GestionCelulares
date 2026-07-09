@@ -12,10 +12,6 @@ public class ProveedorCrearDto
     [StringLength(20)] public string? CondicionPago { get; set; }
     [Range(0, 365)] public int DiasCredito { get; set; }
     [StringLength(300)] public string? NotaCondicion { get; set; }
-    [StringLength(150)] public string? ContactoNombre { get; set; }
-    [StringLength(100)] public string? ContactoCargo { get; set; }
-    [StringLength(30)] public string? ContactoTelefono { get; set; }
-    [EmailAddress, StringLength(150)] public string? ContactoEmail { get; set; }
 }
 
 public class ProveedorActualizarDto
@@ -29,10 +25,6 @@ public class ProveedorActualizarDto
     [StringLength(20)] public string? CondicionPago { get; set; }
     [Range(0, 365)] public int DiasCredito { get; set; }
     [StringLength(300)] public string? NotaCondicion { get; set; }
-    [StringLength(150)] public string? ContactoNombre { get; set; }
-    [StringLength(100)] public string? ContactoCargo { get; set; }
-    [StringLength(30)] public string? ContactoTelefono { get; set; }
-    [EmailAddress, StringLength(150)] public string? ContactoEmail { get; set; }
 }
 
 public class ProveedorDto
@@ -49,10 +41,26 @@ public class ProveedorDto
     public string CondicionPago { get; set; } = "Contado";
     public int DiasCredito { get; set; }
     public string? NotaCondicion { get; set; }
-    public string? ContactoNombre { get; set; }
-    public string? ContactoCargo { get; set; }
-    public string? ContactoTelefono { get; set; }
-    public string? ContactoEmail { get; set; }
+}
+
+public class ContactoProveedorDto
+{
+    public int ContactoProveedorId { get; set; }
+    public int ProveedorId { get; set; }
+    public string Nombre { get; set; } = null!;
+    public string? Cargo { get; set; }
+    public string? Telefono { get; set; }
+    public string? Email { get; set; }
+    public bool EsPrincipal { get; set; }
+}
+
+public class ContactoGuardarDto
+{
+    [Required, StringLength(150)] public string Nombre { get; set; } = null!;
+    [StringLength(100)] public string? Cargo { get; set; }
+    [StringLength(30)] public string? Telefono { get; set; }
+    [EmailAddress, StringLength(150)] public string? Email { get; set; }
+    public bool EsPrincipal { get; set; }
 }
 
 public class CompraRegistroDto

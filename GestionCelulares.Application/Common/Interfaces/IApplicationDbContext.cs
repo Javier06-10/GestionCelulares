@@ -21,6 +21,7 @@ public interface IApplicationDbContext
     DbSet<Proveedor> Proveedores { get; }
     DbSet<Compra> Compras { get; }
     DbSet<PagoProveedor> PagosProveedor { get; }
+    DbSet<ContactoProveedor> ContactosProveedor { get; }
     DbSet<Marca> Marcas { get; }
     DbSet<Categoria> Categorias { get; }
     DbSet<Producto> Productos { get; }

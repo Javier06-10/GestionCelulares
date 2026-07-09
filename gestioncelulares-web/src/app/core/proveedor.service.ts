@@ -17,10 +17,6 @@ export interface Proveedor {
   condicionPago: CondicionPago;
   diasCredito: number;
   notaCondicion: string | null;
-  contactoNombre: string | null;
-  contactoCargo: string | null;
-  contactoTelefono: string | null;
-  contactoEmail: string | null;
 }
 
 export interface ProveedorGuardar {
@@ -33,10 +29,24 @@ export interface ProveedorGuardar {
   condicionPago?: CondicionPago;
   diasCredito?: number;
   notaCondicion?: string | null;
-  contactoNombre?: string | null;
-  contactoCargo?: string | null;
-  contactoTelefono?: string | null;
-  contactoEmail?: string | null;
+}
+
+export interface ContactoProveedor {
+  contactoProveedorId: number;
+  proveedorId: number;
+  nombre: string;
+  cargo: string | null;
+  telefono: string | null;
+  email: string | null;
+  esPrincipal: boolean;
+}
+
+export interface ContactoGuardar {
+  nombre: string;
+  cargo?: string | null;
+  telefono?: string | null;
+  email?: string | null;
+  esPrincipal: boolean;
 }
 
 export interface Compra {
@@ -83,5 +93,17 @@ export class ProveedorService {
   pagos(id: number) { return this.http.get<Pago[]>(`${this.base}/${id}/pagos`); }
   registrarPago(id: number, dto: { monto: number; compraId?: number | null; referencia?: string | null }) {
     return this.http.post<Pago>(`${this.base}/${id}/pagos`, dto);
+  }
+
+  // ----- Contactos -----
+  contactos(id: number) { return this.http.get<ContactoProveedor[]>(`${this.base}/${id}/contactos`); }
+  agregarContacto(id: number, dto: ContactoGuardar) {
+    return this.http.post<ContactoProveedor>(`${this.base}/${id}/contactos`, dto);
+  }
+  actualizarContacto(contactoId: number, dto: ContactoGuardar) {
+    return this.http.put<ContactoProveedor>(`${this.base}/contactos/${contactoId}`, dto);
+  }
+  eliminarContacto(contactoId: number) {
+    return this.http.delete<void>(`${this.base}/contactos/${contactoId}`);
   }
 }

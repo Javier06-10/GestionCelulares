@@ -22,6 +22,7 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
     public DbSet<Proveedor> Proveedores => Set<Proveedor>();
     public DbSet<Compra> Compras => Set<Compra>();
     public DbSet<PagoProveedor> PagosProveedor => Set<PagoProveedor>();
+    public DbSet<ContactoProveedor> ContactosProveedor => Set<ContactoProveedor>();
     public DbSet<Marca> Marcas => Set<Marca>();
     public DbSet<Categoria> Categorias => Set<Categoria>();
     public DbSet<Producto> Productos => Set<Producto>();
@@ -70,6 +71,7 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<Proveedor>().ToTable("Proveedor").HasKey(e => e.ProveedorId);
         mb.Entity<Compra>().ToTable("Compra").HasKey(e => e.CompraId);
         mb.Entity<PagoProveedor>().ToTable("PagoProveedor").HasKey(e => e.PagoProveedorId);
+        mb.Entity<ContactoProveedor>().ToTable("ContactoProveedor").HasKey(e => e.ContactoProveedorId);
         mb.Entity<RefreshToken>().ToTable("RefreshToken").HasKey(e => e.RefreshTokenId);
         mb.Entity<Marca>().ToTable("Marca").HasKey(e => e.MarcaId);
         mb.Entity<Categoria>().ToTable("Categoria").HasKey(e => e.CategoriaId);
@@ -140,6 +142,7 @@ public class GestionCelularesContext : DbContext, IApplicationDbContext
         mb.Entity<Compra>().HasOne(c => c.Sucursal).WithMany().HasForeignKey(c => c.SucursalId);
         mb.Entity<Compra>().HasOne(c => c.MetodoPago).WithMany().HasForeignKey(c => c.MetodoPagoId);
         mb.Entity<PagoProveedor>().HasOne(p => p.Proveedor).WithMany(x => x.Pagos).HasForeignKey(p => p.ProveedorId);
+        mb.Entity<ContactoProveedor>().HasOne(c => c.Proveedor).WithMany(p => p.Contactos).HasForeignKey(c => c.ProveedorId);
         mb.Entity<PagoProveedor>().HasOne(p => p.Compra).WithMany().HasForeignKey(p => p.CompraId);
 
         mb.Entity<SesionCaja>().HasOne(s => s.Sucursal).WithMany().HasForeignKey(s => s.SucursalId);
