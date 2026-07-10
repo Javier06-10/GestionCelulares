@@ -34,10 +34,10 @@
   </div>
   <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
     <div class="flex items-center justify-between">
-      <span class="text-xs font-medium text-tech-steel">Valor en venta</span>
+      <span class="text-xs font-medium text-tech-steel">Inversión (costo)</span>
       <span class="w-8 h-8 grid place-items-center rounded-lg bg-emerald-500/10 text-emerald-600"><lucide-icon name="circle-dollar-sign" [size]="16"></lucide-icon></span>
     </div>
-    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="valorVenta()" countPrefix="RD$ " [countDecimals]="0"></div>
+    <div class="text-2xl font-bold text-tech-charcoal mt-1.5" [gcCountUp]="valorCosto()" countPrefix="RD$ " [countDecimals]="0"></div>
   </div>
   <button (click)="irA('agotados')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4 transition-all duration-300 hover:border-red-500/40 active:scale-[0.98]">
     <div class="flex items-center justify-between">

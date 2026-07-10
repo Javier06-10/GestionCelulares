@@ -68,4 +68,5 @@ public class InventarioDisponibleDto
     public int StockMinimo { get; set; }
     public int SucursalId { get; set; }
     public int Disponibles { get; set; }
+    public decimal CostoTotal { get; set; }
 }

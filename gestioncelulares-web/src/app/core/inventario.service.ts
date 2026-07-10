@@ -15,6 +15,7 @@ export interface StockDisponible {
   stockMinimo: number;
   sucursalId: number;
   disponibles: number;
+  costoTotal: number;
 }
 
 /** Un equipo individual por IMEI. */
