@@ -16,7 +16,7 @@ interface ModeloGrupo { modelo: string; variantes: StockDisponible[]; total: num
 interface MarcaGrupo { marca: string; total: number; modelos: ModeloGrupo[]; }
 interface LoteFila { varianteId: number; imei: string; etiqueta: string; }
 
-type TabInv = 'existencias' | 'agotados' | 'faltantes';
+type TabInv = 'existencias' | 'agotados' | 'poragotar' | 'faltantes';
 
 @Component({
   selector: 'app-inventario',

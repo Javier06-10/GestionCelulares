@@ -24,7 +24,7 @@
 </div>
 
 <!-- KPIs -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
   <div class="rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4">
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-tech-steel">Equipos disponibles</span>
@@ -46,6 +46,13 @@
     </div>
     <div class="text-2xl font-bold mt-1.5" [class]="agotadosCount() > 0 ? 'text-red-500' : 'text-tech-charcoal'" [gcCountUp]="agotadosCount()"></div>
   </button>
+  <button (click)="irA('poragotar')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4 transition-all duration-300 hover:border-amber-500/40 active:scale-[0.98]">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-tech-steel">Próximos a agotar</span>
+      <span class="w-8 h-8 grid place-items-center rounded-lg bg-amber-500/10 text-amber-600"><lucide-icon name="triangle-alert" [size]="16"></lucide-icon></span>
+    </div>
+    <div class="text-2xl font-bold mt-1.5" [class]="porAgotarCount() > 0 ? 'text-amber-600' : 'text-tech-charcoal'" [gcCountUp]="porAgotarCount()"></div>
+  </button>
   <button (click)="irA('faltantes')" class="text-left rounded-2xl bg-tech-card-light/80 backdrop-blur-md border border-tech-pastel/40 p-4 transition-all duration-300 hover:border-tech-purple/40 active:scale-[0.98]">
     <div class="flex items-center justify-between">
       <span class="text-xs font-medium text-tech-steel">Por pedir</span>
@@ -63,7 +70,10 @@
   <button (click)="irA('agotados')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="tab() === 'agotados' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">
     <lucide-icon name="package-x" [size]="15"></lucide-icon> Agotados
     @if (agotadosCount() > 0) { <span class="px-1.5 py-0.5 rounded-md text-[0.65rem] font-bold" [class]="tab() === 'agotados' ? 'bg-white/20 text-white' : 'bg-red-500/10 text-red-500'">{{ agotadosCount() }}</span> }
-    @if (porAgotarCount() > 0) { <span class="px-1.5 py-0.5 rounded-md text-[0.65rem] font-bold" [class]="tab() === 'agotados' ? 'bg-white/20 text-white' : 'bg-amber-500/10 text-amber-600'">{{ porAgotarCount() }}</span> }
+  </button>
+  <button (click)="irA('poragotar')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="tab() === 'poragotar' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">
+    <lucide-icon name="triangle-alert" [size]="15"></lucide-icon> Próximos a agotar
+    @if (porAgotarCount() > 0) { <span class="px-1.5 py-0.5 rounded-md text-[0.65rem] font-bold" [class]="tab() === 'poragotar' ? 'bg-white/20 text-white' : 'bg-amber-500/10 text-amber-600'">{{ porAgotarCount() }}</span> }
   </button>
   <button (click)="irA('faltantes')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="tab() === 'faltantes' ? 'bg-tech-charcoal text-white' : 'text-tech-steel hover:text-tech-charcoal'">
     <lucide-icon name="clipboard-list" [size]="15"></lucide-icon> Por pedir
@@ -246,11 +256,8 @@
   }
 }
 
-<!-- ============ AGOTADOS ============ -->
-@else if (tab() === 'agotados') {
-  <div class="flex flex-col gap-4">
-
-  <!-- Próximos a agotar (al/por debajo del stock mínimo) -->
+<!-- ============ PRÓXIMOS A AGOTAR ============ -->
+@else if (tab() === 'poragotar') {
   @if (porAgotar().length > 0 || dispPorAgotar().length > 0) {
     <div class="bg-tech-card-light border border-amber-500/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
       <div class="px-5 py-3.5 border-b border-tech-pastel/30 flex items-center gap-2.5">
@@ -306,7 +313,17 @@
         </table>
       </div>
     </div>
+  } @else {
+    <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl p-12 text-center text-tech-steel">
+      <lucide-icon name="circle-check" [size]="32" class="mx-auto mb-2 text-tech-accent/50"></lucide-icon>
+      <p>¡Nada próximo a agotarse! Todo por encima del stock mínimo.</p>
+    </div>
   }
+}
+
+<!-- ============ AGOTADOS ============ -->
+@else if (tab() === 'agotados') {
+  <div class="flex flex-col gap-4">
 
   <div class="bg-tech-card-light border border-tech-pastel/30 rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
     <div class="px-5 py-3.5 border-b border-tech-pastel/30 flex items-center gap-2.5">
