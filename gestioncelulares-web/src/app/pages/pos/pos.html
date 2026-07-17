@@ -46,7 +46,7 @@
             <input
               [ngModel]="imeiInput()" (ngModelChange)="imeiInput.set($event)" name="imei"
               autofocus
-              placeholder="Escanea o escribe el IMEI y presiona Enter…"
+              placeholder="Escanea IMEI o código de barras y presiona Enter…"
               class="flex-1 min-w-0 bg-transparent text-tech-charcoal text-lg font-mono outline-none placeholder:text-tech-steel/60" />
           </div>
         </form>
@@ -346,6 +346,53 @@
 <!-- ===== Celebración: venta completada ===== -->
 @if (celebrando()) {
   <app-celebracion class="no-print" icono="check" mensaje="¡Venta completada!" [submensaje]="celebraSub()" tono="accent" [confeti]="false" />
+}
+
+<!-- ===== Modal venta rápida (producto no inventariado) ===== -->
+@if (modalRapido()) {
+  <div class="no-print fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/55 backdrop-blur-sm" (click)="modalRapido.set(false)">
+    <div (click)="$event.stopPropagation()" class="w-[min(440px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 grid place-items-center rounded-lg bg-tech-accent/10 text-tech-accent"><lucide-icon name="zap" [size]="17"></lucide-icon></span>
+          <h3 class="font-bold text-tech-charcoal">Venta rápida</h3>
+        </div>
+        <button (click)="modalRapido.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+      </div>
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <div class="px-3.5 py-2.5 rounded-xl bg-tech-accent/10 border border-tech-accent/30 text-emerald-700 text-sm">
+          Producto no encontrado en inventario. Créalo al vuelo con nombre y precio; queda como <span class="font-semibold">provisional</span> para formalizarlo luego en el Catálogo.
+        </div>
+        @if (rapidoCodigo()) {
+          <div class="flex items-center gap-2 text-xs text-tech-steel"><lucide-icon name="scan-line" [size]="14" class="text-tech-purple"></lucide-icon> Código: <span class="font-mono text-tech-charcoal">{{ rapidoCodigo() }}</span></div>
+        }
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Nombre del producto *</label>
+          <input [ngModel]="rapidoNombre()" (ngModelChange)="rapidoNombre.set($event)" name="rapidoNombre" type="text" placeholder="Ej.: Cargador USB-C" autofocus
+            class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Precio *</label>
+            <input [ngModel]="rapidoPrecio()" (ngModelChange)="rapidoPrecio.set($event)" name="rapidoPrecio" type="number" step="0.01" min="0" placeholder="0.00"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-lg font-semibold outline-none focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Cantidad</label>
+            <input [ngModel]="rapidoCantidad()" (ngModelChange)="rapidoCantidad.set($event)" name="rapidoCantidad" type="number" min="1" step="1"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+        </div>
+        @if (errorRapido()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorRapido() }}</div> }
+      </div>
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/40">
+        <button (click)="modalRapido.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button (click)="crearRapido()" [disabled]="guardandoRapido()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 disabled:opacity-60">
+          @if (guardandoRapido()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Creando… } @else { <lucide-icon name="plus" [size]="16"></lucide-icon> Crear y agregar }
+        </button>
+      </div>
+    </div>
+  </div>
 }
 
 <!-- ===== Modal configurar factura ===== -->

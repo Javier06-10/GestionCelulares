@@ -112,6 +112,9 @@
               @if (p.serializado) {
                 <span class="text-[0.65rem] uppercase font-semibold px-1.5 py-0.5 rounded bg-tech-purple/10 text-tech-purple">IMEI</span>
               }
+              @if (p.provisional) {
+                <span class="inline-flex items-center gap-1 text-[0.65rem] uppercase font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600"><lucide-icon name="zap" [size]="11"></lucide-icon> Provisional</span>
+              }
             </div>
             <div class="text-xs text-tech-steel">
               {{ p.marca || 'Sin marca' }}{{ p.categoria ? ' · ' + p.categoria : '' }} · {{ p.variantes.length }} variante(s)

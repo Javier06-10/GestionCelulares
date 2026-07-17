@@ -87,6 +87,21 @@ public class CatalogoController : ControllerBase
         }
     }
 
+    /// <summary>Venta rápida del POS: crea un accesorio provisional (nombre + precio). Admin o Vendedor.</summary>
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Vendedor}")]
+    [HttpPost("productos/rapido")]
+    public async Task<IActionResult> CrearProductoRapido([FromBody] ProductoRapidoDto dto)
+    {
+        try
+        {
+            return Ok(await _catalogo.CrearProductoRapidoAsync(dto));
+        }
+        catch (CatalogoException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     /// <summary>Actualiza un producto (incluye activar/desactivar).</summary>
     [Authorize(Roles = Roles.Admin)]
     [HttpPut("productos/{id:int}")]

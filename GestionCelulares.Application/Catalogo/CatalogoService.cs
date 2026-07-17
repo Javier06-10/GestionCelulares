@@ -18,6 +18,8 @@ public interface ICatalogoService
     Task<ProductoDto?> ProductoPorIdAsync(int id);
     Task<ProductoDto> CrearProductoAsync(ProductoCrearDto dto);
     Task<ProductoDto> ActualizarProductoAsync(int id, ProductoActualizarDto dto);
+    /// <summary>Venta rápida del POS: crea un accesorio provisional con nombre y precio.</summary>
+    Task<ProductoRapidoResultadoDto> CrearProductoRapidoAsync(ProductoRapidoDto dto);
     Task<VarianteDto> AgregarVarianteAsync(int productoId, VarianteCrearDto dto);
     Task<VarianteDto> ActualizarVarianteAsync(int varianteId, VarianteActualizarDto dto);
 
@@ -131,9 +133,46 @@ public class CatalogoService : ICatalogoService
         producto.CategoriaId = dto.CategoriaId;
         producto.Serializado = dto.Serializado;
         producto.Activo = dto.Activo;
+        producto.Provisional = false;   // al editarlo formalmente deja de ser provisional
         await _db.SaveChangesAsync();
 
         return (await ProductoPorIdAsync(id))!;
+    }
+
+    public async Task<ProductoRapidoResultadoDto> CrearProductoRapidoAsync(ProductoRapidoDto dto)
+    {
+        var codigo = Normalizar(dto.CodigoBarras);
+        if (codigo is not null && await _db.ProductoVariantes.AnyAsync(v => v.CodigoBarras == codigo))
+            throw new CatalogoException("Ya existe un producto con ese código de barras.");
+
+        var producto = new Producto
+        {
+            Nombre = dto.Nombre.Trim(),
+            Serializado = false,      // se vende por cantidad (como accesorio)
+            Activo = true,
+            Provisional = true,       // pendiente de formalizar
+            FechaCreacion = DateTime.Now
+        };
+        var variante = new ProductoVariante
+        {
+            CodigoBarras = codigo,
+            PrecioVenta = dto.PrecioVenta,
+            PrecioCosto = 0,
+            StockNoSerial = Math.Max(1, dto.Cantidad),
+            StockMinimo = 0,
+            Activo = true
+        };
+        producto.Variantes.Add(variante);
+        _db.Productos.Add(producto);
+        await _db.SaveChangesAsync();
+
+        return new ProductoRapidoResultadoDto
+        {
+            ProductoId = producto.ProductoId,
+            VarianteId = variante.VarianteId,
+            Nombre = producto.Nombre,
+            PrecioVenta = variante.PrecioVenta
+        };
     }
 
     public async Task<VarianteDto> AgregarVarianteAsync(int productoId, VarianteCrearDto dto)
@@ -273,6 +312,7 @@ public class CatalogoService : ICatalogoService
         Categoria = p.Categoria == null ? null : p.Categoria.Nombre,
         Serializado = p.Serializado,
         Activo = p.Activo,
+        Provisional = p.Provisional,
         FechaCreacion = p.FechaCreacion,
         Variantes = p.Variantes
             .OrderBy(v => v.VarianteId)

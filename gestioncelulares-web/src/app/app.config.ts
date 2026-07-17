@@ -21,7 +21,7 @@ import {
   Download, FileText, Calendar, Printer, SlidersHorizontal,
   Truck, Building2, HandCoins, ShieldAlert, RefreshCcw,
   PackageX, ClipboardCheck, Volume2, VolumeX,
-  WandSparkles, Scale, Eye, Maximize, Minimize, RotateCcw
+  WandSparkles, Scale, Eye, Maximize, Minimize, RotateCcw, Zap
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
@@ -54,7 +54,7 @@ export const appConfig: ApplicationConfig = {
         Download, FileText, Calendar, Printer, SlidersHorizontal,
         Truck, Building2, HandCoins, ShieldAlert, RefreshCcw,
         PackageX, ClipboardCheck, Volume2, VolumeX,
-        WandSparkles, Scale, Eye, Maximize, Minimize, RotateCcw
+        WandSparkles, Scale, Eye, Maximize, Minimize, RotateCcw, Zap
       })
     )
   ]

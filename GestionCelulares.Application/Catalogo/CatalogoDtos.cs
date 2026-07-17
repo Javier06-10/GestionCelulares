@@ -97,6 +97,25 @@ public class ProductoDto
     public string? Categoria { get; set; }
     public bool Serializado { get; set; }
     public bool Activo { get; set; }
+    public bool Provisional { get; set; }
     public DateTime FechaCreacion { get; set; }
     public List<VarianteDto> Variantes { get; set; } = new();
+}
+
+/// <summary>Creación rápida desde el POS: solo nombre, precio y (opcional) código de barras.</summary>
+public class ProductoRapidoDto
+{
+    [Required, StringLength(150)] public string Nombre { get; set; } = null!;
+    [Range(0, double.MaxValue)] public decimal PrecioVenta { get; set; }
+    [StringLength(50)] public string? CodigoBarras { get; set; }
+    [Range(1, 9999)] public int Cantidad { get; set; } = 1;
+}
+
+/// <summary>Resultado de la creación rápida (para agregar al carrito del POS).</summary>
+public class ProductoRapidoResultadoDto
+{
+    public int ProductoId { get; set; }
+    public int VarianteId { get; set; }
+    public string Nombre { get; set; } = null!;
+    public decimal PrecioVenta { get; set; }
 }

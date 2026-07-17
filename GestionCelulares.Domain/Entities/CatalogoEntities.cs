@@ -24,6 +24,8 @@ public class Producto
     public bool Serializado { get; set; }
     public bool Activo { get; set; }
     public DateTime FechaCreacion { get; set; }
+    /// <summary>Creado desde "venta rápida" en el POS; pendiente de formalizar (marca, categoría, costo…).</summary>
+    public bool Provisional { get; set; }
 
     public Marca? Marca { get; set; }
     public Categoria? Categoria { get; set; }

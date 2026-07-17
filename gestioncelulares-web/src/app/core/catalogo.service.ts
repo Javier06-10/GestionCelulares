@@ -26,8 +26,17 @@ export interface Producto {
   categoria: string | null;
   serializado: boolean;
   activo: boolean;
+  provisional: boolean;
   fechaCreacion: string;
   variantes: Variante[];
+}
+
+/** Resultado de la creación rápida (venta rápida del POS). */
+export interface ProductoRapidoResultado {
+  productoId: number;
+  varianteId: number;
+  nombre: string;
+  precioVenta: number;
 }
 
 export interface Marca { marcaId: number; nombre: string; }
@@ -93,6 +102,10 @@ export class CatalogoService {
   productoPorId(id: number) { return this.http.get<Producto>(`${this.base}/productos/${id}`); }
   crearProducto(dto: ProductoCrear) { return this.http.post<Producto>(`${this.base}/productos`, dto); }
   actualizarProducto(id: number, dto: ProductoActualizar) { return this.http.put<Producto>(`${this.base}/productos/${id}`, dto); }
+  /** Venta rápida: crea un accesorio provisional con nombre y precio. */
+  crearRapido(dto: { nombre: string; precioVenta: number; codigoBarras?: string | null; cantidad: number }) {
+    return this.http.post<ProductoRapidoResultado>(`${this.base}/productos/rapido`, dto);
+  }
 
   // Variantes
   agregarVariante(productoId: number, dto: VarianteGuardar) {

@@ -211,14 +211,23 @@ export class Pos implements OnDestroy {
     });
   }
 
-  // ----- Agregar por IMEI -----
+  // ----- Escaneo inteligente: código de barras de accesorio → IMEI → venta rápida -----
   agregarPorImei(): void {
-    const imei = this.imeiInput().trim();
-    if (imei.length < 4) return;
+    const code = this.imeiInput().trim();
+    if (code.length < 3) return;
     this.errorImei.set(null);
-    this.buscandoImei.set(true);
 
-    this.inventario.porImei(imei).subscribe({
+    // 1) ¿Coincide con el código de barras de un accesorio del catálogo?
+    const acc = this.accesorioPorCodigo(code);
+    if (acc) {
+      this.agregarAccesorio(acc);
+      this.imeiInput.set('');
+      return;
+    }
+
+    // 2) ¿Es el IMEI de un equipo del inventario?
+    this.buscandoImei.set(true);
+    this.inventario.porImei(code).subscribe({
       next: e => {
         this.buscandoImei.set(false);
         if (e.estado !== 'Disponible') {
@@ -232,7 +241,6 @@ export class Pos implements OnDestroy {
           return;
         }
         this.sound.playScan();
-        // Precio de venta desde el catálogo (la consulta por IMEI no lo trae)
         const precio = this.precioDeVariante(e.varianteId);
         this.carrito.update(c => [...c, {
           key: 'imei-' + e.imeiId,
@@ -248,11 +256,71 @@ export class Pos implements OnDestroy {
         }]);
         this.imeiInput.set('');
       },
+      // 3) No está en inventario → creación rápida (venta rápida)
       error: () => {
         this.buscandoImei.set(false);
-        this.errorImei.set('No se encontró ningún equipo con ese IMEI.');
-        this.sound.playError();
+        this.abrirRapido(code);
       }
+    });
+  }
+
+  /** Busca un accesorio del catálogo por su código de barras (cliente). */
+  private accesorioPorCodigo(code: string): { varianteId: number; nombre: string; detalle: string; precioVenta: number } | null {
+    const c = code.toLowerCase();
+    for (const p of this.productos()) {
+      if (p.serializado || !p.activo) continue;
+      const v = p.variantes.find(x => x.activo && !!x.codigoBarras && x.codigoBarras.toLowerCase() === c);
+      if (v) return { varianteId: v.varianteId, nombre: p.nombre, detalle: [v.color, v.almacenamiento].filter(Boolean).join(' · '), precioVenta: v.precioVenta };
+    }
+    return null;
+  }
+
+  // ----- Venta rápida (producto no inventariado) -----
+  modalRapido = signal(false);
+  rapidoCodigo = signal('');
+  rapidoNombre = signal('');
+  rapidoPrecio = signal(0);
+  rapidoCantidad = signal(1);
+  guardandoRapido = signal(false);
+  errorRapido = signal<string | null>(null);
+
+  abrirRapido(codigo: string): void {
+    this.rapidoCodigo.set(codigo);
+    this.rapidoNombre.set('');
+    this.rapidoPrecio.set(0);
+    this.rapidoCantidad.set(1);
+    this.errorRapido.set(null);
+    this.modalRapido.set(true);
+  }
+
+  crearRapido(): void {
+    const nombre = this.rapidoNombre().trim();
+    const precio = this.rapidoPrecio();
+    const cantidad = Math.max(1, this.rapidoCantidad());
+    if (!nombre) { this.errorRapido.set('Indica el nombre del producto.'); return; }
+    if (precio <= 0) { this.errorRapido.set('Indica un precio válido.'); return; }
+    this.guardandoRapido.set(true);
+    this.errorRapido.set(null);
+    this.catalogo.crearRapido({ nombre, precioVenta: precio, codigoBarras: this.rapidoCodigo() || null, cantidad }).subscribe({
+      next: r => {
+        this.guardandoRapido.set(false);
+        this.modalRapido.set(false);
+        this.imeiInput.set('');
+        this.sound.playScan();
+        // Refresca el catálogo (queda en inventario) y lo agrega al carrito con la cantidad creada
+        this.catalogo.productos().subscribe(p => this.productos.set(p));
+        this.carrito.update(c => [...c, {
+          key: 'var-' + r.varianteId,
+          imeiId: null,
+          varianteId: r.varianteId,
+          descripcion: r.nombre,
+          cantidad,
+          precioUnitario: r.precioVenta,
+          descuento: 0,
+          serializado: false
+        }]);
+      },
+      error: err => { this.guardandoRapido.set(false); this.errorRapido.set(err.error?.error ?? 'No se pudo crear el producto.'); }
     });
   }
 
