@@ -67,7 +67,6 @@ export class Inventario {
   );
 
   totalEquipos = computed(() => this.stock().reduce((a, s) => a + s.disponibles, 0));
-  valorVenta = computed(() => this.stock().reduce((a, s) => a + s.precioVenta * s.disponibles, 0));
   // Dinero invertido (costo): costo real de los equipos disponibles + costo de los accesorios en stock
   valorCosto = computed(() =>
     this.stock().reduce((a, s) => a + s.costoTotal, 0) +
