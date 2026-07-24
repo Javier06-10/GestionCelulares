@@ -256,10 +256,20 @@ export class Pos implements OnDestroy {
         }]);
         this.imeiInput.set('');
       },
-      // 3) No está en inventario → creación rápida (venta rápida)
+      // 3) No está en inventario → puede haberse creado en otra terminal.
+      //    Refresca el catálogo y, si ahora aparece, lo agrega; si no, ofrece crearlo.
       error: () => {
         this.buscandoImei.set(false);
-        this.abrirRapido(code);
+        this.catalogo.productos().subscribe(ps => {
+          this.productos.set(ps);
+          const yaExiste = this.accesorioPorCodigo(code);
+          if (yaExiste) {
+            this.agregarAccesorio(yaExiste);   // reproduce el sonido y suma al carrito
+            this.imeiInput.set('');
+          } else {
+            this.abrirRapido(code);
+          }
+        });
       }
     });
   }
@@ -320,7 +330,28 @@ export class Pos implements OnDestroy {
           serializado: false
         }]);
       },
-      error: err => { this.guardandoRapido.set(false); this.errorRapido.set(err.error?.error ?? 'No se pudo crear el producto.'); }
+      error: err => {
+        const codigo = this.rapidoCodigo();
+        // Carrera multi-terminal: otro cajero ya creó este código (rechazado por único).
+        // Refresca y, si ahora existe, resuélvelo agregándolo al carrito en vez de atascar.
+        if (codigo) {
+          this.catalogo.productos().subscribe(ps => {
+            this.productos.set(ps);
+            const yaExiste = this.accesorioPorCodigo(codigo);
+            this.guardandoRapido.set(false);
+            if (yaExiste) {
+              this.modalRapido.set(false);
+              this.imeiInput.set('');
+              this.agregarAccesorio(yaExiste);
+            } else {
+              this.errorRapido.set(err.error?.error ?? 'No se pudo crear el producto.');
+            }
+          });
+          return;
+        }
+        this.guardandoRapido.set(false);
+        this.errorRapido.set(err.error?.error ?? 'No se pudo crear el producto.');
+      }
     });
   }
 
