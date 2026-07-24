@@ -45,6 +45,10 @@ public class ReporteService : IReporteService
             {
                 Fecha = v.Fecha.Date,
                 d.Total,
+                // Un producto provisional (venta rápida) todavía sin costo real no
+                // puede computar margen: contar su precio como 100% ganancia mentiría.
+                // Se excluye de la ganancia y se divulga aparte hasta que se formalice.
+                SinCosto = d.ImeiId == null && d.Variante.Producto.Provisional && d.Variante.PrecioCosto == 0m,
                 Ganancia = d.PrecioUnitario * d.Cantidad - d.Descuento
                     - (d.ImeiId != null ? d.Imei!.PrecioCosto : d.Variante.PrecioCosto * d.Cantidad),
                 v.VentaId
@@ -55,10 +59,21 @@ public class ReporteService : IReporteService
                 Fecha = g.Key,
                 Cantidad = g.Select(x => x.VentaId).Distinct().Count(),
                 Total = g.Sum(x => x.Total),
-                Ganancia = g.Sum(x => x.Ganancia)
+                Ganancia = g.Sum(x => x.SinCosto ? 0m : x.Ganancia)
             })
             .OrderBy(d => d.Fecha)
             .ToListAsync();
+
+        var sinCosto = await q
+            .SelectMany(v => v.Detalles)
+            .Where(d => d.ImeiId == null && d.Variante.Producto.Provisional && d.Variante.PrecioCosto == 0m)
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Lineas = g.Count(),
+                Monto = g.Sum(d => d.PrecioUnitario * d.Cantidad - d.Descuento)
+            })
+            .FirstOrDefaultAsync();
 
         return new ReporteVentasDto
         {
@@ -70,6 +85,8 @@ public class ReporteService : IReporteService
             Impuesto = totales?.Impuesto ?? 0,
             Total = totales?.Total ?? 0,
             Ganancia = porDia.Sum(d => d.Ganancia),
+            LineasSinCosto = sinCosto?.Lineas ?? 0,
+            MontoSinCosto = sinCosto?.Monto ?? 0,
             PorDia = porDia
         };
     }

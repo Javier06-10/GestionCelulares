@@ -122,10 +122,16 @@ public class CatalogoService : ICatalogoService
 
     public async Task<ProductoDto> ActualizarProductoAsync(int id, ProductoActualizarDto dto)
     {
-        var producto = await _db.Productos.FirstOrDefaultAsync(p => p.ProductoId == id)
+        var producto = await _db.Productos.Include(p => p.Variantes)
+            .FirstOrDefaultAsync(p => p.ProductoId == id)
             ?? throw new CatalogoException("El producto no existe.");
 
         await ValidarReferenciasAsync(dto.MarcaId, dto.CategoriaId);
+
+        // Formalizar un provisional exige costo real: si no, la ganancia contaría
+        // el precio completo como utilidad. Debe asignarse el costo a la variante antes.
+        if (producto.Provisional && producto.Variantes.Any(v => v.PrecioCosto <= 0))
+            throw new CatalogoException("Asigna el costo de compra a la(s) variante(s) antes de formalizar el producto (aún tiene costo 0).");
 
         producto.Nombre = dto.Nombre.Trim();
         producto.Descripcion = Normalizar(dto.Descripcion);

@@ -69,6 +69,12 @@
     <div class="kpi"><span class="t">Total</span><span class="v">{{ r.total | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
     <div class="kpi accent"><span class="t">Ganancia</span><span class="v">{{ r.ganancia | currency: 'DOP':'RD$':'1.0-0' }}</span></div>
   </div>
+  @if (r.lineasSinCosto > 0) {
+    <div class="flex items-start gap-2 mb-4 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 text-sm">
+      <lucide-icon name="triangle-alert" [size]="16" class="mt-0.5 shrink-0"></lucide-icon>
+      <span>La ganancia <span class="font-semibold">no incluye</span> {{ r.lineasSinCosto }} línea(s) de venta rápida (productos provisionales sin costo) por {{ r.montoSinCosto | currency: 'DOP':'RD$':'1.2-2' }}. Formaliza esos productos en <span class="font-semibold">Catálogo</span> asignándoles su costo para que sumen a la ganancia.</span>
+    </div>
+  }
   <div class="panel">
     <table class="w-full text-sm border-collapse">
       <thead><tr class="text-left text-tech-steel"><th class="th">Día</th><th class="th text-right">Ventas</th><th class="th text-right">Total</th><th class="th text-right">Ganancia</th></tr></thead>

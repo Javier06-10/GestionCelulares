@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 export interface ReporteVentas {
   desde: string; hasta: string; cantidad: number;
   subtotal: number; descuento: number; impuesto: number; total: number; ganancia: number;
+  lineasSinCosto: number; montoSinCosto: number;
   porDia: { fecha: string; cantidad: number; total: number; ganancia: number }[];
 }
 

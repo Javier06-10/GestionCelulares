@@ -11,6 +11,10 @@ public class ReporteVentasDto
     public decimal Impuesto { get; set; }
     public decimal Total { get; set; }
     public decimal Ganancia { get; set; }
+    // Ventas rápidas (productos provisionales) todavía sin costo real: su margen
+    // NO está incluido en Ganancia. Se divulga para que el dueño formalice el costo.
+    public int LineasSinCosto { get; set; }
+    public decimal MontoSinCosto { get; set; }
     public List<VentaDiaDto> PorDia { get; set; } = new();
 }
 
