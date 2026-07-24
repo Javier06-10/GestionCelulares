@@ -44,6 +44,15 @@ export interface IndiceFalla {
   totalCasos: number;
 }
 
+/** Resultado de resolver un caso; incluye la venta de la diferencia si la hubo. */
+export interface CasoResuelto {
+  caso: Caso;
+  ventaDiferenciaId: number | null;
+  facturaDiferencia: string | null;
+  ncfDiferencia: string | null;
+  montoDiferencia: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class GarantiaService {
   private http = inject(HttpClient);
@@ -77,8 +86,8 @@ export class GarantiaService {
     const p = ordenTallerId ? new HttpParams().set('ordenTallerId', ordenTallerId) : undefined;
     return this.http.post<Caso>(`${this.base}/casos/${id}/iniciar`, {}, { params: p });
   }
-  resolverCaso(id: number, dto: { tipoResolucion: string; imeiReemplazoId?: number | null; notas?: string | null }) {
-    return this.http.post<Caso>(`${this.base}/casos/${id}/resolver`, dto);
+  resolverCaso(id: number, dto: { tipoResolucion: string; imeiReemplazoId?: number | null; montoDiferencia?: number; metodoPagoId?: number | null; notas?: string | null }) {
+    return this.http.post<CasoResuelto>(`${this.base}/casos/${id}/resolver`, dto);
   }
   cerrarCaso(id: number) { return this.http.post<Caso>(`${this.base}/casos/${id}/cerrar`, {}); }
 

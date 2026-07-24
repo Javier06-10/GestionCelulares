@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { Caso, Garantia, GarantiaService, IndiceFalla } from '../../core/garantia.service';
+import { MetodoPago, VentaService } from '../../core/venta.service';
 import { CountUpDirective } from '../../shared/count-up.directive';
 
 type Vista = 'garantias' | 'casos' | 'fallas';
@@ -16,7 +17,11 @@ type Vista = 'garantias' | 'casos' | 'fallas';
 export class Garantias {
   private fb = inject(FormBuilder);
   private servicio = inject(GarantiaService);
+  private ventas = inject(VentaService);
   auth = inject(AuthService);
+
+  metodos = signal<MetodoPago[]>([]);
+  avisoDiferencia = signal<string | null>(null);
 
   vista = signal<Vista>('garantias');
   cargando = signal(false);
@@ -49,6 +54,8 @@ export class Garantias {
   formResolver = this.fb.nonNullable.group({
     tipoResolucion: ['Reparacion', Validators.required],
     imeiReemplazoId: [null as number | null],
+    montoDiferencia: [0],
+    metodoPagoId: [null as number | null],
     notas: ['']
   });
 
@@ -69,7 +76,10 @@ export class Garantias {
     return 'bg-tech-accent/10 text-tech-accent';
   }
 
-  constructor() { this.cargar(); }
+  constructor() {
+    this.cargar();
+    this.ventas.metodosPago().subscribe(m => this.metodos.set(m));
+  }
 
   cambiarVista(v: Vista): void { this.vista.set(v); }
 
@@ -125,14 +135,34 @@ export class Garantias {
   // ----- Resolver caso -----
   abrirResolver(): void {
     this.errorResolver.set(null);
-    this.formResolver.reset({ tipoResolucion: 'Reparacion', imeiReemplazoId: null, notas: '' });
+    this.avisoDiferencia.set(null);
+    this.formResolver.reset({ tipoResolucion: 'Reparacion', imeiReemplazoId: null, montoDiferencia: 0, metodoPagoId: null, notas: '' });
     this.modalResolver.set(true);
   }
   resolver(): void {
     const c = this.caso(); if (!c || this.formResolver.invalid) return;
     const v = this.formResolver.getRawValue();
-    this.servicio.resolverCaso(c.casoGarantiaId, { tipoResolucion: v.tipoResolucion, imeiReemplazoId: v.imeiReemplazoId, notas: v.notas?.trim() || null }).subscribe({
-      next: x => { this.caso.set(x); this.modalResolver.set(false); this.cargar(); },
+    const esReemplazo = v.tipoResolucion === 'Reemplazo';
+    const diferencia = esReemplazo ? Math.max(0, Number(v.montoDiferencia) || 0) : 0;
+    if (diferencia > 0 && !v.metodoPagoId) {
+      this.errorResolver.set('Indica el método de pago de la diferencia.');
+      return;
+    }
+    this.servicio.resolverCaso(c.casoGarantiaId, {
+      tipoResolucion: v.tipoResolucion,
+      imeiReemplazoId: v.imeiReemplazoId,
+      montoDiferencia: diferencia,
+      metodoPagoId: diferencia > 0 ? Number(v.metodoPagoId) : null,
+      notas: v.notas?.trim() || null
+    }).subscribe({
+      next: x => {
+        this.caso.set(x.caso);
+        this.modalResolver.set(false);
+        this.cargar();
+        if (x.ventaDiferenciaId) {
+          this.avisoDiferencia.set(`Diferencia cobrada: RD$ ${x.montoDiferencia.toFixed(2)} · Factura ${x.facturaDiferencia ?? ''}${x.ncfDiferencia ? ' · NCF ' + x.ncfDiferencia : ''}`);
+        }
+      },
       error: e => this.errorResolver.set(e.error?.error ?? 'No se pudo resolver.')
     });
   }

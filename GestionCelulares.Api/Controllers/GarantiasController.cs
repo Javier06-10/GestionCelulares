@@ -118,7 +118,8 @@ public class GarantiasController : ControllerBase
 
     /// <summary>
     /// Resuelve el caso: Reparacion, Reemplazo (mueve inventario: sale el reemplazo y
-    /// reingresa el devuelto), NotaCredito o Rechazado.
+    /// reingresa el devuelto; si el reemplazo vale más, cobra la diferencia como venta
+    /// con NCF que entra a la caja del turno), NotaCredito o Rechazado.
     /// </summary>
     [HttpPost("casos/{id:int}/resolver")]
     public async Task<IActionResult> ResolverCaso(int id, [FromBody] CasoResolverDto dto)

@@ -62,7 +62,24 @@ public class CasoResolverDto
     [Required, StringLength(15)] public string TipoResolucion { get; set; } = null!;
     /// <summary>Requerido cuando la resolución es Reemplazo (IMEI disponible que se entrega).</summary>
     public int? ImeiReemplazoId { get; set; }
+    /// <summary>
+    /// Diferencia (ITBIS incluido) que paga el cliente cuando el equipo de reemplazo vale más.
+    /// 0 = cambio a igual valor (no genera venta). Solo aplica a Reemplazo.
+    /// </summary>
+    [Range(0, double.MaxValue)] public decimal MontoDiferencia { get; set; }
+    /// <summary>Método de pago de la diferencia (requerido si MontoDiferencia &gt; 0).</summary>
+    public int? MetodoPagoId { get; set; }
     [StringLength(500)] public string? Notas { get; set; }
+}
+
+/// <summary>Resultado de resolver un caso: incluye la venta de la diferencia si la hubo.</summary>
+public class CasoResueltoDto
+{
+    public CasoDto Caso { get; set; } = null!;
+    public int? VentaDiferenciaId { get; set; }
+    public string? FacturaDiferencia { get; set; }
+    public string? NcfDiferencia { get; set; }
+    public decimal MontoDiferencia { get; set; }
 }
 
 public class CasoDto

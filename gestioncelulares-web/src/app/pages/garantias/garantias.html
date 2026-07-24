@@ -146,6 +146,7 @@
       </div>
       <div class="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-3 text-sm">
         @if (errorCaso()) { <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500">{{ errorCaso() }}</div> }
+        @if (avisoDiferencia()) { <div class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-tech-accent/10 border border-tech-accent/30 text-emerald-700"><lucide-icon name="check" [size]="16"></lucide-icon><span>{{ avisoDiferencia() }}</span></div> }
         @if (c.tipoFalla) { <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">Falla</div><div class="text-tech-charcoal">{{ c.tipoFalla }}</div></div> }
         @if (c.descripcionFalla) { <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">Descripción</div><p class="text-tech-charcoal">{{ c.descripcionFalla }}</p></div> }
         @if (c.tipoResolucion) { <div><div class="text-[0.7rem] uppercase font-semibold text-tech-steel">Resolución</div><div class="text-tech-charcoal">{{ c.tipoResolucion }}{{ c.imeiReemplazo ? ' · reemplazo IMEI ' + c.imeiReemplazo : '' }}</div></div> }
@@ -216,6 +217,20 @@
             <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">IMEI de reemplazo (ImeiId) *</label>
             <input formControlName="imeiReemplazoId" type="number" placeholder="Id del equipo disponible que se entrega" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
           </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Diferencia a cobrar (ITBIS incl.)</label>
+            <input formControlName="montoDiferencia" type="number" min="0" step="0.01" placeholder="0 = mismo valor" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white" />
+            <p class="text-xs text-tech-steel mt-1">Si el equipo entregado vale más, el cliente paga la diferencia. Se registra como venta con NCF y entra a la caja del turno.</p>
+          </div>
+          @if (formResolver.controls.montoDiferencia.value > 0) {
+            <div>
+              <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Método de pago de la diferencia *</label>
+              <select formControlName="metodoPagoId" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-accent/60 focus:bg-white">
+                <option [ngValue]="null">— Selecciona —</option>
+                @for (m of metodos(); track m.metodoPagoId) { <option [ngValue]="m.metodoPagoId">{{ m.nombre }}</option> }
+              </select>
+            </div>
+          }
         }
         <div>
           <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Notas</label>

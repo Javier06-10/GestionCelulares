@@ -18,7 +18,7 @@ public interface IGarantiaService
     Task<CasoDto?> CasoPorIdAsync(int id);
     Task<IReadOnlyList<CasoDto>> CasosAsync(string? estado, int? clienteId);
     Task<CasoDto> IniciarCasoAsync(int id, int? ordenTallerId);
-    Task<CasoDto> ResolverCasoAsync(int id, CasoResolverDto dto, int? usuarioId);
+    Task<CasoResueltoDto> ResolverCasoAsync(int id, CasoResolverDto dto, int? usuarioId);
     Task<CasoDto> CerrarCasoAsync(int id);
 
     Task<IReadOnlyList<IndiceFallaDto>> IndiceFallasAsync();
@@ -29,8 +29,15 @@ public class GarantiaService : IGarantiaService
     private static readonly string[] Resoluciones = { "Reparacion", "Reemplazo", "NotaCredito", "Rechazado" };
 
     private readonly IApplicationDbContext _db;
+    private readonly INcfProcedures _ncf;
+    private readonly IVentaProcedures _ventaProc;
 
-    public GarantiaService(IApplicationDbContext db) => _db = db;
+    public GarantiaService(IApplicationDbContext db, INcfProcedures ncf, IVentaProcedures ventaProc)
+    {
+        _db = db;
+        _ncf = ncf;
+        _ventaProc = ventaProc;
+    }
 
     // ----- Garantías -----
 
@@ -201,7 +208,7 @@ public class GarantiaService : IGarantiaService
         return (await CasoPorIdAsync(id))!;
     }
 
-    public async Task<CasoDto> ResolverCasoAsync(int id, CasoResolverDto dto, int? usuarioId)
+    public async Task<CasoResueltoDto> ResolverCasoAsync(int id, CasoResolverDto dto, int? usuarioId)
     {
         var caso = await ObtenerCasoAsync(id);
 
@@ -211,6 +218,8 @@ public class GarantiaService : IGarantiaService
         var resolucion = dto.TipoResolucion.Trim();
         if (!Resoluciones.Contains(resolucion))
             throw new GarantiaException($"Resolución inválida. Opciones: {string.Join(", ", Resoluciones)}.");
+
+        Venta? ventaDiferencia = null;
 
         if (resolucion == "Reemplazo")
         {
@@ -255,15 +264,99 @@ public class GarantiaService : IGarantiaService
             }
 
             caso.ImeiReemplazoId = dto.ImeiReemplazoId;
+
+            // Cambio a un equipo de mayor valor: el cliente paga la diferencia como venta
+            // (con NCF y método de pago) que entra a la caja del turno y al 607. No mueve
+            // inventario: el equipo ya salió por el movimiento de reemplazo de arriba.
+            if (dto.MontoDiferencia > 0m)
+                ventaDiferencia = await CobrarDiferenciaAsync(caso, reemplazo, dto, usuarioId);
         }
 
         caso.TipoResolucion = resolucion;
         caso.Notas = Normalizar(dto.Notas) ?? caso.Notas;
+        if (ventaDiferencia is not null)
+            caso.Notas = $"{caso.Notas} | Diferencia RD$ {ventaDiferencia.Total:0.00} cobrada (factura {ventaDiferencia.NumeroFactura}).".TrimStart(' ', '|', ' ');
         caso.Estado = resolucion == "Rechazado" ? "Rechazado" : "Resuelto";
         await _db.SaveChangesAsync();
 
-        return (await CasoPorIdAsync(id))!;
+        return new CasoResueltoDto
+        {
+            Caso = (await CasoPorIdAsync(id))!,
+            VentaDiferenciaId = ventaDiferencia?.VentaId,
+            FacturaDiferencia = ventaDiferencia?.NumeroFactura,
+            NcfDiferencia = ventaDiferencia?.Ncf,
+            MontoDiferencia = ventaDiferencia?.Total ?? 0m
+        };
     }
+
+    // Registra la diferencia de un cambio de equipo como una venta de contado (sin mover
+    // inventario). Requiere caja abierta en la sucursal del equipo entregado y método de pago.
+    private async Task<Venta> CobrarDiferenciaAsync(CasoGarantia caso, InventarioImei reemplazo, CasoResolverDto dto, int? usuarioId)
+    {
+        if (usuarioId is null)
+            throw new GarantiaException("Se requiere un usuario autenticado para cobrar la diferencia.");
+        if (dto.MetodoPagoId is null)
+            throw new GarantiaException("Indica el método de pago de la diferencia.");
+        if (!await _db.MetodosPago.AnyAsync(m => m.MetodoPagoId == dto.MetodoPagoId.Value))
+            throw new GarantiaException("El método de pago indicado no existe.");
+
+        var sesionCajaId = await _db.SesionesCaja
+            .Where(s => s.SucursalId == reemplazo.SucursalId && s.Estado == "Abierta")
+            .Select(s => (int?)s.SesionCajaId)
+            .FirstOrDefaultAsync()
+            ?? throw new GarantiaException("No hay una caja abierta en la sucursal; ábrela para cobrar la diferencia.");
+
+        // El monto que paga el cliente es ITBIS incluido: se desglosa base + impuesto.
+        var tasa = await _db.Empresas.OrderBy(e => e.EmpresaId)
+            .Select(e => e.PorcentajeItbis).FirstOrDefaultAsync();
+        var total = decimal.Round(dto.MontoDiferencia, 2);
+        var subtotal = tasa > 0 ? decimal.Round(total / (1 + tasa / 100m), 2) : total;
+        var impuesto = total - subtotal;
+
+        var venta = new Venta
+        {
+            SucursalId = reemplazo.SucursalId,
+            ClienteId = caso.ClienteId,
+            UsuarioId = usuarioId.Value,
+            SesionCajaId = sesionCajaId,
+            Fecha = DateTime.Now,
+            NumeroFactura = await _ventaProc.ProximoNumeroFacturaAsync(),
+            Subtotal = subtotal,
+            Descuento = 0m,
+            Impuesto = impuesto,
+            Total = total,
+            EsCredito = false,
+            Estado = "Completada"
+        };
+        venta.Detalles.Add(new VentaDetalle
+        {
+            VarianteId = reemplazo.VarianteId,
+            ImeiId = null,   // dinero puro: el IMEI ya salió por el reemplazo, no se descuenta aquí
+            Descripcion = $"Diferencia por cambio de equipo (caso #{caso.CasoGarantiaId})",
+            Cantidad = 1,
+            PrecioUnitario = subtotal,
+            Descuento = 0m,
+            Impuesto = impuesto,
+            Total = total
+        });
+        venta.Pagos.Add(new VentaPago { MetodoPagoId = dto.MetodoPagoId.Value, Monto = total });
+
+        // NCF: 01 si el cliente tiene RNC (9 dígitos), 02 consumo en caso contrario.
+        try
+        {
+            var cedula = caso.ClienteId is null ? null : await _db.Clientes
+                .Where(c => c.ClienteId == caso.ClienteId.Value).Select(c => c.Cedula).FirstOrDefaultAsync();
+            var tipoNcf = SoloDigitos(cedula).Length == 9 ? "01" : "02";
+            venta.Ncf = await _ncf.SiguienteNcfAsync(tipoNcf);
+        }
+        catch { /* sin rango activo: la venta queda sin NCF, se corrige luego */ }
+
+        _db.Ventas.Add(venta);
+        return venta;
+    }
+
+    private static string SoloDigitos(string? s)
+        => string.IsNullOrWhiteSpace(s) ? "" : new string(s.Where(char.IsDigit).ToArray());
 
     public async Task<CasoDto> CerrarCasoAsync(int id)
     {
