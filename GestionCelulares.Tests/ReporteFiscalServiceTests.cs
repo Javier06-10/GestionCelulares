@@ -53,6 +53,24 @@ public class ReporteFiscalServiceTests
     }
 
     [Fact]
+    public async Task Reporte607_incluye_ventas_devueltas()
+    {
+        // Una venta devuelta SIGUE declarada en el 607 (la nota de crédito la corrige).
+        var db = ConEmpresa();
+        db.Ventas.Add(new Venta
+        {
+            VentaId = 3, Ncf = "B0200000003", SucursalId = 1, UsuarioId = 1, Fecha = EnPeriodo,
+            Subtotal = 800m, Impuesto = 144m, Total = 944m, Estado = "Devuelta"
+        });
+        await db.SaveChangesAsync();
+
+        var r = await new ReporteFiscalService(db).Generar607Async(Anio, Mes);
+
+        Assert.Equal(1, r.Cantidad);
+        Assert.Contains("B0200000003", r.ContenidoTxt);
+    }
+
+    [Fact]
     public async Task Reporte607_excluye_ventas_anuladas()
     {
         var db = ConEmpresa();

@@ -66,24 +66,12 @@ public class DevolucionService : IDevolucionService
 
     public async Task<NotaCreditoDto> CrearAsync(DevolucionCrearDto dto, int? usuarioId)
     {
-        var venta = await _db.Ventas.AsNoTracking().FirstOrDefaultAsync(v => v.VentaId == dto.VentaId)
-            ?? throw new VentaException("La venta no existe.");
-
-        if (venta.Estado != "Completada")
-            throw new VentaException("Solo se puede devolver una venta completada.");
-        if (string.IsNullOrWhiteSpace(venta.Ncf))
-            throw new VentaException("La venta no tiene NCF fiscal; no se puede emitir una Nota de Crédito.");
-
-        // Reutiliza el flujo ya probado: anula la venta emitiendo la Nota de Crédito (04)
-        // con tipo de anulación 07 (Devolución de productos) y revierte el inventario.
-        await _ventas.AnularAsync(dto.VentaId, new AnularVentaDto
-        {
-            TipoAnulacion = "07",
-            Motivo = dto.Motivo,
-            EmitirNotaCredito = true
-        }, usuarioId);
+        // DevolverAsync valida (venta completada + con NCF), revierte el inventario,
+        // deja la venta como "Devuelta" (sigue en el 607) y emite la Nota de Crédito (04).
+        await _ventas.DevolverAsync(dto.VentaId, dto.Motivo, usuarioId);
 
         var nc = await _db.NotasCredito.AsNoTracking()
+            .Include(n => n.Venta)!.ThenInclude(v => v!.Cliente)
             .OrderByDescending(n => n.NotaCreditoId)
             .FirstAsync(n => n.VentaId == dto.VentaId);
 
@@ -93,7 +81,8 @@ public class DevolucionService : IDevolucionService
             Ncf = nc.Ncf,
             NcfModificado = nc.NcfModificado,
             VentaId = nc.VentaId,
-            NumeroFactura = venta.NumeroFactura,
+            NumeroFactura = nc.Venta?.NumeroFactura,
+            Cliente = nc.Venta?.Cliente?.Nombre,
             Monto = nc.Monto,
             Itbis = nc.Itbis,
             Total = nc.Total,

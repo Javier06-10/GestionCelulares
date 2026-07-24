@@ -53,6 +53,8 @@
               <td class="py-3 px-4 text-center">
                 @if (v.estado === 'Anulada') {
                   <span class="inline-block px-2 py-0.5 rounded-lg bg-red-500/10 text-red-500 font-semibold text-xs">Anulada</span>
+                } @else if (v.estado === 'Devuelta') {
+                  <span class="inline-block px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 font-semibold text-xs">Devuelta</span>
                 } @else if (v.esCredito) {
                   <span class="inline-block px-2 py-0.5 rounded-lg bg-tech-purple/10 text-tech-purple font-semibold text-xs">Crédito</span>
                 } @else {

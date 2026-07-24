@@ -32,7 +32,7 @@ public class ReporteFiscalService : IReporteFiscalService
         var rnc = SoloDigitos(await _db.Empresas.Select(e => e.RNC).FirstOrDefaultAsync());
 
         var ventas = await _db.Ventas.AsNoTracking()
-            .Where(v => v.Estado == "Completada" && v.Fecha >= desde && v.Fecha < hasta)
+            .Where(v => (v.Estado == "Completada" || v.Estado == "Devuelta") && v.Fecha >= desde && v.Fecha < hasta)
             .OrderBy(v => v.Fecha)
             .Select(v => new VentaLinea
             {

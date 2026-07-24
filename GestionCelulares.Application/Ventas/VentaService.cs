@@ -13,6 +13,7 @@ public interface IVentaService
     Task<IReadOnlyList<VentaResumenDto>> BuscarAsync(DateTime? desde, DateTime? hasta, int? sucursalId, int? clienteId);
     Task<IReadOnlyList<MetodoPagoDto>> MetodosPagoAsync();
     Task<VentaDto> AnularAsync(int ventaId, AnularVentaDto dto, int? usuarioId);
+    Task<VentaDto> DevolverAsync(int ventaId, string? motivo, int? usuarioId);
 }
 
 public class VentaService : IVentaService
@@ -146,7 +147,71 @@ public class VentaService : IVentaService
         if (!TiposAnulacion.Contains(dto.TipoAnulacion))
             throw new VentaException("El tipo de anulación no es válido.");
 
-        // Revertir el inventario (los bienes vuelven al stock)
+        await RevertirInventarioAsync(venta, usuarioId);
+        venta.Estado = "Anulada";
+
+        // Si tenía NCF, queda registrado como comprobante anulado (alimenta el 608)
+        if (!string.IsNullOrWhiteSpace(venta.Ncf))
+        {
+            _db.ComprobantesAnulados.Add(new ComprobanteAnulado
+            {
+                Ncf = venta.Ncf,
+                FechaComprobante = venta.Fecha,
+                TipoAnulacion = dto.TipoAnulacion,
+                Motivo = string.IsNullOrWhiteSpace(dto.Motivo) ? null : dto.Motivo.Trim(),
+                VentaId = venta.VentaId,
+                UsuarioId = usuarioId,
+                FechaRegistro = DateTime.Now
+            });
+        }
+
+        await _db.SaveChangesAsync();
+        return (await PorIdAsync(ventaId))!;
+    }
+
+    public async Task<VentaDto> DevolverAsync(int ventaId, string? motivo, int? usuarioId)
+    {
+        var venta = await _db.Ventas.Include(v => v.Detalles)
+            .FirstOrDefaultAsync(v => v.VentaId == ventaId)
+            ?? throw new VentaException("La venta no existe.");
+
+        if (venta.Estado != "Completada")
+            throw new VentaException("Solo se puede devolver una venta completada.");
+        if (string.IsNullOrWhiteSpace(venta.Ncf))
+            throw new VentaException("La venta no tiene NCF fiscal; no se puede emitir una Nota de Crédito.");
+
+        await RevertirInventarioAsync(venta, usuarioId);
+
+        // Importante: la venta original NO se anula, se marca "Devuelta" y SIGUE contando
+        // en el 607 (comprobante válido ya emitido). La Nota de Crédito (04) es la línea
+        // correctora del período en que se emite. Anularla la sacaría del 607 y, junto a
+        // la NC negativa, reduciría el período dos veces.
+        venta.Estado = "Devuelta";
+
+        string? ncfNota = null;
+        try { ncfNota = await _ncf.SiguienteNcfAsync("04"); } catch { /* sin rango 04 activo: queda sin NCF */ }
+
+        _db.NotasCredito.Add(new NotaCredito
+        {
+            VentaId = venta.VentaId,
+            Ncf = ncfNota,
+            NcfModificado = venta.Ncf,
+            Fecha = venta.Fecha,
+            Monto = venta.Subtotal - venta.Descuento,
+            Itbis = venta.Impuesto,
+            Total = venta.Total,
+            Motivo = string.IsNullOrWhiteSpace(motivo) ? null : motivo.Trim(),
+            UsuarioId = usuarioId,
+            FechaRegistro = DateTime.Now
+        });
+
+        await _db.SaveChangesAsync();
+        return (await PorIdAsync(ventaId))!;
+    }
+
+    // Devuelve al inventario los bienes de una venta (IMEIs a Disponible, stock++).
+    private async Task RevertirInventarioAsync(Venta venta, int? usuarioId)
+    {
         foreach (var d in venta.Detalles)
         {
             if (d.ImeiId.HasValue)
@@ -160,7 +225,7 @@ public class VentaService : IVentaService
                         ImeiId = imei.ImeiId,
                         Tipo = "Anulacion",
                         SucursalDestino = venta.SucursalId,
-                        Referencia = $"Anulación venta #{venta.VentaId}",
+                        Referencia = $"Reverso venta #{venta.VentaId}",
                         UsuarioId = usuarioId,
                         Fecha = DateTime.Now
                     });
@@ -172,50 +237,6 @@ public class VentaService : IVentaService
                 if (variante is not null) variante.StockNoSerial += d.Cantidad;
             }
         }
-
-        venta.Estado = "Anulada";
-
-        var motivo = string.IsNullOrWhiteSpace(dto.Motivo) ? null : dto.Motivo.Trim();
-
-        if (!string.IsNullOrWhiteSpace(venta.Ncf) && dto.EmitirNotaCredito)
-        {
-            // Emite una Nota de Crédito (04) que referencia el NCF original.
-            // El NCF original permanece válido (ya declarado en su 607); la NC se
-            // reporta en el 607 del período en que se emite.
-            string? ncfNota = null;
-            try { ncfNota = await _ncf.SiguienteNcfAsync("04"); } catch { /* sin rango 04: queda sin NCF */ }
-
-            _db.NotasCredito.Add(new NotaCredito
-            {
-                VentaId = venta.VentaId,
-                Ncf = ncfNota,
-                NcfModificado = venta.Ncf,
-                Fecha = venta.Fecha,
-                Monto = venta.Subtotal - venta.Descuento,
-                Itbis = venta.Impuesto,
-                Total = venta.Total,
-                Motivo = motivo,
-                UsuarioId = usuarioId,
-                FechaRegistro = DateTime.Now
-            });
-        }
-        else if (!string.IsNullOrWhiteSpace(venta.Ncf))
-        {
-            // Anulación del NCF: queda registrado como comprobante anulado (alimenta el 608)
-            _db.ComprobantesAnulados.Add(new ComprobanteAnulado
-            {
-                Ncf = venta.Ncf,
-                FechaComprobante = venta.Fecha,
-                TipoAnulacion = dto.TipoAnulacion,
-                Motivo = motivo,
-                VentaId = venta.VentaId,
-                UsuarioId = usuarioId,
-                FechaRegistro = DateTime.Now
-            });
-        }
-
-        await _db.SaveChangesAsync();
-        return (await PorIdAsync(ventaId))!;
     }
 
     public async Task<VentaDto?> PorIdAsync(int id)
