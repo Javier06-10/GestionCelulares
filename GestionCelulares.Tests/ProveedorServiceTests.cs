@@ -104,6 +104,38 @@ public class ProveedorServiceTests
     }
 
     [Fact]
+    public async Task Eliminar_contacto_principal_promueve_otro()
+    {
+        var (id, db) = await SembrarAsync();
+        var svc = new ProveedorService(db);
+        var principal = await svc.AgregarContactoAsync(id, new ContactoGuardarDto { Nombre = "Ana", EsPrincipal = true });
+        await svc.AgregarContactoAsync(id, new ContactoGuardarDto { Nombre = "Beto", EsPrincipal = false });
+
+        await svc.EliminarContactoAsync(principal.ContactoProveedorId);
+
+        var restantes = await svc.ContactosAsync(id);
+        Assert.Single(restantes);
+        Assert.Equal("Beto", restantes[0].Nombre);
+        Assert.True(restantes[0].EsPrincipal);   // el que quedaba pasa a principal
+    }
+
+    [Fact]
+    public async Task Eliminar_contacto_no_principal_no_cambia_al_principal()
+    {
+        var (id, db) = await SembrarAsync();
+        var svc = new ProveedorService(db);
+        var principal = await svc.AgregarContactoAsync(id, new ContactoGuardarDto { Nombre = "Ana", EsPrincipal = true });
+        var secundario = await svc.AgregarContactoAsync(id, new ContactoGuardarDto { Nombre = "Beto", EsPrincipal = false });
+
+        await svc.EliminarContactoAsync(secundario.ContactoProveedorId);
+
+        var restantes = await svc.ContactosAsync(id);
+        Assert.Single(restantes);
+        Assert.Equal(principal.ContactoProveedorId, restantes[0].ContactoProveedorId);
+        Assert.True(restantes[0].EsPrincipal);
+    }
+
+    [Fact]
     public async Task Pago_mayor_al_balance_lanza_excepcion()
     {
         var (id, db) = await SembrarAsync();

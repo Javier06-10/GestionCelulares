@@ -300,6 +300,17 @@ public class ProveedorService : IProveedorService
         var contacto = await _db.ContactosProveedor.FirstOrDefaultAsync(c => c.ContactoProveedorId == contactoId)
             ?? throw new ProveedorException("El contacto no existe.");
         _db.ContactosProveedor.Remove(contacto);
+
+        // Si se borra el principal, promueve otro contacto para no dejar al proveedor sin principal.
+        if (contacto.EsPrincipal)
+        {
+            var reemplazo = await _db.ContactosProveedor
+                .Where(c => c.ProveedorId == contacto.ProveedorId && c.ContactoProveedorId != contactoId)
+                .OrderBy(c => c.Nombre)
+                .FirstOrDefaultAsync();
+            if (reemplazo is not null) reemplazo.EsPrincipal = true;
+        }
+
         await _db.SaveChangesAsync();
     }
 
