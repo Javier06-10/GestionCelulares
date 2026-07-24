@@ -203,6 +203,16 @@ export class Proveedores {
   }
   cerrarDetalle(): void { this.detalle.set(null); }
 
+  // Una compra a crédito pendiente (sin pago vinculado) cuyo vencimiento ya pasó
+  vencida(c: Compra): boolean {
+    if (c.contado || !c.fechaVencimiento) return false;
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    return new Date(c.fechaVencimiento) < hoy;
+  }
+
+  // Cantidad de compras vencidas del proveedor abierto (para la alerta)
+  vencidas = computed(() => this.compras().filter(c => this.vencida(c)).length);
+
   // ----- Compra -----
   abrirCompra(): void {
     this.errorCompra.set(null);

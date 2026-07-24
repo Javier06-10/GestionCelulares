@@ -71,6 +71,25 @@ public class ProveedorServiceTests
     }
 
     [Fact]
+    public async Task Compra_a_credito_fija_vencimiento_segun_dias_del_proveedor()
+    {
+        var db = TestDb.Crear();
+        db.Sucursales.Add(new Sucursal { SucursalId = Sucursal, Nombre = "Principal" });
+        var prov = new Proveedor { Nombre = "Mayorista", Activo = true, FechaCreacion = DateTime.Now, CondicionPago = "Credito", DiasCredito = 30 };
+        db.Proveedores.Add(prov);
+        await db.SaveChangesAsync();
+        var svc = new ProveedorService(db);
+
+        await svc.RegistrarCompraAsync(prov.ProveedorId, new CompraRegistroDto { SucursalId = Sucursal, Total = 3000m, Contado = false });
+        await svc.RegistrarCompraAsync(prov.ProveedorId, new CompraRegistroDto { SucursalId = Sucursal, Total = 500m, Contado = true });
+
+        var credito = await db.Compras.FirstAsync(c => c.Total == 3000m);
+        var contado = await db.Compras.FirstAsync(c => c.Total == 500m);
+        Assert.Equal(credito.Fecha.Date.AddDays(30), credito.FechaVencimiento);   // crédito: vence a 30 días
+        Assert.Null(contado.FechaVencimiento);                                     // contado: sin vencimiento
+    }
+
+    [Fact]
     public async Task Pago_reduce_el_balance()
     {
         var (id, db) = await SembrarAsync();

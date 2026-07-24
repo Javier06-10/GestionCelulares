@@ -181,6 +181,13 @@
               </div>
             </div>
 
+            @if (vencidas() > 0) {
+              <div class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 text-sm">
+                <lucide-icon name="triangle-alert" [size]="16" class="shrink-0"></lucide-icon>
+                <span><span class="font-semibold">{{ vencidas() }}</span> compra(s) a crédito vencida(s). Revisa la lista y registra el pago.</span>
+              </div>
+            }
+
             <!-- Toggle compras / pagos -->
             <div class="flex items-center gap-1">
               <button (click)="tabDetalle.set('compras')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all" [class]="tabDetalle() === 'compras' ? 'bg-tech-purple/15 text-tech-purple' : 'text-tech-steel hover:text-tech-charcoal'">Compras ({{ compras().length }})</button>
@@ -189,10 +196,10 @@
 
             @if (tabDetalle() === 'compras') {
               <table class="w-full text-sm border-collapse">
-                <thead><tr class="text-left text-tech-steel"><th class="font-semibold py-2 px-2">Fecha</th><th class="font-semibold py-2 px-2">Factura</th><th class="font-semibold py-2 px-2">Tipo</th><th class="font-semibold py-2 px-2 text-right">Total</th></tr></thead>
+                <thead><tr class="text-left text-tech-steel"><th class="font-semibold py-2 px-2">Fecha</th><th class="font-semibold py-2 px-2">Factura</th><th class="font-semibold py-2 px-2">Tipo</th><th class="font-semibold py-2 px-2">Vence</th><th class="font-semibold py-2 px-2 text-right">Total</th></tr></thead>
                 <tbody>
-                  @for (c of compras(); track c.compraId) { <tr class="border-t border-tech-pastel/20"><td class="py-2 px-2 text-tech-charcoal">{{ c.fecha | date:'dd/MM/yy' }}</td><td class="py-2 px-2 text-tech-steel">{{ c.numeroFactura || '—' }}</td><td class="py-2 px-2">@if (c.contado) { <span class="inline-block px-2 py-0.5 rounded-lg bg-tech-accent/10 text-tech-accent font-semibold text-xs">Contado</span> } @else { <span class="inline-block px-2 py-0.5 rounded-lg bg-tech-purple/10 text-tech-purple font-semibold text-xs">Crédito</span> }</td><td class="py-2 px-2 text-right font-medium text-tech-charcoal">{{ c.total | currency: 'DOP':'RD$':'1.2-2' }}</td></tr> }
-                  @empty { <tr><td colspan="4" class="py-8 text-center text-tech-steel">Sin compras registradas.</td></tr> }
+                  @for (c of compras(); track c.compraId) { <tr class="border-t border-tech-pastel/20"><td class="py-2 px-2 text-tech-charcoal">{{ c.fecha | date:'dd/MM/yy' }}</td><td class="py-2 px-2 text-tech-steel">{{ c.numeroFactura || '—' }}</td><td class="py-2 px-2">@if (c.contado) { <span class="inline-block px-2 py-0.5 rounded-lg bg-tech-accent/10 text-tech-accent font-semibold text-xs">Contado</span> } @else { <span class="inline-block px-2 py-0.5 rounded-lg bg-tech-purple/10 text-tech-purple font-semibold text-xs">Crédito</span> }</td><td class="py-2 px-2">@if (c.contado || !c.fechaVencimiento) { <span class="text-tech-steel">—</span> } @else if (vencida(c)) { <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-500/10 text-red-500 font-semibold text-xs"><lucide-icon name="triangle-alert" [size]="11"></lucide-icon> Vencida {{ c.fechaVencimiento | date:'dd/MM/yy' }}</span> } @else { <span class="text-tech-charcoal">{{ c.fechaVencimiento | date:'dd/MM/yy' }}</span> }</td><td class="py-2 px-2 text-right font-medium text-tech-charcoal">{{ c.total | currency: 'DOP':'RD$':'1.2-2' }}</td></tr> }
+                  @empty { <tr><td colspan="5" class="py-8 text-center text-tech-steel">Sin compras registradas.</td></tr> }
                 </tbody>
               </table>
             } @else {

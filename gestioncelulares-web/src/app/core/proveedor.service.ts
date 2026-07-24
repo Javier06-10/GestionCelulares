@@ -55,6 +55,7 @@ export interface Compra {
   sucursalId: number;
   numeroFactura: string | null;
   fecha: string;
+  fechaVencimiento: string | null;
   total: number;
   itbis: number | null;
   notas: string | null;

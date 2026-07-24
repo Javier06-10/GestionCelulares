@@ -86,6 +86,7 @@ public class CompraDto
     public int SucursalId { get; set; }
     public string? NumeroFactura { get; set; }
     public DateTime Fecha { get; set; }
+    public DateTime? FechaVencimiento { get; set; }
     public decimal Total { get; set; }
     public decimal? Itbis { get; set; }
     public string? Notas { get; set; }

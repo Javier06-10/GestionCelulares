@@ -111,6 +111,7 @@ public class ProveedorService : IProveedorService
                 SucursalId = c.SucursalId,
                 NumeroFactura = c.NumeroFactura,
                 Fecha = c.Fecha,
+                FechaVencimiento = c.FechaVencimiento,
                 Total = c.Total,
                 Itbis = c.Itbis,
                 Notas = c.Notas,
@@ -137,12 +138,15 @@ public class ProveedorService : IProveedorService
         }
 
         var itbis = Math.Min(dto.Itbis, dto.Total);
+        var ahora = DateTime.Now;
         var compra = new Compra
         {
             ProveedorId = proveedorId,
             SucursalId = dto.SucursalId,
             NumeroFactura = Normalizar(dto.NumeroFactura),
-            Fecha = DateTime.Now,
+            Fecha = ahora,
+            // A crédito: vence según los días acordados con el proveedor (snapshot).
+            FechaVencimiento = dto.Contado ? null : ahora.Date.AddDays(Math.Max(0, proveedor.DiasCredito)),
             Total = dto.Total,
             Subtotal = dto.Total - itbis,
             Itbis = itbis,
@@ -180,6 +184,7 @@ public class ProveedorService : IProveedorService
             SucursalId = compra.SucursalId,
             NumeroFactura = compra.NumeroFactura,
             Fecha = compra.Fecha,
+            FechaVencimiento = compra.FechaVencimiento,
             Total = compra.Total,
             Notas = compra.Notas,
             Contado = dto.Contado
