@@ -133,7 +133,22 @@ tienes un admin funcional aunque no hayas insertado la fila `admin` a mano.
 
 ---
 
-## 5. Checklist de go-live
+## 5. Monitoreo (health checks)
+
+La API expone endpoints **anónimos** de salud para balanceadores, orquestadores y uptime monitors:
+
+| Endpoint | Qué verifica | Uso |
+|---|---|---|
+| `GET /health/live` | El proceso responde (no toca dependencias). | *Liveness* — reinicio si no responde. |
+| `GET /health/ready` | La base de datos es accesible. | *Readiness* — no enrutar tráfico si falla. |
+| `GET /health` | Resumen **JSON** de todos los checks. | Diagnóstico / dashboards. |
+
+Responden `200` si sano y `503` si no. Ejemplo de `/health`:
+```json
+{ "status": "Healthy", "durationMs": 12.3, "checks": [ { "name": "database", "status": "Healthy", "description": "Base de datos accesible." } ] }
+```
+
+## 6. Checklist de go-live
 
 - [ ] `ASPNETCORE_ENVIRONMENT=Production`
 - [ ] `Jwt__Key` fuerte (32+), por variable de entorno
@@ -145,8 +160,8 @@ tienes un admin funcional aunque no hayas insertado la fila `admin` a mano.
 - [ ] `Cors__Origins__0` puesto **solo si** front y API van en orígenes distintos
 - [ ] TLS/HTTPS terminado en el proxy o Kestrel; verificar HSTS
 - [ ] (Recomendado) `AllowedHosts` fijado al dominio real en `appsettings.Production.json`
+- [ ] Monitoreo apuntando a `/health/ready` (readiness) y `/health/live` (liveness)
 
 ## Pendientes conocidos (no bloquean el arranque, sí conviene antes de operar)
-- **Health check** `/health` para monitoreo/orquestador (alta prioridad H4).
 - **Refresh de token** en el frontend: hoy expulsa al usuario a los 60 min (H3).
 - **e-CF (Ley 32-23)** — facturación electrónica DGII pendiente (H1).

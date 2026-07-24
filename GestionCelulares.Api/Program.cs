@@ -8,7 +8,9 @@ using GestionCelulares.Domain.Entities;
 using GestionCelulares.Infrastructure;
 using GestionCelulares.Infrastructure.Persistence;
 using GestionCelulares.Infrastructure.Settings;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -69,6 +71,10 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0
             }));
 });
+
+// --- Health checks: liveness (proceso) y readiness (base de datos) ---
+builder.Services.AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>("database", tags: new[] { "ready" });
 
 // --- Controllers + Swagger con soporte JWT ---
 builder.Services.AddControllers();
@@ -134,7 +140,32 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+// --- Endpoints de salud (anónimos, para monitoreo/orquestador) ---
+// /health/live  : el proceso responde (sin tocar dependencias).
+// /health/ready : la base de datos es accesible (readiness).
+// /health       : resumen JSON de todos los checks.
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = r => r.Tags.Contains("ready") });
+app.MapHealthChecks("/health", new HealthCheckOptions { ResponseWriter = EscribirSaludJson });
+
 app.Run();
+
+// Respuesta JSON compacta con el estado global y el detalle por check.
+static Task EscribirSaludJson(HttpContext ctx, HealthReport report)
+{
+    ctx.Response.ContentType = "application/json";
+    return ctx.Response.WriteAsJsonAsync(new
+    {
+        status = report.Status.ToString(),
+        durationMs = report.TotalDuration.TotalMilliseconds,
+        checks = report.Entries.Select(e => new
+        {
+            name = e.Key,
+            status = e.Value.Status.ToString(),
+            description = e.Value.Description
+        })
+    });
+}
 
 // --- Siembra del admin: deja un usuario 'admin' con contraseña utilizable ---
 // Producción: la contraseña sale de Seed:AdminPassword (variable de entorno
