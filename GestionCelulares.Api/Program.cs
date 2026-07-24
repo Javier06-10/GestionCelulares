@@ -4,6 +4,7 @@ using GestionCelulares.Api;
 using GestionCelulares.Api.Services;
 using GestionCelulares.Application;
 using GestionCelulares.Application.Common.Interfaces;
+using GestionCelulares.Domain.Entities;
 using GestionCelulares.Infrastructure;
 using GestionCelulares.Infrastructure.Persistence;
 using GestionCelulares.Infrastructure.Settings;
@@ -114,7 +115,6 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    await SeedDevPasswordAsync(app);
 }
 else
 {
@@ -124,6 +124,10 @@ else
     app.UseHttpsRedirection();
 }
 
+// Siembra del admin: en cualquier entorno. En producción usa Seed:AdminPassword;
+// en desarrollo cae a una clave por defecto para no frenar el trabajo local.
+await SeedAdminAsync(app);
+
 app.UseCors(CorsPolicy);
 app.UseRateLimiter();
 app.UseAuthentication();
@@ -132,8 +136,13 @@ app.MapControllers();
 
 app.Run();
 
-// --- Siembra de desarrollo: asigna una contraseña real al admin si quedó el placeholder ---
-static async Task SeedDevPasswordAsync(WebApplication app)
+// --- Siembra del admin: deja un usuario 'admin' con contraseña utilizable ---
+// Producción: la contraseña sale de Seed:AdminPassword (variable de entorno
+// Seed__AdminPassword). Sin esa clave, en producción no se toca nada.
+// Desarrollo: si no se define, cae a 'Admin123*' para no frenar el trabajo local.
+// Crea el admin si no existe (requiere el rol 'Admin', que trae el bootstrap de datos)
+// o le fija la contraseña si quedó con el placeholder 'CAMBIAR_HASH'.
+static async Task SeedAdminAsync(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
@@ -141,16 +150,56 @@ static async Task SeedDevPasswordAsync(WebApplication app)
     {
         var db = scope.ServiceProvider.GetRequiredService<GestionCelularesContext>();
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+        var seedPassword = config["Seed:AdminPassword"];
+        var esDesarrollo = app.Environment.IsDevelopment();
+        var password = string.IsNullOrWhiteSpace(seedPassword) && esDesarrollo ? "Admin123*" : seedPassword;
+        var origen = string.IsNullOrWhiteSpace(seedPassword) && esDesarrollo ? "desarrollo (Admin123*)" : "Seed:AdminPassword";
+
         var admin = await db.Usuarios.FirstOrDefaultAsync(u => u.NombreUsuario == "admin");
-        if (admin is not null && admin.HashContrasena == "CAMBIAR_HASH")
+
+        if (admin is null)
         {
-            admin.HashContrasena = hasher.Hash("Admin123*");
+            // Sin contraseña definida no hay nada que crear (producción sin Seed:AdminPassword).
+            if (string.IsNullOrWhiteSpace(password)) return;
+
+            var rolAdminId = await db.Roles.Where(r => r.Nombre == "Admin")
+                .Select(r => (int?)r.RolId).FirstOrDefaultAsync();
+            if (rolAdminId is null)
+            {
+                logger.LogWarning("No existe el rol 'Admin'; no se puede crear el usuario admin. Ejecuta el bootstrap de datos iniciales.");
+                return;
+            }
+            var sucursalId = await db.Sucursales.OrderBy(s => s.SucursalId)
+                .Select(s => (int?)s.SucursalId).FirstOrDefaultAsync();
+
+            db.Usuarios.Add(new Usuario
+            {
+                NombreUsuario = "admin",
+                NombreCompleto = "Administrador",
+                HashContrasena = hasher.Hash(password),
+                RolId = rolAdminId.Value,
+                SucursalId = sucursalId,
+                Activo = true,
+                FechaCreacion = DateTime.Now
+            });
             await db.SaveChangesAsync();
-            logger.LogWarning("Contraseña del usuario 'admin' inicializada a 'Admin123*' (solo desarrollo). Cámbiala.");
+            logger.LogWarning("Usuario 'admin' creado con la contraseña de {Origen}. Cámbiala tras el primer acceso.", origen);
+            return;
+        }
+
+        // El admin existe con el hash placeholder: fíjale la contraseña si la tenemos.
+        if (admin.HashContrasena == "CAMBIAR_HASH" && !string.IsNullOrWhiteSpace(password))
+        {
+            admin.HashContrasena = hasher.Hash(password);
+            if (!admin.Activo) admin.Activo = true;
+            await db.SaveChangesAsync();
+            logger.LogWarning("Contraseña del usuario 'admin' inicializada desde {Origen}. Cámbiala.", origen);
         }
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "No se pudo ejecutar la siembra de desarrollo (¿BD accesible?).");
+        logger.LogError(ex, "No se pudo ejecutar la siembra del admin (¿BD accesible?).");
     }
 }

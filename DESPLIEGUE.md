@@ -20,6 +20,7 @@ de sección. Estas son **obligatorias** en producción:
 | `Jwt__Key` | ✅ (secreto) | *(32+ chars aleatorios)* | La API **no arranca** si falta, es corta (<32) o contiene "CAMBIA". Ver cómo generarla abajo. |
 | `ConnectionStrings__Default` | ✅ (secreto) | `Server=SQLPROD;Database=GestionCelulares;User Id=gc_app;Password=***;TrustServerCertificate=True;Encrypt=True` | Usar el login **`gc_app`** (mínimo privilegio), no `sa`. |
 | `Cors__Origins__0` | ⚠️ | `https://tienda.tudominio.com` | Solo si el frontend se sirve en **otro origen** que la API. Si van en el mismo dominio (recomendado, ver §3), CORS no se activa. |
+| `Seed__AdminPassword` | ⚠️ (secreto) | *(clave del primer admin)* | Solo para el **primer arranque**: crea/activa el usuario `admin` con esa contraseña. Ver §4. Quítala después. |
 | `Jwt__Issuer` / `Jwt__Audience` | opcional | `GestionCelulares` | Tienen default; cámbialos si quieres. |
 | `Jwt__AccessTokenMinutes` | opcional | `60` | Vida del access token. |
 | `Jwt__RefreshTokenDays` | opcional | `7` | Vida del refresh token. |
@@ -118,16 +119,17 @@ IF NOT EXISTS (SELECT 1 FROM dbo.Usuario WHERE NombreUsuario = N'admin')
 > ganó columnas de bloqueo en `v17`; deben tener default o admitir NULL).
 
 ### Contraseña del admin en producción
-La siembra automática de contraseña (`SeedDevPasswordAsync`) **solo corre en `Development`**. En
-producción el admin queda con `HashContrasena = 'CAMBIAR_HASH'` y **no puede entrar** hasta fijar una
-contraseña real (hash BCrypt). Hoy **no hay un mecanismo de producción** para esto.
+El *seeder* de arranque (`SeedAdminAsync`) deja el `admin` con una contraseña utilizable en **cualquier
+entorno**:
+- Define **`Seed__AdminPassword`** con la clave deseada y arranca la API **una vez**. El seeder:
+  - crea el usuario `admin` (rol Admin, sucursal principal) si no existe, **o**
+  - le fija la contraseña si quedó con el placeholder `CAMBIAR_HASH`.
+- **Quita `Seed__AdminPassword`** del entorno tras ese primer arranque (ya no hace falta; el seeder no
+  pisa una contraseña ya establecida).
 
-**Recomendado (pendiente, ver nota):** añadir un *seeder* de producción que cree/active el admin desde
-una variable de entorno (p. ej. `Seed__AdminPassword`) cuando no haya usuarios. Es un cambio pequeño
-de arranque; puedo implementarlo como paso siguiente (B4).
-
-**Interino sin cambio de código:** generar un hash BCrypt con la misma librería que usa la app
-(`BCrypt.Net-Next`) y hacer `UPDATE dbo.Usuario SET HashContrasena = N'<hash>' WHERE NombreUsuario = N'admin';`.
+Sin `Seed__AdminPassword`, en producción el seeder **no toca nada** (no hay contraseñas por defecto en
+prod). El bootstrap SQL de arriba y este seeder se complementan: con solo definir la variable y arrancar,
+tienes un admin funcional aunque no hayas insertado la fila `admin` a mano.
 
 ---
 
@@ -147,5 +149,4 @@ de arranque; puedo implementarlo como paso siguiente (B4).
 ## Pendientes conocidos (no bloquean el arranque, sí conviene antes de operar)
 - **Health check** `/health` para monitoreo/orquestador (alta prioridad H4).
 - **Refresh de token** en el frontend: hoy expulsa al usuario a los 60 min (H3).
-- **Seeder de admin de producción** (§4) — recomendado para no depender del hash manual.
 - **e-CF (Ley 32-23)** — facturación electrónica DGII pendiente (H1).
