@@ -581,7 +581,8 @@ export class Pos implements OnDestroy {
       };
       window.addEventListener('resize', handleResize);
 
-      const particles: any[] = [];
+      type Particula = { x: number; y: number; r: number; d: number; color: string; tilt: number; tiltAngleIncremental: number; tiltAngle: number };
+      const particles: Particula[] = [];
       const colors = ['#00E676', '#6C5CE7', '#00c853', '#80ee9f', '#a29bfe', '#ffffff'];
 
       for (let i = 0; i < 100; i++) {

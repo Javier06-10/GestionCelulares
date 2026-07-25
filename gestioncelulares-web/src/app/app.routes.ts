@@ -1,58 +1,38 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth-guard';
 import { rolGuard } from './core/rol-guard';
-import { Layout } from './layout/layout';
-import { Apartados } from './pages/apartados/apartados';
-import { Asientos } from './pages/asientos/asientos';
-import { Caja } from './pages/caja/caja';
-import { Catalogo } from './pages/catalogo/catalogo';
-import { Clientes } from './pages/clientes/clientes';
-import { Creditos } from './pages/creditos/creditos';
-import { Cuentas } from './pages/cuentas/cuentas';
-import { Dashboard } from './pages/dashboard/dashboard';
-import { Devoluciones } from './pages/devoluciones/devoluciones';
-import { Estados } from './pages/estados/estados';
-import { Garantias } from './pages/garantias/garantias';
-import { Inventario } from './pages/inventario/inventario';
-import { Login } from './pages/login/login';
-import { Ncf } from './pages/ncf/ncf';
-import { Nomina } from './pages/nomina/nomina';
-import { Pos } from './pages/pos/pos';
-import { Proveedores } from './pages/proveedores/proveedores';
-import { Reportes } from './pages/reportes/reportes';
-import { Taller } from './pages/taller/taller';
-import { Usuarios } from './pages/usuarios/usuarios';
-import { Ventas } from './pages/ventas/ventas';
 
+// Carga diferida (lazy) de cada pantalla: cada ruta baja su propio chunk bajo demanda,
+// en vez de meter las 22 páginas en el bundle inicial.
 export const routes: Routes = [
-  { path: 'login', component: Login },
+  { path: 'login', loadComponent: () => import('./pages/login/login').then(m => m.Login) },
   {
     path: '',
-    component: Layout,
+    loadComponent: () => import('./layout/layout').then(m => m.Layout),
     canActivate: [authGuard],
     canActivateChild: [rolGuard],
     children: [
-      { path: '', component: Dashboard },
-      { path: 'pos', component: Pos },
-      { path: 'ventas', component: Ventas },
-      { path: 'devoluciones', component: Devoluciones },
-      { path: 'clientes', component: Clientes },
-      { path: 'inventario', component: Inventario },
+      { path: '', loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard) },
+      { path: 'pos', loadComponent: () => import('./pages/pos/pos').then(m => m.Pos) },
+      { path: 'ventas', loadComponent: () => import('./pages/ventas/ventas').then(m => m.Ventas) },
+      { path: 'devoluciones', loadComponent: () => import('./pages/devoluciones/devoluciones').then(m => m.Devoluciones) },
+      { path: 'clientes', loadComponent: () => import('./pages/clientes/clientes').then(m => m.Clientes) },
+      { path: 'inventario', loadComponent: () => import('./pages/inventario/inventario').then(m => m.Inventario) },
       { path: 'faltantes', redirectTo: 'inventario', pathMatch: 'full' },
-      { path: 'catalogo', component: Catalogo },
-      { path: 'proveedores', component: Proveedores },
-      { path: 'caja', component: Caja },
-      { path: 'creditos', component: Creditos },
-      { path: 'taller', component: Taller },
-      { path: 'apartados', component: Apartados },
-      { path: 'garantias', component: Garantias },
-      { path: 'usuarios', component: Usuarios },
-      { path: 'nomina', component: Nomina },
-      { path: 'cuentas', component: Cuentas },
-      { path: 'asientos', component: Asientos },
-      { path: 'estados', component: Estados },
-      { path: 'ncf', component: Ncf },
-      { path: 'reportes', component: Reportes }
+      { path: 'catalogo', loadComponent: () => import('./pages/catalogo/catalogo').then(m => m.Catalogo) },
+      { path: 'proveedores', loadComponent: () => import('./pages/proveedores/proveedores').then(m => m.Proveedores) },
+      { path: 'caja', loadComponent: () => import('./pages/caja/caja').then(m => m.Caja) },
+      { path: 'creditos', loadComponent: () => import('./pages/creditos/creditos').then(m => m.Creditos) },
+      { path: 'taller', loadComponent: () => import('./pages/taller/taller').then(m => m.Taller) },
+      { path: 'apartados', loadComponent: () => import('./pages/apartados/apartados').then(m => m.Apartados) },
+      { path: 'garantias', loadComponent: () => import('./pages/garantias/garantias').then(m => m.Garantias) },
+      { path: 'usuarios', loadComponent: () => import('./pages/usuarios/usuarios').then(m => m.Usuarios) },
+      { path: 'nomina', loadComponent: () => import('./pages/nomina/nomina').then(m => m.Nomina) },
+      { path: 'cuentas', loadComponent: () => import('./pages/cuentas/cuentas').then(m => m.Cuentas) },
+      { path: 'asientos', loadComponent: () => import('./pages/asientos/asientos').then(m => m.Asientos) },
+      { path: 'estados', loadComponent: () => import('./pages/estados/estados').then(m => m.Estados) },
+      { path: 'ncf', loadComponent: () => import('./pages/ncf/ncf').then(m => m.Ncf) },
+      { path: 'reportes', loadComponent: () => import('./pages/reportes/reportes').then(m => m.Reportes) }
     ]
   },
   { path: '**', redirectTo: '' }
