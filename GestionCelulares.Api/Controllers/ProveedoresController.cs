@@ -16,8 +16,9 @@ public class ProveedoresController : ControllerBase
 
     /// <summary>Busca proveedores por nombre, RNC o teléfono; permite filtrar por activos.</summary>
     [HttpGet]
-    public async Task<IActionResult> Buscar([FromQuery] string? buscar, [FromQuery] bool? activos)
-        => Ok(await _proveedores.BuscarAsync(buscar, activos));
+    public async Task<IActionResult> Buscar([FromQuery] string? buscar, [FromQuery] bool? activos,
+        [FromQuery] int pagina = 1, [FromQuery] int tamano = 50)
+        => Ok(await _proveedores.BuscarAsync(buscar, activos, pagina, tamano));
 
     /// <summary>Consulta un proveedor por su Id (incluye su balance actual).</summary>
     [HttpGet("{id:int}")]

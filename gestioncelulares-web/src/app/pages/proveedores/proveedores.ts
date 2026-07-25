@@ -152,8 +152,10 @@ export class Proveedores {
 
   cargar(): void {
     this.cargando.set(true);
-    this.servicio.buscar(this.termino() || undefined).subscribe({
-      next: d => { this.proveedores.set(d); this.cargando.set(false); },
+    // Carga acotada (tope del API) con KPIs en cliente. Para catálogos de proveedores
+    // muy grandes, migrar a paginación de servidor (búsqueda + conteos).
+    this.servicio.buscar(this.termino() || undefined, undefined, 1, 200).subscribe({
+      next: d => { this.proveedores.set(d.items); this.cargando.set(false); },
       error: () => this.cargando.set(false)
     });
   }

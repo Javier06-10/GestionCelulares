@@ -7,7 +7,7 @@ namespace GestionCelulares.Application.Proveedores;
 
 public interface IProveedorService
 {
-    Task<IReadOnlyList<ProveedorDto>> BuscarAsync(string? termino, bool? activos);
+    Task<ResultadoPaginado<ProveedorDto>> BuscarAsync(string? termino, bool? activos, int pagina = 1, int tamano = 50);
     Task<ProveedorDto?> PorIdAsync(int id);
     Task<ProveedorDto> CrearAsync(ProveedorCrearDto dto);
     Task<ProveedorDto> ActualizarAsync(int id, ProveedorActualizarDto dto);
@@ -29,7 +29,7 @@ public class ProveedorService : IProveedorService
 
     public ProveedorService(IApplicationDbContext db) => _db = db;
 
-    public async Task<IReadOnlyList<ProveedorDto>> BuscarAsync(string? termino, bool? activos)
+    public async Task<ResultadoPaginado<ProveedorDto>> BuscarAsync(string? termino, bool? activos, int pagina = 1, int tamano = 50)
     {
         var q = _db.Proveedores.AsNoTracking();
 
@@ -45,7 +45,23 @@ public class ProveedorService : IProveedorService
         if (activos.HasValue)
             q = q.Where(p => p.Activo == activos.Value);
 
-        return await q.OrderBy(p => p.Nombre).Select(p => Proyectar(p)).ToListAsync();
+        // Proyección inline (no el método Proyectar) para que EF traduzca Skip/Take/Count a SQL.
+        var proyeccion = q.OrderBy(p => p.Nombre).Select(p => new ProveedorDto
+        {
+            ProveedorId = p.ProveedorId,
+            Nombre = p.Nombre,
+            RNC = p.RNC,
+            Telefono = p.Telefono,
+            Email = p.Email,
+            Direccion = p.Direccion,
+            Balance = p.Balance,
+            Activo = p.Activo,
+            FechaCreacion = p.FechaCreacion,
+            CondicionPago = p.CondicionPago,
+            DiasCredito = p.DiasCredito,
+            NotaCondicion = p.NotaCondicion
+        });
+        return await ResultadoPaginado<ProveedorDto>.DesdeConsultaAsync(proyeccion, pagina, tamano);
     }
 
     public async Task<ProveedorDto?> PorIdAsync(int id)

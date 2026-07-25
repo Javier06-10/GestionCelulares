@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { Paginado } from './models';
 
 export type CondicionPago = 'Contado' | 'Credito' | 'Acuerdo';
 
@@ -77,11 +78,11 @@ export class ProveedorService {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/proveedores`;
 
-  buscar(termino?: string, activos?: boolean) {
-    let params = new HttpParams();
+  buscar(termino?: string, activos?: boolean, pagina = 1, tamano = 50) {
+    let params = new HttpParams().set('pagina', pagina).set('tamano', tamano);
     if (termino) params = params.set('buscar', termino);
     if (activos !== undefined) params = params.set('activos', activos);
-    return this.http.get<Proveedor[]>(this.base, { params });
+    return this.http.get<Paginado<Proveedor>>(this.base, { params });
   }
   porId(id: number) { return this.http.get<Proveedor>(`${this.base}/${id}`); }
   crear(dto: ProveedorGuardar) { return this.http.post<Proveedor>(this.base, dto); }

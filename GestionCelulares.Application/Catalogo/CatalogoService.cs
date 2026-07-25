@@ -87,6 +87,8 @@ public class CatalogoService : ICatalogoService
         if (activos.HasValue)
             q = q.Where(p => p.Activo == activos.Value);
 
+        // Set de referencia acotado que el POS consume completo para el matcheo de
+        // códigos de barra; no se pagina (rompería el escaneo).
         return await q.OrderBy(p => p.Nombre).Select(Proyeccion).ToListAsync();
     }
 
