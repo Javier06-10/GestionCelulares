@@ -78,10 +78,16 @@ public class ApartadoServiceTests
     }
 
     [Fact]
-    public async Task Crear_con_abono_sin_caja_abierta_falla()
+    public async Task Crear_con_abono_sin_caja_no_persiste_nada()
     {
-        var (_, svc, _) = Crear(cajaAbierta: false);
+        var (db, svc, _) = Crear(cajaAbierta: false);
+
         await Assert.ThrowsAsync<ApartadoException>(() => svc.CrearAsync(CrearDto(abono: 1000m), Usuario));
+
+        // Atomicidad (un solo SaveChanges): si el abono inicial falla, no queda ni apartado
+        // ni abono persistidos (antes eran 2 saves y quedaba el apartado reservado sin abono).
+        Assert.Equal(0, await db.Apartados.CountAsync());
+        Assert.Empty(await db.AbonosApartado.ToListAsync());
     }
 
     // ---------- AbonarAsync ----------

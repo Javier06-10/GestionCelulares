@@ -109,10 +109,13 @@ public class ApartadoService : IApartadoService
         // Reserva del equipo
         imei.Estado = "Apartado";
         _db.Apartados.Add(apartado);
-        await _db.SaveChangesAsync();
 
+        // El abono inicial (si lo hay) va en la MISMA operación: apartado + reserva + abono
+        // se guardan atómicamente en un solo SaveChanges (si algo falla, no persiste nada).
         if (dto.AbonoInicial > 0)
-            await RegistrarAbonoInternoAsync(apartado, dto.AbonoInicial, dto.MetodoPagoId, usuarioId);
+            await PrepararAbonoAsync(apartado, dto.AbonoInicial, dto.MetodoPagoId, usuarioId);
+
+        await _db.SaveChangesAsync();
 
         return (await PorIdAsync(apartado.ApartadoId))!;
     }
@@ -128,11 +131,14 @@ public class ApartadoService : IApartadoService
         if (dto.Monto > saldo)
             throw new ApartadoException($"El abono ({dto.Monto:N2}) excede el saldo pendiente ({saldo:N2}).");
 
-        await RegistrarAbonoInternoAsync(apartado, dto.Monto, dto.MetodoPagoId, usuarioId);
+        await PrepararAbonoAsync(apartado, dto.Monto, dto.MetodoPagoId, usuarioId);
+        await _db.SaveChangesAsync();
         return (await PorIdAsync(id))!;
     }
 
-    private async Task RegistrarAbonoInternoAsync(Apartado apartado, decimal monto, int? metodoPagoId, int? usuarioId)
+    // Prepara (sin guardar) el abono en la colección del apartado, para que el llamador haga
+    // UN solo SaveChanges y la operación sea atómica. Valida el método de pago y la caja abierta.
+    private async Task PrepararAbonoAsync(Apartado apartado, decimal monto, int? metodoPagoId, int? usuarioId)
     {
         if (metodoPagoId is null)
             throw new ApartadoException("Indica el método de pago del abono.");
@@ -142,9 +148,10 @@ public class ApartadoService : IApartadoService
         var sesionCajaId = await SesionAbiertaAsync(apartado.SucursalId)
             ?? throw new ApartadoException("No hay una caja abierta en esta sucursal para registrar el abono.");
 
-        _db.AbonosApartado.Add(new AbonoApartado
+        // Se agrega vía la navegación (no _db.AbonosApartado.Add) para que EF resuelva el FK
+        // incluso cuando el apartado aún no tiene Id (alta con abono inicial en un solo save).
+        apartado.Abonos.Add(new AbonoApartado
         {
-            ApartadoId = apartado.ApartadoId,
             Monto = monto,
             MetodoPagoId = metodoPagoId,
             SesionCajaId = sesionCajaId,
@@ -153,7 +160,6 @@ public class ApartadoService : IApartadoService
             Fecha = DateTime.Now
         });
         apartado.TotalAbonado += monto;
-        await _db.SaveChangesAsync();
     }
 
     public async Task<ApartadoDto> CambiarEquipoAsync(int id, CambiarEquipoDto dto)
