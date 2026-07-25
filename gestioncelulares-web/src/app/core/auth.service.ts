@@ -1,13 +1,16 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, finalize, shareReplay, tap, throwError } from 'rxjs';
+import { Observable, finalize, of, shareReplay, tap } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { LoginResponse, UsuarioSesion } from './models';
+import { UsuarioSesion } from './models';
 
-const TOKEN_KEY = 'gc_token';
-const REFRESH_KEY = 'gc_refresh';
 const USUARIO_KEY = 'gc_usuario';
+
+/** La sesión vive en cookies HttpOnly (no accesibles desde JS). Aquí solo se guarda el
+ *  perfil del usuario para pintar la UI; la autenticación real la llevan las cookies. */
+interface SesionResponse { usuario: UsuarioSesion; expiraEn: string; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -19,36 +22,23 @@ export class AuthService {
   readonly esAdmin = computed(() => this.usuario()?.rol === 'Admin');
 
   // Refresh en curso compartido: varios 401 simultáneos comparten una sola llamada.
-  private refresh$: Observable<LoginResponse> | null = null;
-
-  get token(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
-  }
-
-  get refreshToken(): string | null {
-    return localStorage.getItem(REFRESH_KEY);
-  }
+  private refresh$: Observable<SesionResponse> | null = null;
 
   login(nombreUsuario: string, contrasena: string) {
+    // withCredentials para que el navegador acepte/envíe las cookies de sesión.
     return this.http
-      .post<LoginResponse>(`${environment.apiUrl}/auth/login`, { nombreUsuario, contrasena })
-      .pipe(tap(resp => this.guardarSesion(resp)));
+      .post<SesionResponse>(`${environment.apiUrl}/auth/login`, { nombreUsuario, contrasena }, { withCredentials: true })
+      .pipe(tap(resp => this.guardarUsuario(resp.usuario)));
   }
 
-  /**
-   * Renueva el access token con el refresh token guardado. El backend rota ambos
-   * tokens. Deduplica llamadas concurrentes con shareReplay para no disparar N refrescos.
-   */
-  refrescar(): Observable<LoginResponse> {
+  /** Renueva la sesión usando la cookie de refresh. Deduplica llamadas concurrentes. */
+  refrescar(): Observable<SesionResponse> {
     if (this.refresh$) return this.refresh$;
 
-    const rt = this.refreshToken;
-    if (!rt) return throwError(() => new Error('No hay refresh token.'));
-
     this.refresh$ = this.http
-      .post<LoginResponse>(`${environment.apiUrl}/auth/refresh`, { refreshToken: rt })
+      .post<SesionResponse>(`${environment.apiUrl}/auth/refresh`, {}, { withCredentials: true })
       .pipe(
-        tap(resp => this.guardarSesion(resp)),
+        tap(resp => this.guardarUsuario(resp.usuario)),
         shareReplay(1),
         finalize(() => (this.refresh$ = null))
       );
@@ -56,18 +46,21 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_KEY);
+    // Revoca el refresh token y borra las cookies del lado servidor; luego limpia la UI.
+    this.http.post(`${environment.apiUrl}/auth/logout`, {}, { withCredentials: true })
+      .pipe(catchError(() => of(null)))
+      .subscribe(() => this.limpiarSesion());
+  }
+
+  private limpiarSesion(): void {
     localStorage.removeItem(USUARIO_KEY);
     this.usuario.set(null);
     this.router.navigate(['/login']);
   }
 
-  private guardarSesion(resp: LoginResponse): void {
-    localStorage.setItem(TOKEN_KEY, resp.accessToken);
-    localStorage.setItem(REFRESH_KEY, resp.refreshToken);
-    localStorage.setItem(USUARIO_KEY, JSON.stringify(resp.usuario));
-    this.usuario.set(resp.usuario);
+  private guardarUsuario(usuario: UsuarioSesion): void {
+    localStorage.setItem(USUARIO_KEY, JSON.stringify(usuario));
+    this.usuario.set(usuario);
   }
 
   private leerUsuario(): UsuarioSesion | null {

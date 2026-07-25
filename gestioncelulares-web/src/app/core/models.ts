@@ -17,13 +17,6 @@ export interface UsuarioSesion {
   sucursalId: number | null;
 }
 
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  expiraEn: string;
-  usuario: UsuarioSesion;
-}
-
 export interface VentasIndicador {
   cantidad: number;
   total: number;

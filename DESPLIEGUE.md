@@ -76,6 +76,18 @@ Así frontend y API comparten origen, `apiUrl: '/api'` funciona y **no hace falt
 hosts separados, pon el dominio del front en `Cors__Origins__0` y cambia `apiUrl` en
 `environment.production.ts` por la URL absoluta de la API.
 
+### Autenticación por cookies (importante)
+La sesión viaja en cookies **HttpOnly + Secure + SameSite=Strict** (`gc_access`, `gc_refresh`), no en
+`localStorage`. Esto impone dos condiciones de despliegue:
+- **HTTPS obligatorio** (las cookies son `Secure`). En dev funciona sobre `http://localhost` porque el
+  navegador trata localhost como contexto seguro.
+- **Frontend y API deben estar en el mismo *site*** (mismo dominio registrable) por `SameSite=Strict`.
+  El montaje recomendado (mismo origen, `/api` por reverse proxy) lo cumple. Si el front vive en un
+  **dominio distinto** al de la API, `SameSite=Strict` **no enviará las cookies** y el login no
+  funcionará; en ese caso hay que reconsiderar el `SameSite` (Lax) y añadir orígenes a `Cors__Origins`
+  con credenciales. La API ya envía `Access-Control-Allow-Credentials`; el front usa `withCredentials`.
+- CSRF: mitigado por `SameSite=Strict` (las cookies no se envían en peticiones cross-site).
+
 ---
 
 ## 4. Datos iniciales (⚠️ paso obligatorio para una BD nueva)

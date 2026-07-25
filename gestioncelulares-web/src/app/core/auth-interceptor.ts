@@ -1,41 +1,34 @@
-import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
 /**
- * Adjunta el JWT a las llamadas a la API. Si expira (401), intenta renovar el
- * token con el refresh token y reintenta la petición; si la renovación falla,
- * cierra la sesión.
+ * La sesión viaja en cookies HttpOnly: este interceptor solo asegura que las
+ * peticiones a la API las envíen (withCredentials). Si el access token expira (401),
+ * intenta renovar la sesión con la cookie de refresh y reintenta; si falla, cierra sesión.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
+  const esApi = req.url.startsWith(environment.apiUrl);
 
-  const conToken = (r: HttpRequest<unknown>) =>
-    auth.token && r.url.startsWith(environment.apiUrl)
-      ? r.clone({ setHeaders: { Authorization: `Bearer ${auth.token}` } })
-      : r;
+  const conCredenciales = esApi ? req.clone({ withCredentials: true }) : req;
 
-  return next(conToken(req)).pipe(
+  return next(conCredenciales).pipe(
     catchError((error: HttpErrorResponse) => {
-      const esApi = req.url.startsWith(environment.apiUrl);
-      const esAuth = req.url.endsWith('/auth/login') || req.url.endsWith('/auth/refresh');
+      const esAuth = req.url.endsWith('/auth/login')
+        || req.url.endsWith('/auth/refresh')
+        || req.url.endsWith('/auth/logout');
 
-      // Solo interesa el 401 de la API que no venga del propio login/refresh.
+      // Solo interesa el 401 de la API que no venga del propio flujo de auth.
       if (error.status !== 401 || !esApi || esAuth) {
         return throwError(() => error);
       }
 
-      // Sin refresh token no hay nada que renovar: cerrar sesión.
-      if (!auth.refreshToken) {
-        auth.logout();
-        return throwError(() => error);
-      }
-
-      // Renovar (compartido entre 401 simultáneos) y reintentar con el token nuevo.
+      // Renovar (compartido entre 401 simultáneos) y reintentar con las cookies nuevas.
       return auth.refrescar().pipe(
-        switchMap(() => next(conToken(req))),
+        switchMap(() => next(conCredenciales)),
         catchError(err => {
           auth.logout();
           return throwError(() => err);

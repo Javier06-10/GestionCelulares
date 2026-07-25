@@ -9,6 +9,7 @@ public interface IAuthService
 {
     Task<LoginResponse> LoginAsync(LoginRequest req);
     Task<LoginResponse> RefreshAsync(string refreshToken);
+    Task LogoutAsync(string? refreshToken);
 }
 
 public class AuthService : IAuthService
@@ -111,6 +112,20 @@ public class AuthService : IAuthService
 
         await _db.SaveChangesAsync();
         return resp;
+    }
+
+    /// <summary>Revoca el refresh token presentado (cierre de sesión del lado servidor).</summary>
+    public async Task LogoutAsync(string? refreshToken)
+    {
+        if (string.IsNullOrEmpty(refreshToken)) return;
+
+        var hash = _tokens.HashRefreshToken(refreshToken);
+        var token = await _db.RefreshTokens.FirstOrDefaultAsync(t => t.Token == hash);
+        if (token is not null && !token.Revocado)
+        {
+            token.Revocado = true;
+            await _db.SaveChangesAsync();
+        }
     }
 
     private LoginResponse Emitir(Usuario usuario)

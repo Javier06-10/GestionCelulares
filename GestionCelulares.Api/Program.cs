@@ -8,6 +8,7 @@ using GestionCelulares.Domain.Entities;
 using GestionCelulares.Infrastructure;
 using GestionCelulares.Infrastructure.Persistence;
 using GestionCelulares.Infrastructure.Settings;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -52,6 +53,16 @@ builder.Services.AddAuthentication("Bearer")
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)),
             ClockSkew = TimeSpan.FromSeconds(30)
         };
+        // El access token viaja en una cookie HttpOnly (no accesible desde JS): se lee de ahí.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = ctx =>
+            {
+                if (ctx.Request.Cookies.TryGetValue("gc_access", out var cookie) && !string.IsNullOrEmpty(cookie))
+                    ctx.Token = cookie;
+                return Task.CompletedTask;
+            }
+        };
     });
 builder.Services.AddAuthorization();
 
@@ -63,7 +74,8 @@ var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>
 builder.Services.AddCors(o => o.AddPolicy(CorsPolicy, p =>
     p.WithOrigins(corsOrigins)
      .AllowAnyHeader()
-     .AllowAnyMethod()));
+     .AllowAnyMethod()
+     .AllowCredentials()));   // las cookies de auth requieren credenciales (orígenes específicos)
 
 // --- Rate limiting: frena la fuerza bruta contra el login (por IP) ---
 builder.Services.AddRateLimiter(options =>
