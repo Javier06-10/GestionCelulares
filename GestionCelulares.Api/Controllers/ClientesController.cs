@@ -14,10 +14,11 @@ public class ClientesController : ControllerBase
 
     public ClientesController(IClienteService clientes) => _clientes = clientes;
 
-    /// <summary>Busca clientes por nombre, cédula o teléfono; permite filtrar morosos y bloqueados.</summary>
+    /// <summary>Busca clientes (paginado) por nombre, cédula o teléfono; filtra morosos y bloqueados.</summary>
     [HttpGet]
-    public async Task<IActionResult> Buscar([FromQuery] string? buscar, [FromQuery] bool? morosos, [FromQuery] bool? bloqueados)
-        => Ok(await _clientes.BuscarAsync(buscar, morosos, bloqueados));
+    public async Task<IActionResult> Buscar([FromQuery] string? buscar, [FromQuery] bool? morosos, [FromQuery] bool? bloqueados,
+        [FromQuery] int pagina = 1, [FromQuery] int tamano = 50)
+        => Ok(await _clientes.BuscarAsync(buscar, morosos, bloqueados, pagina, tamano));
 
     /// <summary>Consulta un cliente por su Id.</summary>
     [HttpGet("{id:int}")]

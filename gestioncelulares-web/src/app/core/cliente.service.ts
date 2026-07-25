@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { Paginado } from './models';
 
 export interface Cliente {
   clienteId: number;
@@ -27,12 +28,12 @@ export class ClienteService {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/clientes`;
 
-  buscar(termino?: string, morosos?: boolean, bloqueados?: boolean) {
-    let params = new HttpParams();
+  buscar(termino?: string, morosos?: boolean, bloqueados?: boolean, pagina = 1, tamano = 50) {
+    let params = new HttpParams().set('pagina', pagina).set('tamano', tamano);
     if (termino) params = params.set('buscar', termino);
     if (morosos !== undefined) params = params.set('morosos', morosos);
     if (bloqueados !== undefined) params = params.set('bloqueados', bloqueados);
-    return this.http.get<Cliente[]>(this.base, { params });
+    return this.http.get<Paginado<Cliente>>(this.base, { params });
   }
 
   porId(id: number) {

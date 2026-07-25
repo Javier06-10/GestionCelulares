@@ -106,8 +106,8 @@ export class Clientes {
     this.reparacionesCli.set([]);
     this.creditoSrv.buscar(c.clienteId).subscribe({ next: d => this.creditosCli.set(d) });
     this.tallerSrv.buscar(undefined, undefined, undefined, c.clienteId).subscribe({ next: r => this.reparacionesCli.set(r) });
-    this.ventaSrv.buscar(undefined, undefined, undefined, c.clienteId).subscribe({
-      next: v => { this.comprasCli.set(v); this.cargandoPerfil.set(false); },
+    this.ventaSrv.buscar(undefined, undefined, undefined, c.clienteId, 1, 50).subscribe({
+      next: v => { this.comprasCli.set(v.items); this.cargandoPerfil.set(false); },
       error: () => this.cargandoPerfil.set(false)
     });
   }
@@ -124,9 +124,11 @@ export class Clientes {
 
   cargar(): void {
     this.cargando.set(true);
-    this.servicio.buscar().subscribe({
+    // Carga acotada (tope del API) con búsqueda/KPIs en cliente. Para catálogos de
+    // clientes muy grandes, migrar a paginación de servidor (búsqueda + conteos).
+    this.servicio.buscar(undefined, undefined, undefined, 1, 200).subscribe({
       next: data => {
-        this.clientes.set(data);
+        this.clientes.set(data.items);
         this.cargando.set(false);
       },
       error: () => this.cargando.set(false)

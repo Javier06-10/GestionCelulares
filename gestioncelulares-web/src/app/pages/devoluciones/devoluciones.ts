@@ -65,8 +65,8 @@ export class Devoluciones {
     this.cargandoVentas.set(true);
     const hasta = new Date();
     const desde = new Date(); desde.setDate(desde.getDate() - 90);
-    this.ventaSrv.buscar(this.fecha(desde), this.fecha(hasta)).subscribe({
-      next: v => { this.candidatas.set(v); this.cargandoVentas.set(false); },
+    this.ventaSrv.buscar(this.fecha(desde), this.fecha(hasta), undefined, undefined, 1, 200).subscribe({
+      next: v => { this.candidatas.set(v.items); this.cargandoVentas.set(false); },
       error: () => this.cargandoVentas.set(false)
     });
   }

@@ -10,7 +10,7 @@ public interface IVentaService
 {
     Task<VentaDto> RegistrarAsync(VentaRegistroDto dto, int usuarioId);
     Task<VentaDto?> PorIdAsync(int id);
-    Task<IReadOnlyList<VentaResumenDto>> BuscarAsync(DateTime? desde, DateTime? hasta, int? sucursalId, int? clienteId);
+    Task<ResultadoPaginado<VentaResumenDto>> BuscarAsync(DateTime? desde, DateTime? hasta, int? sucursalId, int? clienteId, int pagina = 1, int tamano = 50);
     Task<IReadOnlyList<MetodoPagoDto>> MetodosPagoAsync();
     Task<VentaDto> AnularAsync(int ventaId, AnularVentaDto dto, int? usuarioId);
     Task<VentaDto> DevolverAsync(int ventaId, string? motivo, int? usuarioId);
@@ -245,7 +245,7 @@ public class VentaService : IVentaService
             .Select(ProyeccionVenta)
             .FirstOrDefaultAsync();
 
-    public async Task<IReadOnlyList<VentaResumenDto>> BuscarAsync(DateTime? desde, DateTime? hasta, int? sucursalId, int? clienteId)
+    public async Task<ResultadoPaginado<VentaResumenDto>> BuscarAsync(DateTime? desde, DateTime? hasta, int? sucursalId, int? clienteId, int pagina = 1, int tamano = 50)
     {
         var q = _db.Ventas.AsNoTracking();
 
@@ -254,7 +254,7 @@ public class VentaService : IVentaService
         if (sucursalId.HasValue) q = q.Where(v => v.SucursalId == sucursalId.Value);
         if (clienteId.HasValue) q = q.Where(v => v.ClienteId == clienteId.Value);
 
-        return await q.OrderByDescending(v => v.Fecha)
+        var proyeccion = q.OrderByDescending(v => v.Fecha)
             .Select(v => new VentaResumenDto
             {
                 VentaId = v.VentaId,
@@ -266,8 +266,9 @@ public class VentaService : IVentaService
                 Total = v.Total,
                 EsCredito = v.EsCredito,
                 Estado = v.Estado
-            })
-            .ToListAsync();
+            });
+
+        return await ResultadoPaginado<VentaResumenDto>.DesdeConsultaAsync(proyeccion, pagina, tamano);
     }
 
     public async Task<IReadOnlyList<MetodoPagoDto>> MetodosPagoAsync()

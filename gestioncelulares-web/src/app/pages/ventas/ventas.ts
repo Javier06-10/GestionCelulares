@@ -35,7 +35,14 @@ export class Ventas {
   desde = signal(this.inicioMes());
   hasta = signal(this.hoy());
 
-  totalPeriodo = computed(() => this.ventas().filter(v => v.estado !== 'Anulada').reduce((a, v) => a + v.total, 0));
+  // Paginación de servidor
+  pagina = signal(1);
+  readonly tamano = 50;
+  total = signal(0);
+  totalPaginas = signal(0);
+
+  // Suma de la página actual (sin anuladas). El total del período no se suma en cliente.
+  totalPagina = computed(() => this.ventas().filter(v => v.estado !== 'Anulada').reduce((a, v) => a + v.total, 0));
 
   // Modal anular
   modal = signal(false);
@@ -54,10 +61,25 @@ export class Ventas {
 
   cargar(): void {
     this.cargando.set(true);
-    this.servicio.buscar(this.desde(), this.hasta()).subscribe({
-      next: v => { this.ventas.set(v); this.cargando.set(false); },
+    this.servicio.buscar(this.desde(), this.hasta(), undefined, undefined, this.pagina(), this.tamano).subscribe({
+      next: v => {
+        this.ventas.set(v.items);
+        this.total.set(v.total);
+        this.totalPaginas.set(v.totalPaginas);
+        this.cargando.set(false);
+      },
       error: () => this.cargando.set(false)
     });
+  }
+
+  // Aplica el filtro de fechas volviendo a la primera página.
+  filtrar(): void { this.pagina.set(1); this.cargar(); }
+
+  irPagina(n: number): void {
+    const destino = Math.min(Math.max(1, n), Math.max(1, this.totalPaginas()));
+    if (destino === this.pagina()) return;
+    this.pagina.set(destino);
+    this.cargar();
   }
 
   abrirAnular(v: VentaResumen): void {

@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { Paginado } from './models';
 
 export interface MetodoPago { metodoPagoId: number; nombre: string; }
 
@@ -61,13 +62,13 @@ export class VentaService {
     return this.http.post<Venta>(this.base, dto);
   }
 
-  buscar(desde?: string, hasta?: string, sucursalId?: number, clienteId?: number) {
-    let p = new HttpParams();
+  buscar(desde?: string, hasta?: string, sucursalId?: number, clienteId?: number, pagina = 1, tamano = 50) {
+    let p = new HttpParams().set('pagina', pagina).set('tamano', tamano);
     if (desde) p = p.set('desde', desde);
     if (hasta) p = p.set('hasta', hasta);
     if (sucursalId) p = p.set('sucursalId', sucursalId);
     if (clienteId) p = p.set('clienteId', clienteId);
-    return this.http.get<VentaResumen[]>(this.base, { params: p });
+    return this.http.get<Paginado<VentaResumen>>(this.base, { params: p });
   }
 
   anular(id: number, dto: { tipoAnulacion: string; motivo?: string | null; emitirNotaCredito?: boolean }) {

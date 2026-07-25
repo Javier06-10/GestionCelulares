@@ -32,12 +32,13 @@ public class VentasController : ControllerBase
     private int? UsuarioId =>
         int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
 
-    /// <summary>Lista ventas con filtros por fecha, sucursal y cliente.</summary>
+    /// <summary>Lista ventas (paginado) con filtros por fecha, sucursal y cliente.</summary>
     [HttpGet]
     public async Task<IActionResult> Buscar(
         [FromQuery] DateTime? desde, [FromQuery] DateTime? hasta,
-        [FromQuery] int? sucursalId, [FromQuery] int? clienteId)
-        => Ok(await _ventas.BuscarAsync(desde, hasta, sucursalId, clienteId));
+        [FromQuery] int? sucursalId, [FromQuery] int? clienteId,
+        [FromQuery] int pagina = 1, [FromQuery] int tamano = 50)
+        => Ok(await _ventas.BuscarAsync(desde, hasta, sucursalId, clienteId, pagina, tamano));
 
     /// <summary>Consulta una venta con su detalle y pagos.</summary>
     [HttpGet("{id:int}")]

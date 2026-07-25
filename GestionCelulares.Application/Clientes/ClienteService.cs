@@ -7,7 +7,7 @@ namespace GestionCelulares.Application.Clientes;
 
 public interface IClienteService
 {
-    Task<IReadOnlyList<ClienteDto>> BuscarAsync(string? termino, bool? morosos, bool? bloqueados);
+    Task<ResultadoPaginado<ClienteDto>> BuscarAsync(string? termino, bool? morosos, bool? bloqueados, int pagina = 1, int tamano = 50);
     Task<ClienteDto?> PorIdAsync(int id);
     Task<ClienteDto> CrearAsync(ClienteCrearDto dto);
     Task<ClienteDto> ActualizarAsync(int id, ClienteActualizarDto dto);
@@ -20,7 +20,7 @@ public class ClienteService : IClienteService
 
     public ClienteService(IApplicationDbContext db) => _db = db;
 
-    public async Task<IReadOnlyList<ClienteDto>> BuscarAsync(string? termino, bool? morosos, bool? bloqueados)
+    public async Task<ResultadoPaginado<ClienteDto>> BuscarAsync(string? termino, bool? morosos, bool? bloqueados, int pagina = 1, int tamano = 50)
     {
         var q = _db.Clientes.AsNoTracking();
 
@@ -39,7 +39,20 @@ public class ClienteService : IClienteService
         if (bloqueados.HasValue)
             q = q.Where(c => c.Bloqueado == bloqueados.Value);
 
-        return await q.OrderBy(c => c.Nombre).Select(c => Proyectar(c)).ToListAsync();
+        // Proyección inline (no el método Proyectar) para que EF traduzca Skip/Take/Count a SQL.
+        var proyeccion = q.OrderBy(c => c.Nombre).Select(c => new ClienteDto
+        {
+            ClienteId = c.ClienteId,
+            Cedula = c.Cedula,
+            Nombre = c.Nombre,
+            Telefono = c.Telefono,
+            Email = c.Email,
+            Direccion = c.Direccion,
+            EsMoroso = c.EsMoroso,
+            Bloqueado = c.Bloqueado,
+            FechaCreacion = c.FechaCreacion
+        });
+        return await ResultadoPaginado<ClienteDto>.DesdeConsultaAsync(proyeccion, pagina, tamano);
     }
 
     public async Task<ClienteDto?> PorIdAsync(int id)

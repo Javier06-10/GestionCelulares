@@ -41,7 +41,7 @@ export class ClienteSelector {
   buscar(v: string): void {
     this.busqueda.set(v);
     if (v.trim().length < 2) { this.resultados.set([]); return; }
-    this.clientesSrv.buscar(v.trim()).subscribe(r => this.resultados.set(r.slice(0, 6)));
+    this.clientesSrv.buscar(v.trim(), undefined, undefined, 1, 6).subscribe(r => this.resultados.set(r.items));
   }
 
   elegir(c: Cliente): void {

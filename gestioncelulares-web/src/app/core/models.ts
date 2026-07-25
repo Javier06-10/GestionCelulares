@@ -1,5 +1,14 @@
 // Modelos espejo de los DTOs de la API
 
+/** Página de resultados de un listado paginado. */
+export interface Paginado<T> {
+  items: T[];
+  total: number;
+  pagina: number;
+  tamanoPagina: number;
+  totalPaginas: number;
+}
+
 export interface UsuarioSesion {
   usuarioId: number;
   nombreUsuario: string;
