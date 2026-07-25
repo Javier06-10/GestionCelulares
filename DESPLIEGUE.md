@@ -169,6 +169,35 @@ request (método, ruta, estado, tiempo) vía `UseSerilogRequestLogging`.
 - Los niveles se ajustan sin recompilar en la sección `Serilog` de `appsettings.{Entorno}.json`
   (`MinimumLevel` / `Override`). Para menos ruido en prod, sube `Default` a `Warning`.
 
+## Respaldos de la base de datos (obligatorio para operar)
+
+Toda la operación (ventas, créditos, inventario, contabilidad) vive en SQL Server. Sin respaldos, un
+fallo de disco borra el negocio. Mínimo recomendado:
+
+- **Modelo de recuperación `FULL`** para poder restaurar a un punto en el tiempo (pérdida mínima):
+  ```sql
+  ALTER DATABASE GestionCelulares SET RECOVERY FULL;
+  ```
+  (Si aceptas perder hasta un día, `SIMPLE` + un full diario también sirve, pero para un POS con dinero
+  se recomienda `FULL`.)
+- **Frecuencia:** `FULL` diario + `LOG` cada 15–30 min (con modelo FULL) para minimizar la pérdida.
+  ```sql
+  BACKUP DATABASE GestionCelulares TO DISK = N'D:\Backups\GC_full.bak' WITH INIT, COMPRESSION;
+  BACKUP LOG      GestionCelulares TO DISK = N'D:\Backups\GC_log.trn'  WITH INIT;
+  ```
+- **Automatización:** con SQL Server *Express* (común en tiendas) **no hay SQL Agent**, así que se
+  programa con el **Programador de tareas de Windows** ejecutando `sqlcmd -Q "BACKUP ..."`.
+- **Fuera del servidor de BD:** copia los `.bak` a **otro disco/máquina/nube**. Un respaldo en el mismo
+  disco que la BD no protege de un fallo de disco.
+- **Retención:** p. ej. 30 días en línea + una copia mensual archivada más tiempo.
+- **Restore probado:** un respaldo que nunca restauraste **no es un respaldo**. Prueba la restauración
+  en otra instancia cada cierto tiempo:
+  ```sql
+  RESTORE DATABASE GestionCelulares_test FROM DISK = N'D:\Backups\GC_full.bak' WITH MOVE ..., REPLACE;
+  ```
+- Los respaldos corren bajo una cuenta con privilegios (sysadmin/db_backupoperator), **no** el login
+  `gc_app` de la app (que es de mínimo privilegio).
+
 ## Docker (opcional)
 
 La API se empaqueta con el [`Dockerfile`](Dockerfile) multi-stage (SDK para compilar,
@@ -209,7 +238,8 @@ Notas:
 - [ ] TLS/HTTPS terminado en el proxy o Kestrel; verificar HSTS
 - [ ] (Recomendado) `AllowedHosts` fijado al dominio real en `appsettings.Production.json`
 - [ ] Monitoreo apuntando a `/health/ready` (readiness) y `/health/live` (liveness)
+- [ ] **Respaldos** de la BD automatizados, fuera del servidor y con **restore probado**
 
 ## Pendientes conocidos (no bloquean el arranque, sí conviene antes de operar)
-- **Refresh de token** en el frontend: hoy expulsa al usuario a los 60 min (H3).
-- **e-CF (Ley 32-23)** — facturación electrónica DGII pendiente (H1).
+- **e-CF (Ley 32-23)** — facturación electrónica DGII pendiente (H1). Es una obligación **fiscal del
+  negocio**, no técnica: define si aplica antes del go-live.
