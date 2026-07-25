@@ -148,6 +148,15 @@ Responden `200` si sano y `503` si no. Ejemplo de `/health`:
 { "status": "Healthy", "durationMs": 12.3, "checks": [ { "name": "database", "status": "Healthy", "description": "Base de datos accesible." } ] }
 ```
 
+### Logs (Serilog)
+La API registra con **Serilog**: a consola y a **archivo rotativo diario** en `logs/gc-YYYYMMDD.log`
+(relativo al directorio de la app), con **retención de 30 días**. Incluye una línea estructurada por
+request (método, ruta, estado, tiempo) vía `UseSerilogRequestLogging`.
+- El proceso necesita **permiso de escritura** sobre la carpeta `logs/` (en IIS, la identidad del
+  Application Pool).
+- Los niveles se ajustan sin recompilar en la sección `Serilog` de `appsettings.{Entorno}.json`
+  (`MinimumLevel` / `Override`). Para menos ruido en prod, sube `Default` a `Warning`.
+
 ## 6. Checklist de go-live
 
 - [ ] `ASPNETCORE_ENVIRONMENT=Production`

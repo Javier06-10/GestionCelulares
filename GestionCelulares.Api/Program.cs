@@ -14,8 +14,16 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// --- Logging estructurado (Serilog): consola + archivo rotativo, configurable
+//     por la sección "Serilog" de appsettings.{Entorno}.json ---
+builder.Host.UseSerilog((ctx, services, cfg) => cfg
+    .ReadFrom.Configuration(ctx.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext());
 
 // --- Capas de la aplicación (Clean Architecture) ---
 builder.Services.AddApplication();
@@ -106,6 +114,9 @@ var app = builder.Build();
 
 // Debe ir primero para envolver todo el pipeline.
 app.UseExceptionHandler();
+
+// Una línea estructurada por request: método, ruta, estado y tiempo.
+app.UseSerilogRequestLogging();
 
 // --- Cabeceras de seguridad en las respuestas de la API (seguras para Swagger/JSON) ---
 app.Use(async (context, next) =>
