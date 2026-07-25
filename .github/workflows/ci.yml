@@ -60,3 +60,13 @@ jobs:
 
       - name: Compilar (production)
         run: npx ng build --configuration production
+
+  docker:
+    name: Imagen Docker (API)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Valida que la imagen de la API construye (no la publica).
+      - name: Build de la imagen
+        run: docker build -t gestioncelulares-api:ci .

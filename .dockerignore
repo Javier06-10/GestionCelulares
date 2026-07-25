@@ -1,0 +1,25 @@
+# Artefactos de build y dependencias (no van al contexto de la imagen)
+**/bin/
+**/obj/
+**/out/
+**/logs/
+
+# Frontend Angular: la imagen es solo de la API .NET
+gestioncelulares-web/
+
+# Git y CI
+.git/
+.github/
+.gitignore
+.gitattributes
+
+# Herramientas / editor
+.vs/
+.vscode/
+.claude/
+**/*.user
+
+# Docs y scripts que no hacen falta en la imagen
+*.md
+*.sql
+*.ps1

@@ -169,6 +169,33 @@ request (método, ruta, estado, tiempo) vía `UseSerilogRequestLogging`.
 - Los niveles se ajustan sin recompilar en la sección `Serilog` de `appsettings.{Entorno}.json`
   (`MinimumLevel` / `Override`). Para menos ruido en prod, sube `Default` a `Warning`.
 
+## Docker (opcional)
+
+La API se empaqueta con el [`Dockerfile`](Dockerfile) multi-stage (SDK para compilar,
+`aspnet:8.0` para runtime, usuario no-root). Los secretos van por variables de entorno, no en
+la imagen.
+
+```bash
+# Construir
+docker build -t gestioncelulares-api .
+
+# Ejecutar (mapea 8080 y pasa la configuración por -e)
+docker run -d -p 8080:8080 \
+  -e ASPNETCORE_ENVIRONMENT=Production \
+  -e Jwt__Key="<clave-32+>" \
+  -e ConnectionStrings__Default="Server=SQLPROD;Database=GestionCelulares;User Id=gc_app;Password=***;TrustServerCertificate=True;Encrypt=True" \
+  -e Cors__Origins__0="https://tienda.tudominio.com" \
+  --name gc-api gestioncelulares-api
+```
+
+Notas:
+- La imagen escucha en **8080** (default de .NET 8). Pon un reverse proxy delante que termine TLS y
+  enrute `/api` (y sirva el frontend en el mismo origen; ver §3 y la restricción SameSite).
+- Los **logs** de Serilog quedan dentro del contenedor en `/app/logs`; móntalos en un volumen si los
+  quieres persistir (`-v gc-logs:/app/logs`).
+- La migración de esquema (`Apply-Migrations.ps1`) y el bootstrap de datos (§4) se ejecutan **aparte**
+  contra la BD; la imagen no corre migraciones al arrancar.
+
 ## 6. Checklist de go-live
 
 - [ ] `ASPNETCORE_ENVIRONMENT=Production`
