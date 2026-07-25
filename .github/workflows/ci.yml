@@ -55,5 +55,8 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      - name: Pruebas (Karma headless)
+        run: npx ng test --watch=false --browsers=ChromeHeadless
+
       - name: Compilar (production)
         run: npx ng build --configuration production
