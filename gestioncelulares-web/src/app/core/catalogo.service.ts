@@ -27,6 +27,7 @@ export interface Producto {
   serializado: boolean;
   activo: boolean;
   provisional: boolean;
+  imagenUrl: string | null;
   fechaCreacion: string;
   variantes: Variante[];
 }
@@ -60,6 +61,7 @@ export interface ProductoCrear {
   marcaId?: number | null;
   categoriaId?: number | null;
   serializado: boolean;
+  imagenUrl?: string | null;
   variantes: VarianteGuardar[];
 }
 
@@ -70,6 +72,7 @@ export interface ProductoActualizar {
   categoriaId?: number | null;
   serializado: boolean;
   activo: boolean;
+  imagenUrl?: string | null;
 }
 
 /** Variante aplanada con el nombre del producto, para selectores. */

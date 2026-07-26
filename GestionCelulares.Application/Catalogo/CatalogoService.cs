@@ -110,6 +110,7 @@ public class CatalogoService : ICatalogoService
             CategoriaId = dto.CategoriaId,
             Serializado = dto.Serializado,
             Activo = true,
+            ImagenUrl = Normalizar(dto.ImagenUrl),
             FechaCreacion = DateTime.Now
         };
 
@@ -141,6 +142,7 @@ public class CatalogoService : ICatalogoService
         producto.CategoriaId = dto.CategoriaId;
         producto.Serializado = dto.Serializado;
         producto.Activo = dto.Activo;
+        producto.ImagenUrl = Normalizar(dto.ImagenUrl);
         producto.Provisional = false;   // al editarlo formalmente deja de ser provisional
         await _db.SaveChangesAsync();
 
@@ -321,6 +323,7 @@ public class CatalogoService : ICatalogoService
         Serializado = p.Serializado,
         Activo = p.Activo,
         Provisional = p.Provisional,
+        ImagenUrl = p.ImagenUrl,
         FechaCreacion = p.FechaCreacion,
         Variantes = p.Variantes
             .OrderBy(v => v.VarianteId)

@@ -76,6 +76,18 @@ Así frontend y API comparten origen, `apiUrl: '/api'` funciona y **no hace falt
 hosts separados, pon el dominio del front en `Cors__Origins__0` y cambia `apiUrl` en
 `environment.production.ts` por la URL absoluta de la API.
 
+### Imágenes de producto (Cloudinary, opcional)
+Las fotos de producto se suben **directo del navegador a Cloudinary** (unsigned upload) y la BD solo
+guarda el URL. Para habilitarlo:
+1. Crea una cuenta gratis en [cloudinary.com](https://cloudinary.com).
+2. Settings → Upload → **Add upload preset** con *Signing Mode = Unsigned* (opcional: fija una carpeta y
+   formatos permitidos para acotar abusos).
+3. Pon el **Cloud name** y el **nombre del preset** en `environment.cloudinary` (`environment.ts` y
+   `environment.production.ts`). Son valores **públicos**, no secretos.
+
+Si se dejan vacíos, la app funciona igual pero el botón de subir imagen queda deshabilitado. Para cambiar
+de proveedor (Supabase Storage, etc.) solo se reescribe `imagen.service.ts`.
+
 ### Autenticación por cookies (importante)
 La sesión viaja en cookies **HttpOnly + Secure + SameSite=Strict** (`gc_access`, `gc_refresh`), no en
 `localStorage`. Esto impone dos condiciones de despliegue:

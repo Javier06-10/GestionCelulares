@@ -5,6 +5,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import {
   CatalogoService, Categoria, Marca, Producto, Variante
 } from '../../core/catalogo.service';
+import { ImagenService } from '../../core/imagen.service';
 import { BarcodeComponent } from '../../shared/barcode.component';
 import { CountUpDirective } from '../../shared/count-up.directive';
 
@@ -18,6 +19,7 @@ type FiltroTipo = 'todos' | 'dispositivo' | 'accesorio';
 export class Catalogo {
   private fb = inject(FormBuilder);
   private servicio = inject(CatalogoService);
+  imagenes = inject(ImagenService);
 
   productos = signal<Producto[]>([]);
   marcas = signal<Marca[]>([]);
@@ -64,8 +66,11 @@ export class Catalogo {
     marcaId: [null as number | null],
     categoriaId: [null as number | null],
     serializado: [true],
-    activo: [true]
+    activo: [true],
+    imagenUrl: [null as string | null]
   });
+  subiendoImagen = signal(false);
+  errorImagen = signal<string | null>(null);
 
   // Modal variante
   modalVariante = signal(false);
@@ -156,23 +161,41 @@ export class Catalogo {
   abrirNuevoProducto(): void {
     this.editandoProducto.set(null);
     this.errorProducto.set(null);
-    this.formProducto.reset({ nombre: '', descripcion: '', marcaId: null, categoriaId: null, serializado: true, activo: true });
+    this.errorImagen.set(null);
+    this.formProducto.reset({ nombre: '', descripcion: '', marcaId: null, categoriaId: null, serializado: true, activo: true, imagenUrl: null });
     this.modalProducto.set(true);
   }
 
   abrirEditarProducto(p: Producto): void {
     this.editandoProducto.set(p);
     this.errorProducto.set(null);
+    this.errorImagen.set(null);
     this.formProducto.reset({
       nombre: p.nombre,
       descripcion: p.descripcion ?? '',
       marcaId: p.marcaId,
       categoriaId: p.categoriaId,
       serializado: p.serializado,
-      activo: p.activo
+      activo: p.activo,
+      imagenUrl: p.imagenUrl
     });
     this.modalProducto.set(true);
   }
+
+  // Sube la imagen elegida a Cloudinary y guarda el URL en el form.
+  subirImagen(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const archivo = input.files?.[0];
+    if (!archivo) return;
+    this.errorImagen.set(null);
+    this.subiendoImagen.set(true);
+    this.imagenes.subir(archivo).subscribe({
+      next: url => { this.formProducto.controls.imagenUrl.setValue(url); this.subiendoImagen.set(false); input.value = ''; },
+      error: () => { this.subiendoImagen.set(false); this.errorImagen.set('No se pudo subir la imagen.'); input.value = ''; }
+    });
+  }
+
+  quitarImagen(): void { this.formProducto.controls.imagenUrl.setValue(null); }
 
   guardarProducto(): void {
     if (this.formProducto.invalid) { this.formProducto.markAllAsTouched(); return; }
@@ -184,7 +207,8 @@ export class Catalogo {
       descripcion: v.descripcion?.trim() || null,
       marcaId: v.marcaId ? Number(v.marcaId) : null,
       categoriaId: v.categoriaId ? Number(v.categoriaId) : null,
-      serializado: v.serializado
+      serializado: v.serializado,
+      imagenUrl: v.imagenUrl || null
     };
 
     const accion = this.editandoProducto()

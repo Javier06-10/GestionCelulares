@@ -8,4 +8,10 @@
 export const environment = {
   production: true,
   apiUrl: '/api',
+  // Cloudinary (unsigned upload) para las imágenes de producto. Rellena con tu cloud
+  // name y upload preset (valores públicos). Vacío = subir imágenes deshabilitado.
+  cloudinary: {
+    cloudName: '',
+    uploadPreset: '',
+  },
 };

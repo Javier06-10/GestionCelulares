@@ -99,9 +99,13 @@
             <lucide-icon [name]="expandido() === p.productoId ? 'chevron-down' : 'chevron-right'" [size]="18"></lucide-icon>
           </button>
 
-          <div class="w-10 h-10 rounded-xl grid place-items-center" [class]="p.serializado ? 'bg-tech-accent/10 text-tech-accent' : 'bg-tech-purple/10 text-tech-purple'">
-            <lucide-icon [name]="p.serializado ? 'smartphone' : 'tag'" [size]="20"></lucide-icon>
-          </div>
+          @if (p.imagenUrl) {
+            <img [src]="p.imagenUrl" [alt]="p.nombre" class="w-10 h-10 rounded-xl object-cover border border-tech-pastel/40" loading="lazy" />
+          } @else {
+            <div class="w-10 h-10 rounded-xl grid place-items-center" [class]="p.serializado ? 'bg-tech-accent/10 text-tech-accent' : 'bg-tech-purple/10 text-tech-purple'">
+              <lucide-icon [name]="p.serializado ? 'smartphone' : 'tag'" [size]="20"></lucide-icon>
+            </div>
+          }
 
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2 flex-wrap">
@@ -274,6 +278,35 @@
           <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Descripción</label>
           <input formControlName="descripcion" type="text" placeholder="Opcional"
             class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+
+        <!-- Imagen del producto (subida a Cloudinary) -->
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Imagen</label>
+          <div class="flex items-center gap-3">
+            <div class="w-16 h-16 rounded-xl border border-tech-pastel/40 bg-tech-bg-light/60 grid place-items-center overflow-hidden shrink-0">
+              @if (formProducto.controls.imagenUrl.value) {
+                <img [src]="formProducto.controls.imagenUrl.value" alt="Imagen del producto" class="w-full h-full object-cover" />
+              } @else {
+                <lucide-icon name="image" [size]="22" class="text-tech-steel/60"></lucide-icon>
+              }
+            </div>
+            <div class="flex flex-col gap-1.5">
+              @if (imagenes.habilitado) {
+                <label class="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-tech-pastel/50 text-sm font-medium text-tech-charcoal hover:bg-tech-bg-light active:scale-95 transition-all">
+                  <lucide-icon [name]="subiendoImagen() ? 'loader' : 'upload'" [size]="15" [class]="subiendoImagen() ? 'animate-spin' : ''"></lucide-icon>
+                  {{ subiendoImagen() ? 'Subiendo…' : (formProducto.controls.imagenUrl.value ? 'Cambiar' : 'Subir imagen') }}
+                  <input type="file" accept="image/*" class="hidden" (change)="subirImagen($event)" [disabled]="subiendoImagen()" />
+                </label>
+                @if (formProducto.controls.imagenUrl.value) {
+                  <button type="button" (click)="quitarImagen()" class="text-xs text-red-500 hover:underline text-left">Quitar imagen</button>
+                }
+              } @else {
+                <span class="text-xs text-tech-steel">Configura Cloudinary en <span class="font-mono">environment.cloudinary</span> para habilitar la subida.</span>
+              }
+              @if (errorImagen()) { <span class="text-xs text-red-500">{{ errorImagen() }}</span> }
+            </div>
+          </div>
         </div>
 
         <div>

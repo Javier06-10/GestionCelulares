@@ -26,6 +26,8 @@ public class Producto
     public DateTime FechaCreacion { get; set; }
     /// <summary>Creado desde "venta rápida" en el POS; pendiente de formalizar (marca, categoría, costo…).</summary>
     public bool Provisional { get; set; }
+    /// <summary>URL de la imagen del producto (subida a un store externo, p. ej. Cloudinary).</summary>
+    public string? ImagenUrl { get; set; }
 
     public Marca? Marca { get; set; }
     public Categoria? Categoria { get; set; }

@@ -27,6 +27,8 @@ public class ProductoCrearDto
     public int? CategoriaId { get; set; }
     /// <summary>true = se controla por IMEI; false = accesorio con stock agregado.</summary>
     public bool Serializado { get; set; } = true;
+    /// <summary>URL de la imagen del producto (subida a un store externo, p. ej. Cloudinary).</summary>
+    [StringLength(500)] public string? ImagenUrl { get; set; }
     public List<VarianteCrearDto> Variantes { get; set; } = new();
 }
 
@@ -38,6 +40,7 @@ public class ProductoActualizarDto
     public int? CategoriaId { get; set; }
     public bool Serializado { get; set; } = true;
     public bool Activo { get; set; } = true;
+    [StringLength(500)] public string? ImagenUrl { get; set; }
 }
 
 public class VarianteCrearDto
@@ -98,6 +101,7 @@ public class ProductoDto
     public bool Serializado { get; set; }
     public bool Activo { get; set; }
     public bool Provisional { get; set; }
+    public string? ImagenUrl { get; set; }
     public DateTime FechaCreacion { get; set; }
     public List<VarianteDto> Variantes { get; set; } = new();
 }
