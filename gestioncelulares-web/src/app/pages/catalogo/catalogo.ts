@@ -191,7 +191,13 @@ export class Catalogo {
     this.subiendoImagen.set(true);
     this.imagenes.subir(archivo).subscribe({
       next: url => { this.formProducto.controls.imagenUrl.setValue(url); this.subiendoImagen.set(false); input.value = ''; },
-      error: () => { this.subiendoImagen.set(false); this.errorImagen.set('No se pudo subir la imagen.'); input.value = ''; }
+      error: err => {
+        this.subiendoImagen.set(false);
+        // Surface el mensaje real de Cloudinary (p. ej. "Upload preset must be whitelisted…").
+        const msg = err?.error?.error?.message as string | undefined;
+        this.errorImagen.set(msg ? `No se pudo subir: ${msg}` : 'No se pudo subir la imagen.');
+        input.value = '';
+      }
     });
   }
 
