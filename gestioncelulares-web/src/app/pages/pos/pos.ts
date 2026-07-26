@@ -87,7 +87,8 @@ export class Pos implements OnDestroy {
         nombre: p.nombre,
         detalle: [v.color, v.almacenamiento].filter(Boolean).join(' · '),
         precioVenta: v.precioVenta,
-        stock: v.stockNoSerial
+        stock: v.stockNoSerial,
+        imagenUrl: p.imagenUrl
       })))
   );
 

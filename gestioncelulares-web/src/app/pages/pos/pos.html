@@ -115,6 +115,9 @@
             @for (a of accesoriosFiltrados(); track a.varianteId) {
               <button (click)="agregarAccesorio(a); volar($event)" [disabled]="a.stock <= 0"
                 class="text-left p-3 rounded-xl border border-tech-pastel/40 bg-tech-bg-light/40 transition-all duration-200 hover:border-tech-accent/50 hover:shadow-[0_4px_12px_-6px_rgba(0,230,118,0.4)] active:scale-95 disabled:opacity-40 disabled:active:scale-100">
+                @if (a.imagenUrl) {
+                  <img [src]="a.imagenUrl" [alt]="a.nombre" class="w-full h-20 object-cover rounded-lg mb-2 border border-tech-pastel/30" loading="lazy" />
+                }
                 <div class="font-medium text-tech-charcoal text-sm truncate">{{ a.nombre }}</div>
                 @if (a.detalle) { <div class="text-xs text-tech-steel truncate">{{ a.detalle }}</div> }
                 <div class="flex items-center justify-between mt-1">
