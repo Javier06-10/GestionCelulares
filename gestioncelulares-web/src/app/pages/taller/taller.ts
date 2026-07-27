@@ -34,7 +34,8 @@ export class Taller {
   imagenes = inject(ImagenService);
   auth = inject(AuthService);
 
-  // Piezas disponibles del inventario (accesorios con stock) para elegir como repuesto
+  // Piezas disponibles: accesorios de la categoría de repuestos, para elegir como repuesto
+  readonly categoriaRepuestos = 'Reparaciones';
   piezas = signal<{ varianteId: number; etiqueta: string; stock: number; costo: number }[]>([]);
 
   // Datos del negocio para el encabezado del ticket
@@ -230,8 +231,9 @@ export class Taller {
     this.formRepuesto.reset({ manual: false, varianteId: null, descripcion: '', cantidad: 1, costo: 0 });
     // Carga las piezas disponibles (accesorios activos con stock) del inventario
     this.catalogo.productos().subscribe((ps: Producto[]) => {
+      const cat = this.categoriaRepuestos.toLowerCase();
       const piezas = ps
-        .filter(p => !p.serializado && p.activo)
+        .filter(p => !p.serializado && p.activo && (p.categoria ?? '').toLowerCase() === cat)
         .flatMap(p => p.variantes.filter(v => v.activo).map(v => ({
           varianteId: v.varianteId,
           etiqueta: [p.nombre, v.color, v.almacenamiento].filter(Boolean).join(' · '),
