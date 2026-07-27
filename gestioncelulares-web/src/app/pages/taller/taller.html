@@ -154,22 +154,36 @@
           }
         </div>
 
-        <!-- Fotos -->
+        <!-- Fotos de la condición del equipo (máx. 3) -->
         <div>
-          <span class="text-[0.7rem] uppercase font-semibold text-tech-steel">Fotos</span>
+          <span class="text-[0.7rem] uppercase font-semibold text-tech-steel">Fotos del equipo ({{ o.fotos.length }}/{{ maxFotos }})</span>
           <div class="flex flex-wrap gap-2 mt-2">
             @for (f of o.fotos; track f.id) {
-              <a [href]="f.url" target="_blank" class="w-14 h-14 rounded-lg bg-tech-bg-light border border-tech-pastel/40 grid place-items-center text-tech-steel hover:border-tech-purple/40">
-                <lucide-icon name="image" [size]="18"></lucide-icon>
-              </a>
+              <div class="relative w-16 h-16 rounded-lg overflow-hidden border border-tech-pastel/40 group">
+                <a [href]="f.url" target="_blank" title="Ver en grande">
+                  <img [src]="f.url" alt="Foto del equipo" class="w-full h-full object-cover" loading="lazy" />
+                </a>
+                @if (o.estado !== 'Entregado' && o.estado !== 'Cancelado') {
+                  <button (click)="eliminarFoto(f.id)" title="Eliminar foto"
+                    class="absolute top-0.5 right-0.5 w-5 h-5 grid place-items-center rounded-md bg-tech-bg-dark/70 text-white hover:bg-red-500 active:scale-90 transition-all">
+                    <lucide-icon name="x" [size]="12"></lucide-icon>
+                  </button>
+                }
+              </div>
+            }
+
+            @if (o.estado !== 'Entregado' && o.estado !== 'Cancelado' && o.fotos.length < maxFotos) {
+              @if (imagenes.habilitado) {
+                <label class="w-16 h-16 rounded-lg border border-dashed border-tech-pastel/60 grid place-items-center cursor-pointer text-tech-steel hover:border-tech-purple/60 hover:text-tech-purple transition-all">
+                  <lucide-icon [name]="subiendoFoto() ? 'loader' : 'camera'" [size]="18" [class]="subiendoFoto() ? 'animate-spin' : ''"></lucide-icon>
+                  <input type="file" accept="image/*" class="hidden" (change)="subirFoto($event)" [disabled]="subiendoFoto()" />
+                </label>
+              } @else {
+                <span class="text-xs text-tech-steel self-center">Configura Cloudinary para subir fotos.</span>
+              }
             }
           </div>
-          @if (o.estado !== 'Entregado' && o.estado !== 'Cancelado') {
-            <div class="flex gap-2 mt-2">
-              <input [value]="urlFoto()" (input)="urlFoto.set($any($event.target).value)" type="text" placeholder="URL de la foto…" class="flex-1 px-3 py-2 rounded-lg bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal text-sm outline-none focus:border-tech-purple/60 focus:bg-white" />
-              <button (click)="agregarFoto()" class="w-9 grid place-items-center rounded-lg bg-tech-purple/15 text-tech-purple hover:bg-tech-purple/25 active:scale-90 transition-all"><lucide-icon name="camera" [size]="16"></lucide-icon></button>
-            </div>
-          }
+          @if (errorFoto()) { <p class="text-xs text-red-500 mt-1">{{ errorFoto() }}</p> }
         </div>
       </div>
 

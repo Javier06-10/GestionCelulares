@@ -99,13 +99,27 @@ public class TallerController : ControllerBase
         }
     }
 
-    /// <summary>Adjunta la URL de una foto del equipo (evidencia de recepción/reparación).</summary>
+    /// <summary>Adjunta la URL de una foto del equipo (máx. 3; evidencia de la condición al recibir).</summary>
     [HttpPost("{id:int}/fotos")]
     public async Task<IActionResult> AgregarFoto(int id, [FromBody] FotoAgregarDto dto)
     {
         try
         {
             return Ok(await _taller.AgregarFotoAsync(id, dto));
+        }
+        catch (TallerException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>Elimina una foto de la orden.</summary>
+    [HttpDelete("{id:int}/fotos/{fotoId:int}")]
+    public async Task<IActionResult> EliminarFoto(int id, int fotoId)
+    {
+        try
+        {
+            return Ok(await _taller.EliminarFotoAsync(id, fotoId));
         }
         catch (TallerException ex)
         {

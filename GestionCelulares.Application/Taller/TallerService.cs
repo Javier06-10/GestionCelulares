@@ -15,6 +15,7 @@ public interface ITallerService
     Task<OrdenDto> CambiarEstadoAsync(int id, CambioEstadoDto dto);
     Task<OrdenDto> AgregarRepuestoAsync(int id, RepuestoAgregarDto dto);
     Task<OrdenDto> AgregarFotoAsync(int id, FotoAgregarDto dto);
+    Task<OrdenDto> EliminarFotoAsync(int id, int fotoId);
     Task<IReadOnlyList<ComisionTecnicoDto>> ComisionesPorTecnicoAsync(DateTime? desde, DateTime? hasta);
 }
 
@@ -232,9 +233,15 @@ public class TallerService : ITallerService
         return (await PorIdAsync(id))!;
     }
 
+    private const int MaxFotos = 3;
+
     public async Task<OrdenDto> AgregarFotoAsync(int id, FotoAgregarDto dto)
     {
         await ObtenerEditableAsync(id);
+
+        var actuales = await _db.OrdenTallerFotos.CountAsync(f => f.OrdenTallerId == id);
+        if (actuales >= MaxFotos)
+            throw new TallerException($"La orden ya tiene el máximo de {MaxFotos} fotos. Elimina una para agregar otra.");
 
         _db.OrdenTallerFotos.Add(new OrdenTallerFoto
         {
@@ -242,6 +249,18 @@ public class TallerService : ITallerService
             Url = dto.Url.Trim(),
             Fecha = DateTime.Now
         });
+        await _db.SaveChangesAsync();
+
+        return (await PorIdAsync(id))!;
+    }
+
+    public async Task<OrdenDto> EliminarFotoAsync(int id, int fotoId)
+    {
+        await ObtenerEditableAsync(id);
+
+        var foto = await _db.OrdenTallerFotos.FirstOrDefaultAsync(f => f.Id == fotoId && f.OrdenTallerId == id)
+            ?? throw new TallerException("La foto no existe en esta orden.");
+        _db.OrdenTallerFotos.Remove(foto);
         await _db.SaveChangesAsync();
 
         return (await PorIdAsync(id))!;

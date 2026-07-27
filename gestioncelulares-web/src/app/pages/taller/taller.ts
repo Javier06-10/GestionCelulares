@@ -5,6 +5,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
 import { Cliente } from '../../core/cliente.service';
 import { FacturaConfigService } from '../../core/factura-config.service';
+import { ImagenService } from '../../core/imagen.service';
 import { SoundService } from '../../core/sound.service';
 import { ComisionTecnico, Orden, OrdenResumen, TallerService } from '../../core/taller.service';
 import { Usuario, UsuarioService } from '../../core/usuario.service';
@@ -28,6 +29,7 @@ export class Taller {
   private ventas = inject(VentaService);
   private sound = inject(SoundService);
   private facturaCfg = inject(FacturaConfigService);
+  imagenes = inject(ImagenService);
   auth = inject(AuthService);
 
   // Datos del negocio para el encabezado del ticket
@@ -104,8 +106,10 @@ export class Taller {
     costo: [0, [Validators.min(0)]]
   });
 
-  // Foto
-  urlFoto = signal('');
+  // Fotos del equipo (condición al recibir): hasta 3, subidas a Cloudinary
+  readonly maxFotos = 3;
+  subiendoFoto = signal(false);
+  errorFoto = signal<string | null>(null);
 
   // Comisiones por técnico (solo Admin)
   modalComisiones = signal(false);
@@ -229,14 +233,38 @@ export class Taller {
     });
   }
 
-  // ----- Foto -----
-  agregarFoto(): void {
+  // ----- Fotos del equipo -----
+  // Sube la foto a Cloudinary y la adjunta a la orden (máx. 3).
+  subirFoto(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const archivo = input.files?.[0];
     const o = this.detalle();
-    const url = this.urlFoto().trim();
-    if (!o || !url) return;
-    this.servicio.agregarFoto(o.ordenTallerId, url).subscribe({
-      next: x => { this.detalle.set(x); this.urlFoto.set(''); },
-      error: e => this.errorDetalle.set(e.error?.error ?? 'No se pudo agregar la foto.')
+    if (!archivo || !o) return;
+    this.errorFoto.set(null);
+    this.subiendoFoto.set(true);
+    this.imagenes.subir(archivo).subscribe({
+      next: url => {
+        this.servicio.agregarFoto(o.ordenTallerId, url).subscribe({
+          next: x => { this.detalle.set(x); this.subiendoFoto.set(false); input.value = ''; },
+          error: e => { this.subiendoFoto.set(false); this.errorFoto.set(e.error?.error ?? 'No se pudo adjuntar la foto.'); input.value = ''; }
+        });
+      },
+      error: err => {
+        this.subiendoFoto.set(false);
+        const msg = err?.error?.error?.message as string | undefined;
+        this.errorFoto.set(msg ? `No se pudo subir: ${msg}` : 'No se pudo subir la foto.');
+        input.value = '';
+      }
+    });
+  }
+
+  eliminarFoto(fotoId: number): void {
+    const o = this.detalle();
+    if (!o) return;
+    this.errorFoto.set(null);
+    this.servicio.eliminarFoto(o.ordenTallerId, fotoId).subscribe({
+      next: x => this.detalle.set(x),
+      error: e => this.errorFoto.set(e.error?.error ?? 'No se pudo eliminar la foto.')
     });
   }
 

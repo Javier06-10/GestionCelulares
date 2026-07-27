@@ -127,6 +127,10 @@ export class TallerService {
     return this.http.post<Orden>(`${this.base}/${id}/fotos`, { url });
   }
 
+  eliminarFoto(id: number, fotoId: number) {
+    return this.http.delete<Orden>(`${this.base}/${id}/fotos/${fotoId}`);
+  }
+
   comisiones(desde?: string | null, hasta?: string | null) {
     let params = new HttpParams();
     if (desde) params = params.set('desde', desde);
