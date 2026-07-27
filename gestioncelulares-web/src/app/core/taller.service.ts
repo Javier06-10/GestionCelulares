@@ -123,6 +123,10 @@ export class TallerService {
     return this.http.post<Orden>(`${this.base}/${id}/repuestos`, dto);
   }
 
+  eliminarRepuesto(id: number, repuestoId: number) {
+    return this.http.delete<Orden>(`${this.base}/${id}/repuestos/${repuestoId}`);
+  }
+
   agregarFoto(id: number, url: string) {
     return this.http.post<Orden>(`${this.base}/${id}/fotos`, { url });
   }

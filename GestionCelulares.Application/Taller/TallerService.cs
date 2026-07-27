@@ -14,6 +14,7 @@ public interface ITallerService
     Task<OrdenDto> ActualizarAsync(int id, OrdenActualizarDto dto);
     Task<OrdenDto> CambiarEstadoAsync(int id, CambioEstadoDto dto);
     Task<OrdenDto> AgregarRepuestoAsync(int id, RepuestoAgregarDto dto);
+    Task<OrdenDto> EliminarRepuestoAsync(int id, int repuestoId);
     Task<OrdenDto> AgregarFotoAsync(int id, FotoAgregarDto dto);
     Task<OrdenDto> EliminarFotoAsync(int id, int fotoId);
     Task<IReadOnlyList<ComisionTecnicoDto>> ComisionesPorTecnicoAsync(DateTime? desde, DateTime? hasta);
@@ -228,6 +229,26 @@ public class TallerService : ITallerService
             Cantidad = dto.Cantidad,
             Costo = dto.Costo
         });
+        await _db.SaveChangesAsync();
+
+        return (await PorIdAsync(id))!;
+    }
+
+    public async Task<OrdenDto> EliminarRepuestoAsync(int id, int repuestoId)
+    {
+        await ObtenerEditableAsync(id);
+
+        var repuesto = await _db.OrdenTallerRepuestos.FirstOrDefaultAsync(r => r.Id == repuestoId && r.OrdenTallerId == id)
+            ?? throw new TallerException("El repuesto no existe en esta orden.");
+
+        // Si salió del inventario, se devuelve al quitarlo.
+        if (repuesto.VarianteId.HasValue)
+        {
+            var variante = await _db.ProductoVariantes.FirstOrDefaultAsync(v => v.VarianteId == repuesto.VarianteId.Value);
+            if (variante is not null) variante.StockNoSerial += repuesto.Cantidad;
+        }
+
+        _db.OrdenTallerRepuestos.Remove(repuesto);
         await _db.SaveChangesAsync();
 
         return (await PorIdAsync(id))!;

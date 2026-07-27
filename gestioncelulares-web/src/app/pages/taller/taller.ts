@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../core/auth.service';
+import { CatalogoService, Producto } from '../../core/catalogo.service';
 import { Cliente } from '../../core/cliente.service';
 import { FacturaConfigService } from '../../core/factura-config.service';
 import { ImagenService } from '../../core/imagen.service';
@@ -29,8 +30,12 @@ export class Taller {
   private ventas = inject(VentaService);
   private sound = inject(SoundService);
   private facturaCfg = inject(FacturaConfigService);
+  private catalogo = inject(CatalogoService);
   imagenes = inject(ImagenService);
   auth = inject(AuthService);
+
+  // Piezas disponibles del inventario (accesorios con stock) para elegir como repuesto
+  piezas = signal<{ varianteId: number; etiqueta: string; stock: number; costo: number }[]>([]);
 
   // Datos del negocio para el encabezado del ticket
   cfg = this.facturaCfg.config;
@@ -101,6 +106,8 @@ export class Taller {
   // Repuesto
   modalRepuesto = signal(false);
   formRepuesto = this.fb.nonNullable.group({
+    manual: [false],                              // true = pieza fuera de inventario (texto libre)
+    varianteId: [null as number | null],
     descripcion: ['', Validators.required],
     cantidad: [1, [Validators.required, Validators.min(1)]],
     costo: [0, [Validators.min(0)]]
@@ -220,16 +227,63 @@ export class Taller {
 
   // ----- Repuesto -----
   abrirRepuesto(): void {
-    this.formRepuesto.reset({ descripcion: '', cantidad: 1, costo: 0 });
+    this.formRepuesto.reset({ manual: false, varianteId: null, descripcion: '', cantidad: 1, costo: 0 });
+    // Carga las piezas disponibles (accesorios activos con stock) del inventario
+    this.catalogo.productos().subscribe((ps: Producto[]) => {
+      const piezas = ps
+        .filter(p => !p.serializado && p.activo)
+        .flatMap(p => p.variantes.filter(v => v.activo).map(v => ({
+          varianteId: v.varianteId,
+          etiqueta: [p.nombre, v.color, v.almacenamiento].filter(Boolean).join(' · '),
+          stock: v.stockNoSerial,
+          costo: v.precioCosto
+        })));
+      this.piezas.set(piezas);
+    });
     this.modalRepuesto.set(true);
   }
+
+  // Al elegir una pieza del inventario, autocompleta descripción y costo.
+  piezaElegida(varianteId: number | null): void {
+    this.formRepuesto.controls.varianteId.setValue(varianteId);
+    const p = this.piezas().find(x => x.varianteId === varianteId);
+    if (p) {
+      this.formRepuesto.controls.descripcion.setValue(p.etiqueta);
+      this.formRepuesto.controls.costo.setValue(p.costo);
+    }
+  }
+
+  // Stock disponible de la pieza seleccionada (para el aviso y el tope de cantidad)
+  stockPiezaSel(): number | null {
+    const id = this.formRepuesto.controls.varianteId.value;
+    return id == null ? null : (this.piezas().find(x => x.varianteId === id)?.stock ?? null);
+  }
+
   agregarRepuesto(): void {
     const o = this.detalle();
-    if (this.formRepuesto.invalid || !o) { this.formRepuesto.markAllAsTouched(); return; }
+    if (!o) return;
     const v = this.formRepuesto.getRawValue();
-    this.servicio.agregarRepuesto(o.ordenTallerId, { descripcion: v.descripcion.trim(), cantidad: v.cantidad, costo: v.costo }).subscribe({
+    // Modo inventario: exige elegir una pieza. Modo manual: exige descripción.
+    if (!v.manual && v.varianteId == null) { this.errorDetalle.set('Elige una pieza del inventario (o marca "pieza no inventariada").'); return; }
+    if (v.manual && !v.descripcion.trim()) { this.formRepuesto.markAllAsTouched(); return; }
+
+    this.servicio.agregarRepuesto(o.ordenTallerId, {
+      varianteId: v.manual ? null : v.varianteId,
+      descripcion: v.descripcion.trim(),
+      cantidad: v.cantidad,
+      costo: v.costo
+    }).subscribe({
       next: x => { this.detalle.set(x); this.modalRepuesto.set(false); },
       error: e => this.errorDetalle.set(e.error?.error ?? 'No se pudo agregar el repuesto.')
+    });
+  }
+
+  eliminarRepuesto(repuestoId: number): void {
+    const o = this.detalle();
+    if (!o) return;
+    this.servicio.eliminarRepuesto(o.ordenTallerId, repuestoId).subscribe({
+      next: x => this.detalle.set(x),
+      error: e => this.errorDetalle.set(e.error?.error ?? 'No se pudo quitar el repuesto.')
     });
   }
 

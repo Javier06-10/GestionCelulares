@@ -145,9 +145,14 @@
           @else {
             <div class="flex flex-col gap-1">
               @for (r of o.repuestos; track r.id) {
-                <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-tech-bg-light/60 text-sm">
-                  <span class="text-tech-charcoal">{{ r.cantidad }}× {{ r.descripcion }}</span>
-                  <span class="font-medium text-tech-charcoal">{{ (r.costo * r.cantidad) | currency: 'DOP' : 'RD$' : '1.2-2' }}</span>
+                <div class="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-tech-bg-light/60 text-sm">
+                  <span class="text-tech-charcoal truncate">{{ r.cantidad }}× {{ r.descripcion }}@if (r.varianteId) { <span class="text-[0.6rem] text-tech-purple ml-1">· inventario</span> }</span>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span class="font-medium text-tech-charcoal">{{ (r.costo * r.cantidad) | currency: 'DOP' : 'RD$' : '1.2-2' }}</span>
+                    @if (o.estado !== 'Entregado' && o.estado !== 'Cancelado') {
+                      <button (click)="eliminarRepuesto(r.id)" title="Quitar repuesto (repone stock)" class="w-6 h-6 grid place-items-center rounded-md text-tech-steel hover:bg-red-50 hover:text-red-500 active:scale-90 transition-all"><lucide-icon name="x" [size]="14"></lucide-icon></button>
+                    }
+                  </div>
                 </div>
               }
             </div>
@@ -294,14 +299,38 @@
         <button type="button" (click)="modalRepuesto.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
       </div>
       <div class="px-6 py-5 flex flex-col gap-4">
-        <div>
-          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Descripción *</label>
-          <input formControlName="descripcion" type="text" placeholder="Pantalla, batería…" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
-        </div>
+        @if (!formRepuesto.controls.manual.value) {
+          <!-- Pieza del inventario: descuenta stock al guardar -->
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Pieza del inventario *</label>
+            <select (change)="piezaElegida($any($event.target).value ? +$any($event.target).value : null)"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white">
+              <option value="">— Elige una pieza —</option>
+              @for (p of piezas(); track p.varianteId) {
+                <option [value]="p.varianteId" [selected]="p.varianteId === formRepuesto.controls.varianteId.value" [disabled]="p.stock <= 0">{{ p.etiqueta }} · stock {{ p.stock }}</option>
+              }
+            </select>
+            @if (stockPiezaSel() !== null) {
+              <p class="text-xs mt-1" [class]="(stockPiezaSel() ?? 0) > 0 ? 'text-tech-steel' : 'text-red-500'">Disponible: {{ stockPiezaSel() }}</p>
+            }
+          </div>
+        } @else {
+          <!-- Pieza fuera de inventario: texto libre, no descuenta stock -->
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Descripción *</label>
+            <input formControlName="descripcion" type="text" placeholder="Pantalla, batería…" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
+          </div>
+        }
+
+        <label class="flex items-center gap-2 text-xs text-tech-steel cursor-pointer">
+          <input type="checkbox" formControlName="manual" class="accent-tech-purple" />
+          Pieza no inventariada (texto libre, no descuenta stock)
+        </label>
+
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Cantidad</label>
-            <input formControlName="cantidad" type="number" min="1" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
+            <input formControlName="cantidad" type="number" min="1" [attr.max]="stockPiezaSel()" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none focus:border-tech-purple/60 focus:bg-white" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Costo unit.</label>

@@ -99,6 +99,20 @@ public class TallerController : ControllerBase
         }
     }
 
+    /// <summary>Quita un repuesto de la orden (repone el stock si salió del catálogo).</summary>
+    [HttpDelete("{id:int}/repuestos/{repuestoId:int}")]
+    public async Task<IActionResult> EliminarRepuesto(int id, int repuestoId)
+    {
+        try
+        {
+            return Ok(await _taller.EliminarRepuestoAsync(id, repuestoId));
+        }
+        catch (TallerException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     /// <summary>Adjunta la URL de una foto del equipo (máx. 3; evidencia de la condición al recibir).</summary>
     [HttpPost("{id:int}/fotos")]
     public async Task<IActionResult> AgregarFoto(int id, [FromBody] FotoAgregarDto dto)
