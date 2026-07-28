@@ -35,7 +35,7 @@ export class Taller {
   auth = inject(AuthService);
 
   // Piezas disponibles: accesorios de la categoría de repuestos, para elegir como repuesto
-  readonly categoriaRepuestos = 'Reparaciones';
+  readonly categoriaRepuestos = 'Repuestos';
   piezas = signal<{ varianteId: number; etiqueta: string; stock: number; costo: number }[]>([]);
 
   // Datos del negocio para el encabezado del ticket
