@@ -8,7 +8,12 @@
 
   <div class="relative z-10 min-h-screen grid lg:grid-cols-2">
     <!-- ===== Panel de marca (solo desktop) ===== -->
-    <div class="hidden lg:flex flex-col justify-between p-12 xl:p-16">
+    <div class="hidden lg:block relative overflow-hidden">
+      <!-- Fondo: imagen de celulares (asset local, CSP-safe) -->
+      <img src="login-phones.svg" alt="" aria-hidden="true" class="absolute inset-0 w-full h-full object-cover" />
+      <div class="absolute inset-0 bg-gradient-to-br from-tech-bg-dark/80 via-tech-bg-dark/65 to-tech-bg-dark/90"></div>
+
+      <div class="relative z-10 h-full flex flex-col justify-between p-12 xl:p-16">
       <!-- Logo -->
       <div class="flex items-center gap-3">
         <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-tech-accent/25 to-tech-purple/20 grid place-items-center ring-1 ring-white/10 shadow-[0_0_30px_-6px_rgba(0,230,118,0.5)]">
@@ -43,6 +48,7 @@
       <div class="flex items-center gap-2 text-tech-steel/70 text-sm">
         <lucide-icon name="shield-check" [size]="16"></lucide-icon>
         Sesión segura · datos protegidos
+      </div>
       </div>
     </div>
 

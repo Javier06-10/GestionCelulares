@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d0f13"/>
+      <stop offset="1" stop-color="#08090b"/>
+    </linearGradient>
+    <linearGradient id="scr-green" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#00e676" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#00b894" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="scr-purple" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6c5ce7" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#341f97" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="scr-dim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2f3a" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#14171d" stop-opacity="0.6"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+    <!-- Un teléfono reutilizable: cuerpo + pantalla + notch -->
+    <g id="phone">
+      <rect x="-70" y="-140" width="140" height="280" rx="26" fill="#1a1e26" stroke="#2f353f" stroke-width="2"/>
+      <rect x="-58" y="-126" width="116" height="252" rx="16" fill="url(#scr-dim)"/>
+      <rect x="-16" y="-118" width="32" height="7" rx="3.5" fill="#0c0e12"/>
+    </g>
+  </defs>
+
+  <rect width="800" height="1000" fill="url(#bg)"/>
+
+  <!-- Resplandores de fondo -->
+  <circle cx="160" cy="200" r="220" fill="#00e676" opacity="0.12" filter="url(#soft)"/>
+  <circle cx="640" cy="820" r="240" fill="#6c5ce7" opacity="0.12" filter="url(#soft)"/>
+
+  <!-- Constelación de teléfonos -->
+  <g opacity="0.92">
+    <use href="#phone" transform="translate(180 260) rotate(-14) scale(1.05)"/>
+    <use href="#phone" transform="translate(180 260) rotate(-14) scale(1.05)" fill-opacity="0"/>
+    <rect x="122" y="134" width="116" height="252" rx="16" transform="rotate(-14 180 260)" fill="url(#scr-green)" opacity="0.9"/>
+
+    <use href="#phone" transform="translate(440 360) rotate(10)"/>
+    <rect x="382" y="234" width="116" height="252" rx="16" transform="rotate(10 440 360)" fill="url(#scr-purple)" opacity="0.85"/>
+
+    <use href="#phone" transform="translate(620 180) rotate(-8) scale(0.85)"/>
+
+    <use href="#phone" transform="translate(300 640) rotate(8) scale(0.95)"/>
+    <rect x="242" y="514" width="116" height="252" rx="16" transform="rotate(8 300 640) scale(0.95)" fill="url(#scr-green)" opacity="0.5"/>
+
+    <use href="#phone" transform="translate(560 700) rotate(-12) scale(1.1)"/>
+    <rect x="502" y="574" width="116" height="252" rx="16" transform="rotate(-12 560 700) scale(1.1)" fill="url(#scr-purple)" opacity="0.55"/>
+
+    <use href="#phone" transform="translate(140 820) rotate(-6) scale(0.8)"/>
+  </g>
+</svg>
