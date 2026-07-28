@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 # Config local de herramientas (Claude Code / preview). No versionar.
 .claude/
+
+# Artefacto de análisis graphify (grafo de conocimiento local)
+graphify-out/
