@@ -18,6 +18,14 @@ export class Login {
   cargando = signal(false);
   error = signal<string | null>(null);
 
+  // Chips del panel de marca (izquierda)
+  readonly features = [
+    { icono: 'shopping-cart', label: 'Punto de venta' },
+    { icono: 'boxes', label: 'Inventario' },
+    { icono: 'wrench', label: 'Taller' },
+    { icono: 'calculator', label: 'Contabilidad' }
+  ];
+
   form = this.fb.nonNullable.group({
     nombreUsuario: ['', Validators.required],
     contrasena: ['', Validators.required]
