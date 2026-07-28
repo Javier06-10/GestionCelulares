@@ -111,7 +111,7 @@
             <h3 class="font-semibold text-tech-charcoal text-sm">Accesorios</h3>
             <span class="text-xs text-tech-steel ml-auto">{{ accesoriosFiltrados().length }}</span>
           </div>
-          <div class="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-5 gap-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5">
             @for (a of accesoriosFiltrados(); track a.varianteId) {
               <button (click)="agregarAccesorio(a); volar($event)" [disabled]="a.stock <= 0"
                 class="group text-left rounded-xl border border-tech-pastel/40 bg-tech-card-light overflow-hidden flex flex-col transition-all duration-200 hover:border-tech-accent/50 hover:shadow-[0_8px_24px_-10px_rgba(0,230,118,0.45)] active:scale-95 disabled:opacity-40 disabled:active:scale-100">
@@ -128,10 +128,10 @@
                     [class]="a.stock <= 0 ? 'bg-red-500/90 text-white' : a.stock <= 3 ? 'bg-amber-500/90 text-white' : 'bg-tech-bg-dark/70 text-white'">stock {{ a.stock }}</span>
                 </div>
                 <!-- Info -->
-                <div class="p-2 flex flex-col gap-0.5">
-                  <div class="font-semibold text-tech-charcoal text-xs leading-tight truncate">{{ a.nombre }}</div>
-                  @if (a.detalle) { <div class="text-[0.7rem] text-tech-steel truncate">{{ a.detalle }}</div> }
-                  <span class="text-xs font-bold text-tech-accent mt-0.5">{{ a.precioVenta | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
+                <div class="p-2.5 flex flex-col gap-0.5">
+                  <div class="font-semibold text-tech-charcoal text-sm leading-tight truncate">{{ a.nombre }}</div>
+                  @if (a.detalle) { <div class="text-xs text-tech-steel truncate">{{ a.detalle }}</div> }
+                  <span class="text-sm font-bold text-tech-accent mt-0.5">{{ a.precioVenta | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
                 </div>
               </button>
             } @empty {
