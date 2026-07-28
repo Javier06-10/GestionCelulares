@@ -8,11 +8,6 @@ public class LoginRequest
     [Required] public string Contrasena { get; set; } = null!;
 }
 
-public class RefreshRequest
-{
-    [Required] public string RefreshToken { get; set; } = null!;
-}
-
 public class UsuarioDto
 {
     public int UsuarioId { get; set; }

@@ -92,10 +92,6 @@ export class Inventario {
     const e = this.estadoDisp(disponibles, minimo);
     return e === 'agotado' ? 'bg-red-500' : e === 'bajo' ? 'bg-amber-500' : 'bg-tech-accent';
   }
-  textoDisp(disponibles: number, minimo: number): string {
-    const e = this.estadoDisp(disponibles, minimo);
-    return e === 'agotado' ? 'agotado' : e === 'bajo' ? 'por agotar' : '';
-  }
 
   // Estado de un accesorio según su stock mínimo configurado
   estadoAcc(stock: number, minimo: number): 'agotado' | 'bajo' | 'ok' {
