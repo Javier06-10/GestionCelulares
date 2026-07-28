@@ -114,15 +114,24 @@
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
             @for (a of accesoriosFiltrados(); track a.varianteId) {
               <button (click)="agregarAccesorio(a); volar($event)" [disabled]="a.stock <= 0"
-                class="text-left p-3 rounded-xl border border-tech-pastel/40 bg-tech-bg-light/40 transition-all duration-200 hover:border-tech-accent/50 hover:shadow-[0_4px_12px_-6px_rgba(0,230,118,0.4)] active:scale-95 disabled:opacity-40 disabled:active:scale-100">
-                @if (a.imagenUrl) {
-                  <img [src]="a.imagenUrl" [alt]="a.nombre" class="w-full h-20 object-cover rounded-lg mb-2 border border-tech-pastel/30" loading="lazy" />
-                }
-                <div class="font-medium text-tech-charcoal text-sm truncate">{{ a.nombre }}</div>
-                @if (a.detalle) { <div class="text-xs text-tech-steel truncate">{{ a.detalle }}</div> }
-                <div class="flex items-center justify-between mt-1">
-                  <span class="text-sm font-semibold text-tech-accent">{{ a.precioVenta | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
-                  <span class="px-1.5 py-0.5 rounded-md text-[0.6rem] font-bold" [class]="a.stock <= 0 ? 'bg-red-500/10 text-red-500' : a.stock <= 3 ? 'bg-amber-500/10 text-amber-600' : 'bg-tech-purple/10 text-tech-purple'">stock {{ a.stock }}</span>
+                class="group text-left rounded-xl border border-tech-pastel/40 bg-tech-card-light overflow-hidden flex flex-col transition-all duration-200 hover:border-tech-accent/50 hover:shadow-[0_8px_24px_-10px_rgba(0,230,118,0.45)] active:scale-95 disabled:opacity-40 disabled:active:scale-100">
+                <!-- Imagen (o placeholder consistente) con el stock encima -->
+                <div class="relative aspect-square bg-tech-bg-light overflow-hidden">
+                  @if (a.imagenUrl) {
+                    <img [src]="a.imagenUrl" [alt]="a.nombre" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                  } @else {
+                    <div class="w-full h-full grid place-items-center bg-gradient-to-br from-tech-bg-light to-tech-pastel/25 text-tech-steel/35">
+                      <lucide-icon name="tag" [size]="26"></lucide-icon>
+                    </div>
+                  }
+                  <span class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md text-[0.6rem] font-bold shadow-sm backdrop-blur-sm"
+                    [class]="a.stock <= 0 ? 'bg-red-500/90 text-white' : a.stock <= 3 ? 'bg-amber-500/90 text-white' : 'bg-tech-bg-dark/70 text-white'">stock {{ a.stock }}</span>
+                </div>
+                <!-- Info -->
+                <div class="p-2.5 flex flex-col gap-0.5">
+                  <div class="font-semibold text-tech-charcoal text-sm leading-tight truncate">{{ a.nombre }}</div>
+                  @if (a.detalle) { <div class="text-xs text-tech-steel truncate">{{ a.detalle }}</div> }
+                  <span class="text-sm font-bold text-tech-accent mt-0.5">{{ a.precioVenta | currency: 'DOP' : 'RD$' : '1.0-0' }}</span>
                 </div>
               </button>
             } @empty {
