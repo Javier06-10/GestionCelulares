@@ -107,6 +107,13 @@ export class Catalogo {
   });
   ventaBajoCosto = computed(() => this.ventaNuevo() > 0 && this.ventaNuevo() < this.costoNuevo());
 
+  // Aviso (no bloqueante) si ya hay un producto con el mismo nombre
+  private nombreNuevo = signal('');
+  nombreDuplicado = computed(() => {
+    const n = this.nombreNuevo().toLowerCase();
+    return n.length > 0 && this.productos().some(p => p.nombre.trim().toLowerCase() === n);
+  });
+
   // Modal variante
   modalVariante = signal(false);
   productoVariante = signal<Producto | null>(null);
@@ -175,6 +182,7 @@ export class Catalogo {
     this.formNuevo.valueChanges.pipe(takeUntilDestroyed()).subscribe(v => {
       this.costoNuevo.set(Number(v.precioCosto) || 0);
       this.ventaNuevo.set(Number(v.precioVenta) || 0);
+      this.nombreNuevo.set((v.nombre ?? '').trim());
     });
   }
 
@@ -219,6 +227,13 @@ export class Catalogo {
     return c ? c.categoriaId : null;
   }
 
+  /** Id de una categoría de dispositivos (Celulares/Dispositivos/…), si existe. */
+  private categoriaDispositivosId(): number | null {
+    const nombres = ['celulares', 'celular', 'dispositivos', 'dispositivo', 'teléfonos', 'telefonos', 'smartphones', 'equipos'];
+    const c = this.categorias().find(x => nombres.includes(x.nombre.trim().toLowerCase()));
+    return c ? c.categoriaId : null;
+  }
+
   /** Paso 2: fija el tipo elegido y abre el modal completo (producto + variante principal). */
   elegirTipo(serializado: boolean): void {
     this.tipoNuevo.set(serializado);
@@ -227,8 +242,8 @@ export class Catalogo {
     this.generarCodigoAuto.set(true);
     this.formNuevo.reset({
       nombre: '', descripcion: '', marcaId: null,
-      // Accesorio: categoría "Accesorios" por defecto. Dispositivo: sin categoría.
-      categoriaId: serializado ? null : this.categoriaAccesoriosId(),
+      // Categoría por defecto según el tipo (si existe una en los datos).
+      categoriaId: serializado ? this.categoriaDispositivosId() : this.categoriaAccesoriosId(),
       imagenUrl: null,
       color: '', almacenamiento: '', condicion: 'Nuevo', codigoBarras: '',
       precioCosto: 0, precioVenta: 0, stockNoSerial: 0, stockMinimo: 0
