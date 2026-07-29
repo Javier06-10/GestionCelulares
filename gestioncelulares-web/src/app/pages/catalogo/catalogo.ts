@@ -1,3 +1,4 @@
+import { A11yModule } from '@angular/cdk/a11y';
 import { CurrencyPipe } from '@angular/common';
 import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -14,7 +15,7 @@ type FiltroTipo = 'todos' | 'dispositivo' | 'accesorio';
 
 @Component({
   selector: 'app-catalogo',
-  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, CountUpDirective, BarcodeComponent],
+  imports: [ReactiveFormsModule, LucideAngularModule, CurrencyPipe, CountUpDirective, BarcodeComponent, A11yModule],
   templateUrl: './catalogo.html'
 })
 export class Catalogo {
