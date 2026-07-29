@@ -235,7 +235,242 @@
   }
 </div>
 
-<!-- ===== Modal producto ===== -->
+<!-- ===== Paso 1: elegir tipo (Dispositivo / Accesorio) ===== -->
+@if (modalTipo()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modalTipo.set(false)">
+    <div (click)="$event.stopPropagation()" class="w-[min(560px,95vw)] bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30">
+        <div>
+          <h3 class="font-bold text-tech-charcoal">Nuevo producto</h3>
+          <p class="text-xs text-tech-steel mt-0.5">¿Qué vas a registrar?</p>
+        </div>
+        <button type="button" (click)="modalTipo.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all">
+          <lucide-icon name="x" [size]="18"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="px-6 py-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Dispositivo -->
+        <button type="button" (click)="elegirTipo(true)"
+          class="group flex flex-col items-start gap-3 p-5 rounded-2xl border border-tech-pastel/50 bg-tech-bg-light/40 text-left transition-all hover:border-tech-accent/70 hover:bg-tech-accent/5 hover:shadow-[0_12px_32px_-16px_rgba(0,230,118,0.5)] active:scale-[0.98]">
+          <span class="w-12 h-12 grid place-items-center rounded-xl bg-tech-accent/10 text-tech-accent group-hover:bg-tech-accent/20 transition-colors">
+            <lucide-icon name="smartphone" [size]="26"></lucide-icon>
+          </span>
+          <span class="font-bold text-tech-charcoal">Dispositivo</span>
+          <span class="text-xs text-tech-steel leading-relaxed">Se controla por <b class="text-tech-charcoal">IMEI único</b> (celulares, tablets). Registras color, almacenamiento y condición.</span>
+          <span class="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-tech-accent">Elegir <lucide-icon name="arrow-right" [size]="14" class="transition-transform group-hover:translate-x-0.5"></lucide-icon></span>
+        </button>
+
+        <!-- Accesorio -->
+        <button type="button" (click)="elegirTipo(false)"
+          class="group flex flex-col items-start gap-3 p-5 rounded-2xl border border-tech-pastel/50 bg-tech-bg-light/40 text-left transition-all hover:border-tech-purple/70 hover:bg-tech-purple/5 hover:shadow-[0_12px_32px_-16px_rgba(108,92,231,0.5)] active:scale-[0.98]">
+          <span class="w-12 h-12 grid place-items-center rounded-xl bg-tech-purple/10 text-tech-purple group-hover:bg-tech-purple/20 transition-colors">
+            <lucide-icon name="tag" [size]="26"></lucide-icon>
+          </span>
+          <span class="font-bold text-tech-charcoal">Accesorio</span>
+          <span class="text-xs text-tech-steel leading-relaxed">Se controla por <b class="text-tech-charcoal">cantidad</b> y código de barras (fundas, cargadores, audífonos).</span>
+          <span class="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-tech-purple">Elegir <lucide-icon name="arrow-right" [size]="14" class="transition-transform group-hover:translate-x-0.5"></lucide-icon></span>
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== Paso 2: modal completo (producto + variante principal) ===== -->
+@if (modalNuevo()) {
+  <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modalNuevo.set(false)">
+    <form (click)="$event.stopPropagation()" [formGroup]="formNuevo" (ngSubmit)="guardarNuevo()"
+      class="w-[min(560px,95vw)] max-h-[92vh] overflow-y-auto bg-tech-card-light rounded-2xl shadow-2xl border border-tech-pastel/40">
+      <div class="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-tech-pastel/30 bg-tech-card-light">
+        <div class="flex items-center gap-3">
+          <span class="w-9 h-9 grid place-items-center rounded-xl" [class]="tipoNuevo() ? 'bg-tech-accent/10 text-tech-accent' : 'bg-tech-purple/10 text-tech-purple'">
+            <lucide-icon [name]="tipoNuevo() ? 'smartphone' : 'tag'" [size]="18"></lucide-icon>
+          </span>
+          <div>
+            <h3 class="font-bold text-tech-charcoal">Nuevo {{ tipoNuevo() ? 'dispositivo' : 'accesorio' }}</h3>
+            <button type="button" (click)="modalNuevo.set(false); modalTipo.set(true)" class="text-[0.7rem] text-tech-steel hover:text-tech-charcoal hover:underline">Cambiar tipo</button>
+          </div>
+        </div>
+        <button type="button" (click)="modalNuevo.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all">
+          <lucide-icon name="x" [size]="18"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 flex flex-col gap-4">
+        <!-- Datos del producto -->
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Nombre *</label>
+          <input formControlName="nombre" type="text" autofocus [placeholder]="tipoNuevo() ? 'Ej. Galaxy A55' : 'Ej. Funda silicona iPhone 15'"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+          @if (formNuevo.controls.nombre.invalid && formNuevo.controls.nombre.touched) {
+            <span class="text-xs text-red-500 mt-1 block">El nombre es obligatorio.</span>
+          }
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Marca</label>
+            <select formControlName="marcaId" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white">
+              <option [ngValue]="null">— Sin marca —</option>
+              @for (m of marcas(); track m.marcaId) { <option [ngValue]="m.marcaId">{{ m.nombre }}</option> }
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Categoría</label>
+            <select formControlName="categoriaId" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white">
+              <option [ngValue]="null">— Sin categoría —</option>
+              @for (c of categorias(); track c.categoriaId) { <option [ngValue]="c.categoriaId">{{ c.nombre }}</option> }
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Descripción</label>
+          <input formControlName="descripcion" type="text" placeholder="Opcional"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+        </div>
+
+        <!-- Imagen -->
+        <div>
+          <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Imagen</label>
+          <div class="flex items-center gap-3">
+            <div class="w-16 h-16 rounded-xl border border-tech-pastel/40 bg-tech-bg-light/60 grid place-items-center overflow-hidden shrink-0">
+              @if (formNuevo.controls.imagenUrl.value) {
+                <img [src]="formNuevo.controls.imagenUrl.value" alt="Imagen del producto" class="w-full h-full object-cover" />
+              } @else {
+                <lucide-icon name="image" [size]="22" class="text-tech-steel/60"></lucide-icon>
+              }
+            </div>
+            <div class="flex flex-col gap-1.5">
+              @if (imagenes.habilitado) {
+                <label class="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-tech-pastel/50 text-sm font-medium text-tech-charcoal hover:bg-tech-bg-light active:scale-95 transition-all">
+                  <lucide-icon [name]="subiendoImagen() ? 'loader' : 'upload'" [size]="15" [class]="subiendoImagen() ? 'animate-spin' : ''"></lucide-icon>
+                  {{ subiendoImagen() ? 'Subiendo…' : (formNuevo.controls.imagenUrl.value ? 'Cambiar' : 'Subir imagen') }}
+                  <input type="file" accept="image/*" class="hidden" (change)="subirImagen($event, formNuevo.controls.imagenUrl)" [disabled]="subiendoImagen()" />
+                </label>
+                @if (formNuevo.controls.imagenUrl.value) {
+                  <button type="button" (click)="quitarImagen(formNuevo.controls.imagenUrl)" class="text-xs text-red-500 hover:underline text-left">Quitar imagen</button>
+                }
+              } @else {
+                <span class="text-xs text-tech-steel">Configura Cloudinary en <span class="font-mono">environment.cloudinary</span> para habilitar la subida.</span>
+              }
+              @if (errorImagen()) { <span class="text-xs text-red-500">{{ errorImagen() }}</span> }
+            </div>
+          </div>
+        </div>
+
+        <!-- Separador: variante principal -->
+        <div class="flex items-center gap-2 pt-1">
+          <span class="text-xs font-semibold uppercase tracking-wider text-tech-steel">Variante principal</span>
+          <span class="flex-1 h-px bg-tech-pastel/40"></span>
+        </div>
+
+        @if (tipoNuevo()) {
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Color / Variante</label>
+              <input formControlName="color" type="text" placeholder="Negro" class="w-full px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Almacenamiento</label>
+              <input formControlName="almacenamiento" type="text" placeholder="128GB / —" class="w-full px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+            </div>
+          </div>
+        } @else {
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Color / Variante</label>
+            <input formControlName="color" type="text" placeholder="Negro / —" class="w-full px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-purple/60 focus:bg-white" />
+          </div>
+        }
+
+        <!-- Dispositivo: condición · Accesorio: código de barras -->
+        @if (tipoNuevo()) {
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Condición</label>
+            <select formControlName="condicion" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white">
+              <option value="Nuevo">Nuevo</option>
+              <option value="Usado">Usado</option>
+              <option value="Reacondicionado">Reacondicionado</option>
+            </select>
+          </div>
+        } @else {
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Código de barras</label>
+            <div class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 transition-all focus-within:border-tech-purple/60 focus-within:bg-white">
+              <lucide-icon name="scan-line" [size]="16" class="shrink-0 text-tech-purple"></lucide-icon>
+              <input formControlName="codigoBarras" type="text" placeholder="Escanea, escribe o déjalo vacío para generarlo"
+                class="flex-1 min-w-0 bg-transparent text-tech-charcoal font-mono outline-none placeholder:text-tech-steel/60" />
+            </div>
+            <label class="flex items-center gap-2 mt-2 cursor-pointer">
+              <input type="checkbox" [checked]="generarCodigoAuto()" (change)="generarCodigoAuto.set($any($event.target).checked)" class="w-4 h-4 accent-[#6C5CE7]" />
+              <span class="text-xs text-tech-steel">Generar un código automáticamente si lo dejo vacío</span>
+            </label>
+          </div>
+        }
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Precio costo *</label>
+            <input formControlName="precioCosto" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Precio venta *</label>
+            <input formControlName="precioVenta" type="number" step="0.01" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-accent/60 focus:bg-white" />
+          </div>
+        </div>
+
+        <!-- Margen en vivo -->
+        <div class="flex items-center justify-between px-3.5 py-2 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/30">
+          <span class="text-xs font-medium text-tech-steel">Margen de ganancia</span>
+          <span class="inline-block px-2 py-0.5 rounded-lg text-xs font-bold" [class]="margenClase(margenNuevoPct())">{{ margenNuevoPct() }}%</span>
+        </div>
+        @if (ventaBajoCosto()) {
+          <div class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-medium">
+            <lucide-icon name="triangle-alert" [size]="14"></lucide-icon> Estás vendiendo por debajo del costo.
+          </div>
+        }
+
+        @if (!tipoNuevo()) {
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Stock inicial (cantidad)</label>
+              <input formControlName="stockNoSerial" type="number" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-tech-purple/60 focus:bg-white" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Stock mínimo (alerta)</label>
+              <input formControlName="stockMinimo" type="number" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-amber-500/60 focus:bg-white" />
+            </div>
+          </div>
+        } @else {
+          <div>
+            <label class="block text-xs font-semibold text-tech-charcoal mb-1.5">Stock mínimo (alerta de unidades)</label>
+            <input formControlName="stockMinimo" type="number" min="0" class="w-full px-3.5 py-2.5 rounded-xl bg-tech-bg-light/60 border border-tech-pastel/40 text-tech-charcoal outline-none transition-all focus:border-amber-500/60 focus:bg-white" />
+          </div>
+        }
+
+        @if (tipoNuevo()) {
+          <p class="text-[0.7rem] text-tech-steel flex items-center gap-1.5"><lucide-icon name="smartphone" [size]="13" class="text-tech-accent"></lucide-icon> El stock del dispositivo se controla registrando cada equipo por IMEI en Inventario.</p>
+        } @else {
+          <p class="text-[0.7rem] text-tech-steel flex items-center gap-1.5"><lucide-icon name="circle-alert" [size]="13" class="text-amber-600"></lucide-icon> Cuando el stock baje al mínimo, el producto se marca como “próximo a agotar”.</p>
+        }
+
+        @if (errorNuevo()) {
+          <div class="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm">{{ errorNuevo() }}</div>
+        }
+      </div>
+
+      <div class="sticky bottom-0 flex justify-end gap-2 px-6 py-4 border-t border-tech-pastel/30 bg-tech-bg-light/95 backdrop-blur">
+        <button type="button" (click)="modalNuevo.set(false)" class="px-4 py-2.5 rounded-xl border border-tech-pastel/60 text-tech-charcoal font-medium text-sm hover:bg-tech-bg-light active:scale-95 transition-all">Cancelar</button>
+        <button type="submit" [disabled]="guardandoNuevo()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-tech-accent to-emerald-400 text-tech-bg-dark font-semibold text-sm transition-all hover:shadow-[0_8px_24px_-8px_rgba(0,230,118,0.6)] active:scale-95 disabled:opacity-60">
+          @if (guardandoNuevo()) { <lucide-icon name="loader" [size]="16" class="animate-spin"></lucide-icon> Creando… }
+          @else { <lucide-icon name="check" [size]="16"></lucide-icon> Crear producto }
+        </button>
+      </div>
+    </form>
+  </div>
+}
+
+<!-- ===== Modal producto (editar) ===== -->
 @if (modalProducto()) {
   <div class="fixed inset-0 z-50 grid place-items-center p-4 bg-tech-bg-dark/50 backdrop-blur-sm" (click)="modalProducto.set(false)">
     <form (click)="$event.stopPropagation()" [formGroup]="formProducto" (ngSubmit)="guardarProducto()"
@@ -296,10 +531,10 @@
                 <label class="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-tech-pastel/50 text-sm font-medium text-tech-charcoal hover:bg-tech-bg-light active:scale-95 transition-all">
                   <lucide-icon [name]="subiendoImagen() ? 'loader' : 'upload'" [size]="15" [class]="subiendoImagen() ? 'animate-spin' : ''"></lucide-icon>
                   {{ subiendoImagen() ? 'Subiendo…' : (formProducto.controls.imagenUrl.value ? 'Cambiar' : 'Subir imagen') }}
-                  <input type="file" accept="image/*" class="hidden" (change)="subirImagen($event)" [disabled]="subiendoImagen()" />
+                  <input type="file" accept="image/*" class="hidden" (change)="subirImagen($event, formProducto.controls.imagenUrl)" [disabled]="subiendoImagen()" />
                 </label>
                 @if (formProducto.controls.imagenUrl.value) {
-                  <button type="button" (click)="quitarImagen()" class="text-xs text-red-500 hover:underline text-left">Quitar imagen</button>
+                  <button type="button" (click)="quitarImagen(formProducto.controls.imagenUrl)" class="text-xs text-red-500 hover:underline text-left">Quitar imagen</button>
                 }
               } @else {
                 <span class="text-xs text-tech-steel">Configura Cloudinary en <span class="font-mono">environment.cloudinary</span> para habilitar la subida.</span>

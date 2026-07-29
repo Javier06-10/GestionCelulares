@@ -1,9 +1,10 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, HostListener, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import {
-  CatalogoService, Categoria, Marca, Producto, Variante
+  CatalogoService, Categoria, Marca, Producto, Variante, VarianteGuardar
 } from '../../core/catalogo.service';
 import { ImagenService } from '../../core/imagen.service';
 import { BarcodeComponent } from '../../shared/barcode.component';
@@ -72,6 +73,40 @@ export class Catalogo {
   subiendoImagen = signal(false);
   errorImagen = signal<string | null>(null);
 
+  // ----- Alta unificada (nuevo producto): selector de tipo + modal completo -----
+  modalTipo = signal(false);          // pantalla previa: elegir Accesorio / Dispositivo
+  modalNuevo = signal(false);         // modal con producto + variante principal
+  tipoNuevo = signal(true);           // true = dispositivo (serializado), false = accesorio
+  guardandoNuevo = signal(false);
+  errorNuevo = signal<string | null>(null);
+  generarCodigoAuto = signal(true);   // accesorio: generar código si se deja vacío
+  formNuevo = this.fb.nonNullable.group({
+    // Producto
+    nombre: ['', [Validators.required, Validators.maxLength(150)]],
+    descripcion: [''],
+    marcaId: [null as number | null],
+    categoriaId: [null as number | null],
+    imagenUrl: [null as string | null],
+    // Variante principal
+    color: [''],
+    almacenamiento: [''],
+    condicion: ['Nuevo'],
+    codigoBarras: [''],
+    precioCosto: [0, [Validators.required, Validators.min(0)]],
+    precioVenta: [0, [Validators.required, Validators.min(0)]],
+    stockNoSerial: [0, [Validators.min(0)]],
+    stockMinimo: [0, [Validators.min(0)]]
+  });
+
+  // Margen en vivo del modal de alta (reacciona al teclear costo/venta)
+  private costoNuevo = signal(0);
+  private ventaNuevo = signal(0);
+  margenNuevoPct = computed(() => {
+    const venta = this.ventaNuevo();
+    return venta > 0 ? Math.round(((venta - this.costoNuevo()) / venta) * 100) : 0;
+  });
+  ventaBajoCosto = computed(() => this.ventaNuevo() > 0 && this.ventaNuevo() < this.costoNuevo());
+
   // Modal variante
   modalVariante = signal(false);
   productoVariante = signal<Producto | null>(null);
@@ -136,6 +171,21 @@ export class Catalogo {
   constructor() {
     this.cargar();
     this.cargarCatalogos();
+    // Espeja costo/venta del alta a signals para el margen en vivo.
+    this.formNuevo.valueChanges.pipe(takeUntilDestroyed()).subscribe(v => {
+      this.costoNuevo.set(Number(v.precioCosto) || 0);
+      this.ventaNuevo.set(Number(v.precioVenta) || 0);
+    });
+  }
+
+  /** Escape cierra el modal abierto de más arriba. */
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.modalNuevo()) this.modalNuevo.set(false);
+    else if (this.modalTipo()) this.modalTipo.set(false);
+    else if (this.modalProducto()) this.modalProducto.set(false);
+    else if (this.modalVariante()) this.modalVariante.set(false);
+    else if (this.modalCatalogos()) this.modalCatalogos.set(false);
   }
 
   cargar(): void {
@@ -157,14 +207,84 @@ export class Catalogo {
     this.expandido.set(this.expandido() === id ? null : id);
   }
 
-  // ----- Producto -----
+  // ----- Alta unificada -----
+  /** Paso 1: abre la pantalla para elegir Accesorio o Dispositivo. */
   abrirNuevoProducto(): void {
-    this.editandoProducto.set(null);
-    this.errorProducto.set(null);
-    this.errorImagen.set(null);
-    this.formProducto.reset({ nombre: '', descripcion: '', marcaId: null, categoriaId: null, serializado: true, activo: true, imagenUrl: null });
-    this.modalProducto.set(true);
+    this.modalTipo.set(true);
   }
+
+  /** Id de la categoría "Accesorios" (si existe en los datos), para preseleccionarla. */
+  private categoriaAccesoriosId(): number | null {
+    const c = this.categorias().find(x => x.nombre.trim().toLowerCase() === 'accesorios');
+    return c ? c.categoriaId : null;
+  }
+
+  /** Paso 2: fija el tipo elegido y abre el modal completo (producto + variante principal). */
+  elegirTipo(serializado: boolean): void {
+    this.tipoNuevo.set(serializado);
+    this.errorNuevo.set(null);
+    this.errorImagen.set(null);
+    this.generarCodigoAuto.set(true);
+    this.formNuevo.reset({
+      nombre: '', descripcion: '', marcaId: null,
+      // Accesorio: categoría "Accesorios" por defecto. Dispositivo: sin categoría.
+      categoriaId: serializado ? null : this.categoriaAccesoriosId(),
+      imagenUrl: null,
+      color: '', almacenamiento: '', condicion: 'Nuevo', codigoBarras: '',
+      precioCosto: 0, precioVenta: 0, stockNoSerial: 0, stockMinimo: 0
+    });
+    this.modalTipo.set(false);
+    this.modalNuevo.set(true);
+  }
+
+  /** Crea el producto y su variante principal en una sola llamada atómica. */
+  guardarNuevo(): void {
+    if (this.formNuevo.invalid) { this.formNuevo.markAllAsTouched(); return; }
+    this.guardandoNuevo.set(true);
+    this.errorNuevo.set(null);
+    const v = this.formNuevo.getRawValue();
+    const serializado = this.tipoNuevo();
+    const variante: VarianteGuardar = {
+      color: v.color?.trim() || null,
+      almacenamiento: v.almacenamiento?.trim() || null,
+      // Condición solo aplica a dispositivos; código de barras y stock solo a accesorios
+      condicion: serializado ? (v.condicion?.trim() || null) : null,
+      codigoBarras: serializado ? null : (v.codigoBarras?.trim() || null),
+      precioVenta: v.precioVenta,
+      precioCosto: v.precioCosto,
+      stockNoSerial: serializado ? 0 : v.stockNoSerial,
+      stockMinimo: v.stockMinimo,
+      activo: true
+    };
+    this.servicio.crearProducto({
+      nombre: v.nombre.trim(),
+      descripcion: v.descripcion?.trim() || null,
+      marcaId: v.marcaId ? Number(v.marcaId) : null,
+      categoriaId: v.categoriaId ? Number(v.categoriaId) : null,
+      serializado,
+      imagenUrl: v.imagenUrl || null,
+      variantes: [variante]
+    }).subscribe({
+      next: prod => {
+        const finalizar = () => {
+          this.guardandoNuevo.set(false);
+          this.modalNuevo.set(false);
+          this.cargar();
+          this.expandido.set(prod.productoId);   // deja el nuevo producto abierto mostrando su variante
+        };
+        // Accesorio sin código y con autogenerar activo → genera el EAN-13 tras crear.
+        const autogenerar = !serializado && this.generarCodigoAuto() && !variante.codigoBarras && prod.variantes.length > 0;
+        if (autogenerar) {
+          this.servicio.generarCodigo(prod.variantes[0].varianteId).subscribe({ next: finalizar, error: finalizar });
+        } else {
+          finalizar();
+        }
+      },
+      error: err => { this.guardandoNuevo.set(false); this.errorNuevo.set(err.error?.error ?? 'No se pudo crear el producto.'); }
+    });
+  }
+
+  // ----- Producto (editar) -----
 
   abrirEditarProducto(p: Producto): void {
     this.editandoProducto.set(p);
@@ -182,15 +302,15 @@ export class Catalogo {
     this.modalProducto.set(true);
   }
 
-  // Sube la imagen elegida a Cloudinary y guarda el URL en el form.
-  subirImagen(ev: Event): void {
+  // Sube la imagen elegida a Cloudinary y guarda el URL en el control indicado.
+  subirImagen(ev: Event, ctrl: FormControl<string | null>): void {
     const input = ev.target as HTMLInputElement;
     const archivo = input.files?.[0];
     if (!archivo) return;
     this.errorImagen.set(null);
     this.subiendoImagen.set(true);
     this.imagenes.subir(archivo).subscribe({
-      next: url => { this.formProducto.controls.imagenUrl.setValue(url); this.subiendoImagen.set(false); input.value = ''; },
+      next: url => { ctrl.setValue(url); this.subiendoImagen.set(false); input.value = ''; },
       error: err => {
         this.subiendoImagen.set(false);
         // Surface el mensaje real de Cloudinary (p. ej. "Upload preset must be whitelisted…").
@@ -201,7 +321,7 @@ export class Catalogo {
     });
   }
 
-  quitarImagen(): void { this.formProducto.controls.imagenUrl.setValue(null); }
+  quitarImagen(ctrl: FormControl<string | null>): void { ctrl.setValue(null); }
 
   guardarProducto(): void {
     if (this.formProducto.invalid) { this.formProducto.markAllAsTouched(); return; }
