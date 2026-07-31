@@ -1,6 +1,11 @@
 # Migraciones de base de datos
 
-El esquema de GestiónCelulares se versiona con **scripts SQL numerados** (`GestionCelulares_v5..vN.sql`, con `GestionCelulares_setup_completo.sql` como base) que se aplican con el runner **[`Apply-Migrations.ps1`](Apply-Migrations.ps1)**.
+El esquema de GestiónCelulares se versiona con **scripts SQL numerados** en [`db/migraciones/`](db/migraciones) (`GestionCelulares_v5..vN.sql`, con `GestionCelulares_setup_completo.sql` como base) que se aplican con el runner **[`Apply-Migrations.ps1`](Apply-Migrations.ps1)**.
+
+> **Para instalar una BD nueva desde cero** hay un atajo: un único script consolidado
+> [`db/GestionCelulares_Esquema_Completo.sql`](db/GestionCelulares_Esquema_Completo.sql)
+> crea todo el esquema en un paso (ver [db/README.md](db/README.md)). Las migraciones de
+> abajo se siguen usando para bases **ya existentes** y para agregar cambios a futuro.
 
 El runner reemplaza el "aplicar scripts a mano con sqlcmd": lleva una tabla de control `dbo.SchemaVersion`, aplica en **orden numérico** solo lo que falta y es **idempotente** (correrlo dos veces no repite nada). Cada script, además, es idempotente por sí mismo (guardas `IF [NOT] EXISTS` o `CREATE OR ALTER`).
 
@@ -27,7 +32,7 @@ Registra todos los scripts como aplicados **sin ejecutarlos**. (Ya se hizo en la
 ```
 
 ## Flujo al agregar un cambio de esquema
-1. Crea `GestionCelulares_v{N+1}_descripcion.sql` (con guardas idempotentes o `CREATE OR ALTER`).
+1. Crea `db/migraciones/GestionCelulares_v{N+1}_descripcion.sql` (con guardas idempotentes o `CREATE OR ALTER`).
 2. Corre `./Apply-Migrations.ps1` en local para aplicarlo.
 3. Versiónalo. En cada entorno, correr el runner lo aplica una sola vez.
 

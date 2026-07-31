@@ -20,7 +20,7 @@
     Base de datos destino. Por defecto: GestionCelulares. (Los scripts hacen USE [GestionCelulares].)
 
 .PARAMETER Path
-    Carpeta con los .sql. Por defecto: la carpeta de este script.
+    Carpeta con las migraciones .sql. Por defecto: db\migraciones (junto a este script).
 
 .PARAMETER Baseline
     Marca TODOS los scripts como aplicados SIN ejecutarlos. Úsalo una sola vez para adoptar
@@ -45,12 +45,15 @@
 param(
     [string]$Server = "localhost",
     [string]$Database = "GestionCelulares",
-    [string]$Path = $PSScriptRoot,
+    [string]$Path = "",
     [switch]$Baseline,
     [switch]$WhatIf
 )
 
 $ErrorActionPreference = "Stop"
+
+# Carpeta de migraciones por defecto: db\migraciones junto a este script.
+if ([string]::IsNullOrWhiteSpace($Path)) { $Path = Join-Path $PSScriptRoot 'db\migraciones' }
 
 function Invoke-Sql {
     param([string]$Query, [switch]$Master)

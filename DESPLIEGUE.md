@@ -51,10 +51,16 @@ de sección. Estas son **obligatorias** en producción:
    ```
    y usa esa clave en `ConnectionStrings__Default`.
 
-2. **Esquema:** aplica las migraciones con el runner (ver [MIGRACIONES.md](MIGRACIONES.md)):
-   ```powershell
-   ./Apply-Migrations.ps1 -Server <host> -Database GestionCelulares
-   ```
+2. **Esquema:** dos opciones (ver [db/README.md](db/README.md)):
+
+   - **Instalación nueva (recomendado):** un solo script crea toda la base.
+     ```bash
+     sqlcmd -S <host> -i db/GestionCelulares_Esquema_Completo.sql
+     ```
+   - **BD existente / cambios incrementales:** el runner de migraciones.
+     ```powershell
+     ./Apply-Migrations.ps1 -Server <host> -Database GestionCelulares
+     ```
 
 3. **Datos iniciales:** ver §4 — una BD nueva queda **vacía de datos de referencia**.
 
