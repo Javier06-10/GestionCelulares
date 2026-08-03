@@ -1,7 +1,7 @@
 # Contexto del proyecto — Gestión Celulares
 
 > Documento de traspaso (handoff). Resume el estado para retomar el trabajo o pasarlo a otra sesión.
-> Última actualización: 2026-06-11.
+> Última actualización: 2026-08-03 (estructura de BD reorganizada en `db/`).
 
 **PROYECTO:** ERP + POS + Taller + Créditos + Inventario IMEI para un comercio de venta y reparación de
 celulares (República Dominicana — ITBIS 18% y, a futuro, facturación e-CF de la DGII). Despliegue para
@@ -14,11 +14,22 @@ Se descartó Supabase/PostgreSQL: este proyecto va con SQL Server, administrado 
 (remoto GitHub `Javier06-10/GestionCelulares`). Ojo: existe una carpeta `Desktop\GestionCelulares` vacía que no es el proyecto.
 
 ## 1) Base de datos (YA CREADA en SQL Server local, verificada)
-Base `GestionCelulares` en `localhost` (autenticación Windows). 33 tablas, 5 procedimientos, 4 vistas.
-Script completo exportado por SSMS: `Downloads\script.ipynb` (es T-SQL plano pese a la extensión).
-Scripts originales en orden: `GestionCelulares_v1.sql` (esquema base), `v2_garantias_sp.sql` (Garantías/RMA,
-tipo tabla `VentaDetalleTipo`, SPs `usp_Venta_Registrar`/`usp_Credito_Crear`/`usp_Caja_Cerrar` y vistas),
-`v3_pagocredito.sql` (`usp_PagoCredito_Registrar`), `v4_mora.sql` (`usp_Creditos_ActualizarMora`, job diario).
+Base `GestionCelulares` en `localhost` (autenticación Windows). **46 tablas, 6 procedimientos, 4 vistas,
+76 FKs, 32 índices** (verificado).
+
+**Estructura de scripts SQL — carpeta `db/`:**
+- **`db/GestionCelulares_Esquema_Completo.sql`** — script **consolidado** que crea TODA la BD desde cero en
+  un paso (tipos, tablas con PK/UNIQUE/CHECK/DEFAULT/índices/triggers, FKs, vistas, procedimientos y las
+  semillas de configuración). Generado desde el esquema real con SMO, **idempotente** y verificado contra
+  la BD real (mismos objetos que aplicar `setup_completo` + `v5..v26`). Vía recomendada para instalaciones
+  **NUEVAS**: `sqlcmd -S localhost -i db/GestionCelulares_Esquema_Completo.sql`.
+- **`db/migraciones/`** — historial versionado: `GestionCelulares_setup_completo.sql` (base, incluye lo que
+  antes eran `v1..v4`: tipo tabla `VentaDetalleTipo`, SPs `usp_Venta_Registrar`/`usp_Credito_Crear`/
+  `usp_Caja_Cerrar`/`usp_PagoCredito_Registrar`/`usp_Creditos_ActualizarMora`, vistas) + `v5..v26` (deltas).
+  Lo aplica **`Apply-Migrations.ps1`** (en la raíz), que lleva el control en `dbo.SchemaVersion` y solo corre
+  lo pendiente. Vía para BD **ya existentes** y para agregar cambios a futuro.
+- Ver **`db/README.md`** para cuándo usar cada una. El bootstrap de datos iniciales (Empresa, Sucursal,
+  roles, métodos de pago, admin) va **aparte**, documentado en `DESPLIEGUE.md` §4.
 
 Módulos cubiertos: Empresa/Sucursal, Seguridad (Rol, Permiso, RolPermiso, Usuario, RefreshToken), Clientes,
 Proveedores (Compra, PagoProveedor), Catálogo (Marca, Categoria, Producto, ProductoVariante), Inventario IMEI
