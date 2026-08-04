@@ -299,6 +299,12 @@
         <button type="button" (click)="modalRepuesto.set(false)" class="w-8 h-8 grid place-items-center rounded-lg text-tech-steel hover:bg-tech-bg-light active:scale-90 transition-all"><lucide-icon name="x" [size]="18"></lucide-icon></button>
       </div>
       <div class="px-6 py-5 flex flex-col gap-4">
+        @if (errorRepuesto()) {
+          <div class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 text-sm">
+            <lucide-icon name="circle-alert" [size]="16" class="shrink-0"></lucide-icon>
+            <span>{{ errorRepuesto() }}</span>
+          </div>
+        }
         @if (!formRepuesto.controls.manual.value) {
           <!-- Pieza del inventario (categoría Reparaciones): descuenta stock al guardar -->
           <div>

@@ -79,6 +79,7 @@ export class Taller {
   // Detalle
   detalle = signal<Orden | null>(null);
   errorDetalle = signal<string | null>(null);
+  errorRepuesto = signal<string | null>(null);   // errores del modal de repuesto (visibles dentro del modal)
 
   // Transiciones permitidas
   private transiciones: Record<string, string[]> = {
@@ -228,6 +229,7 @@ export class Taller {
 
   // ----- Repuesto -----
   abrirRepuesto(): void {
+    this.errorRepuesto.set(null);
     this.formRepuesto.reset({ manual: false, varianteId: null, descripcion: '', cantidad: 1, costo: 0 });
     // Carga las piezas disponibles (accesorios activos con stock) del inventario
     this.catalogo.productos().subscribe((ps: Producto[]) => {
@@ -263,11 +265,13 @@ export class Taller {
 
   agregarRepuesto(): void {
     const o = this.detalle();
-    if (!o) return;
+    if (!o) { this.errorRepuesto.set('No hay una orden abierta.'); return; }
+    this.errorRepuesto.set(null);
     const v = this.formRepuesto.getRawValue();
     // Modo inventario: exige elegir una pieza. Modo manual: exige descripción.
-    if (!v.manual && v.varianteId == null) { this.errorDetalle.set('Elige una pieza del inventario (o marca "pieza no inventariada").'); return; }
-    if (v.manual && !v.descripcion.trim()) { this.formRepuesto.markAllAsTouched(); return; }
+    if (!v.manual && v.varianteId == null) { this.errorRepuesto.set('Elige una pieza del inventario (o marca "pieza no inventariada").'); return; }
+    if (v.manual && !v.descripcion.trim()) { this.errorRepuesto.set('Escribe la descripción del repuesto.'); this.formRepuesto.markAllAsTouched(); return; }
+    if (!v.cantidad || v.cantidad < 1) { this.errorRepuesto.set('La cantidad debe ser al menos 1.'); return; }
 
     this.servicio.agregarRepuesto(o.ordenTallerId, {
       varianteId: v.manual ? null : v.varianteId,
@@ -276,7 +280,7 @@ export class Taller {
       costo: v.costo
     }).subscribe({
       next: x => { this.detalle.set(x); this.modalRepuesto.set(false); },
-      error: e => this.errorDetalle.set(e.error?.error ?? 'No se pudo agregar el repuesto.')
+      error: e => this.errorRepuesto.set(e.error?.error ?? 'No se pudo agregar el repuesto.')
     });
   }
 
